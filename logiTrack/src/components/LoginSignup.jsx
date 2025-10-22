@@ -19,7 +19,6 @@ export const LoginSignup = () => {
 
   const navigate = useNavigate();
 
-  // ----------- MAIN HANDLER ------------
   const handleSubmit = async () => {
     // === REAL BACKEND CODE (to be implemented later) ===
     /*
