@@ -61,7 +61,9 @@ export const LoginSignup = () => {
   return (
     <div className="container">
       <header>
-        <h1>LOGITRACK</h1>
+        <div className="login-header">
+          <h1>LOGITRACK</h1>
+        </div>
       </header>
       <div className="horizontal-container">
         <div className="login-container">

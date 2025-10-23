@@ -1,4 +1,11 @@
-header{
+p{
+    padding-top: 30px;
+    margin: auto;
+    font-size: 19px;
+    font-weight: 600;
+}
+
+.login-header{
     width: 100vw;
     height: 10vh;
     color: white;
@@ -7,18 +14,7 @@ header{
     display: flex;
     align-items: center;
     justify-content: center;
-}
-
-h1{
-    margin: 0;
     font-weight: 500;
-}
-
-p{
-    padding-top: 30px;
-    margin: auto;
-    font-size: 19px;
-    font-weight: 600;
 }
 
 .container{

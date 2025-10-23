@@ -24,41 +24,85 @@ const envelopeIco = <FontAwesomeIcon icon={faEnvelope} size="2x" />;
 const fileIco = <FontAwesomeIcon icon={faFile} size="2x" />;
 const previousIco = <FontAwesomeIcon icon={faClockRotateLeft} size="2x" />;
 
-export const NavBar = () => {
+export const NavBar = ({ currentView, changeView }) => {
   return (
     <div className="NV-container">
       <div className="options-container">
-        <div className="user-icon">
+        <div className="user-icon" onClick={() => changeView("Opciones")}>
           <div className="icons">{userIco}</div>
           Usuario
         </div>
         <div className="options-others">
           <div className="icons">{addFriendIco}</div>
-          <div className="icons">{optionsIco}</div>
+          <div className="icons" onClick={() => changeView("Opciones")}>
+            {optionsIco}
+          </div>
         </div>
       </div>
       <div className="navbar-container">
-        <div className="navbar-element">
+        <div
+          className={
+            currentView === "Mis Tareas"
+              ? "navbar-element navbar-selected"
+              : "navbar-element"
+          }
+          onClick={() => changeView("Mis Tareas")}
+        >
           <div className="icons">{clipboardIco}</div>
           Mis Tareas
         </div>
-        <div className="navbar-element">
+        <div
+          className={
+            currentView === "Calendario"
+              ? "navbar-element navbar-selected"
+              : "navbar-element"
+          }
+          onClick={() => changeView("Calendario")}
+        >
           <div className="icons">{calendarIco}</div>
           Calendario
         </div>
-        <div className="navbar-element">
+        <div
+          className={
+            currentView === "Chat"
+              ? "navbar-element navbar-selected"
+              : "navbar-element"
+          }
+          onClick={() => changeView("Chat")}
+        >
           <div className="icons">{messageIco}</div>
           Chat
         </div>
-        <div className="navbar-element">
+        <div
+          className={
+            currentView === "Notificaciones"
+              ? "navbar-element navbar-selected"
+              : "navbar-element"
+          }
+          onClick={() => changeView("Notificaciones")}
+        >
           <div className="icons">{envelopeIco}</div>
           Notificaciones
         </div>
-        <div className="navbar-element">
+        <div
+          className={
+            currentView === "Mis Proyectos"
+              ? "navbar-element navbar-selected"
+              : "navbar-element"
+          }
+          onClick={() => changeView("Mis Proyectos")}
+        >
           <div className="icons">{fileIco}</div>
           Mis Proyectos
         </div>
-        <div className="navbar-element">
+        <div
+          className={
+            currentView === "Proyectos Anteriores"
+              ? "navbar-element navbar-selected"
+              : "navbar-element"
+          }
+          onClick={() => changeView("Proyectos Anteriores")}
+        >
           <div className="icons">{previousIco}</div>
           Proyectos Anteriores
         </div>
