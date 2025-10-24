@@ -3,7 +3,7 @@ import { NavBar } from "./NavBar";
 import "./Home.css";
 
 import { MisTareas } from "./vistas/MisTareas";
-import { Calendario } from "./vistas/Calendario";
+import { GoogleCalendario } from "./vistas/GoogleCalendario";
 import { Chat } from "./vistas/Chat";
 import { Notificaciones } from "./vistas/Notificaciones";
 import { MisProyectos } from "./vistas/MisProyectos";
@@ -16,8 +16,8 @@ export const Home = () => {
     switch (selectedView) {
       case "Mis Tareas":
         return <MisTareas />;
-      case "Calendario":
-        return <Calendario />;
+      case "Google Calendario":
+        return <GoogleCalendario />;
       case "Chat":
         return <Chat />;
       case "Notificaciones":

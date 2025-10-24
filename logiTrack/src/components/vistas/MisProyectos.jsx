@@ -1,5 +1,12 @@
 import React from "react";
+import "./MisProyectos.css";
+
+import { VistaProyectos } from "./subVistas/VistaProyectos";
 
 export const MisProyectos = () => {
-  return <div>MisProyectos</div>;
+  return (
+    <div>
+      <VistaProyectos ViewMode="Mis Proyectos" />
+    </div>
+  );
 };

@@ -78,6 +78,23 @@
     background: #471575;
 }
 
+.dropdown-arrow {
+  margin-left: auto;
+  padding: 4px;
+  cursor: pointer;
+}
+
+.arrow-icon {
+  margin-left: auto;
+  padding: 10px;
+  transition: transform 0.2s ease;
+  cursor: pointer;
+}
+
+.arrow-icon.open {
+  transform: rotate(180deg);
+}
+
 .dropdown {
   background: blueviolet;
   padding-left: 1.5rem;

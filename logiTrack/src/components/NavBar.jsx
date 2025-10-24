@@ -2,27 +2,42 @@ import React, { useState } from "react";
 import "./NavBar.css";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faUser } from "@fortawesome/free-solid-svg-icons";
-import { faUserPlus } from "@fortawesome/free-solid-svg-icons";
-import { faGear } from "@fortawesome/free-solid-svg-icons";
-
-import { faClipboardList } from "@fortawesome/free-solid-svg-icons";
-import { faCalendar } from "@fortawesome/free-solid-svg-icons";
-import { faMessage } from "@fortawesome/free-solid-svg-icons";
-import { faEnvelope } from "@fortawesome/free-solid-svg-icons";
-import { faFile } from "@fortawesome/free-solid-svg-icons";
-import { faClockRotateLeft } from "@fortawesome/free-solid-svg-icons";
+import {
+  faUser,
+  faUserPlus,
+  faGear,
+  faClipboardList,
+  faCalendar,
+  faMessage,
+  faEnvelope,
+  faFile,
+  faClockRotateLeft,
+  faChevronUp,
+} from "@fortawesome/free-solid-svg-icons";
 
 const userIco = <FontAwesomeIcon icon={faUser} size="2x" />;
 const addFriendIco = <FontAwesomeIcon icon={faUserPlus} size="2x" />;
 const optionsIco = <FontAwesomeIcon icon={faGear} size="2x" />;
 
-const clipboardIco = <FontAwesomeIcon icon={faClipboardList} size="2x" />;
-const calendarIco = <FontAwesomeIcon icon={faCalendar} size="2x" />;
-const messageIco = <FontAwesomeIcon icon={faMessage} size="2x" />;
-const envelopeIco = <FontAwesomeIcon icon={faEnvelope} size="2x" />;
-const fileIco = <FontAwesomeIcon icon={faFile} size="2x" />;
-const previousIco = <FontAwesomeIcon icon={faClockRotateLeft} size="2x" />;
+const clipboardIco = (
+  <FontAwesomeIcon icon={faClipboardList} style={{ fontSize: "1.6rem" }} />
+);
+const calendarIco = (
+  <FontAwesomeIcon icon={faCalendar} style={{ fontSize: "1.6rem" }} />
+);
+const messageIco = (
+  <FontAwesomeIcon icon={faMessage} style={{ fontSize: "1.6rem" }} />
+);
+const envelopeIco = (
+  <FontAwesomeIcon icon={faEnvelope} style={{ fontSize: "1.6rem" }} />
+);
+const fileIco = (
+  <FontAwesomeIcon icon={faFile} style={{ fontSize: "1.6rem" }} />
+);
+const previousIco = (
+  <FontAwesomeIcon icon={faClockRotateLeft} style={{ fontSize: "1.6rem" }} />
+);
+const arrowIco = <FontAwesomeIcon icon={faChevronUp} size="sm" />;
 
 const projects = [
   { name: "Proyecto A", state: "En proceso" },
@@ -68,14 +83,14 @@ export const NavBar = ({ currentView, changeView }) => {
 
         <div
           className={
-            currentView === "Calendario"
+            currentView === "Google Calendario"
               ? "navbar-element navbar-selected"
               : "navbar-element"
           }
-          onClick={() => changeView("Calendario")}
+          onClick={() => changeView("Google Calendario")}
         >
           <div className="icons">{calendarIco}</div>
-          Calendario
+          Google Calendario
         </div>
 
         <div
@@ -108,14 +123,20 @@ export const NavBar = ({ currentView, changeView }) => {
               ? "navbar-element navbar-selected"
               : "navbar-element"
           }
-          onClick={() => {
-            changeView("Mis Proyectos");
-            setShowActiveProjects(!showActiveProjects);
-            setShowFinishedProjects(false);
-          }}
+          onClick={() => changeView("Mis Proyectos")}
         >
           <div className="icons">{fileIco}</div>
-          Mis Proyectos
+          <span>Mis Proyectos</span>
+          <div
+            className={`arrow-icon ${showActiveProjects ? "open" : ""}`}
+            onClick={(e) => {
+              e.stopPropagation(); // prevent triggering parent onClick
+              setShowActiveProjects(!showActiveProjects);
+              setShowFinishedProjects(false);
+            }}
+          >
+            {arrowIco}
+          </div>
         </div>
 
         {showActiveProjects && (
@@ -134,14 +155,20 @@ export const NavBar = ({ currentView, changeView }) => {
               ? "navbar-element navbar-selected"
               : "navbar-element"
           }
-          onClick={() => {
-            changeView("Proyectos Anteriores");
-            setShowFinishedProjects(!showFinishedProjects);
-            setShowActiveProjects(false);
-          }}
+          onClick={() => changeView("Proyectos Anteriores")}
         >
           <div className="icons">{previousIco}</div>
-          Proyectos Anteriores
+          <span>Proyectos Anteriores</span>
+          <div
+            className={`arrow-icon ${showFinishedProjects ? "open" : ""}`}
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowFinishedProjects(!showFinishedProjects);
+              setShowActiveProjects(false);
+            }}
+          >
+            {arrowIco}
+          </div>
         </div>
 
         {showFinishedProjects && (
