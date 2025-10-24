@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import "./NavBar.css";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -24,7 +24,20 @@ const envelopeIco = <FontAwesomeIcon icon={faEnvelope} size="2x" />;
 const fileIco = <FontAwesomeIcon icon={faFile} size="2x" />;
 const previousIco = <FontAwesomeIcon icon={faClockRotateLeft} size="2x" />;
 
+const projects = [
+  { name: "Proyecto A", state: "En proceso" },
+  { name: "Proyecto B", state: "En proceso" },
+  { name: "Proyecto C", state: "Terminado" },
+  { name: "Proyecto D", state: "Terminado" },
+];
+
 export const NavBar = ({ currentView, changeView }) => {
+  const [showActiveProjects, setShowActiveProjects] = useState(false);
+  const [showFinishedProjects, setShowFinishedProjects] = useState(false);
+
+  const activeProjects = projects.filter((p) => p.state === "En proceso");
+  const finishedProjects = projects.filter((p) => p.state === "Terminado");
+
   return (
     <div className="NV-container">
       <div className="options-container">
@@ -39,6 +52,7 @@ export const NavBar = ({ currentView, changeView }) => {
           </div>
         </div>
       </div>
+
       <div className="navbar-container">
         <div
           className={
@@ -51,6 +65,7 @@ export const NavBar = ({ currentView, changeView }) => {
           <div className="icons">{clipboardIco}</div>
           Mis Tareas
         </div>
+
         <div
           className={
             currentView === "Calendario"
@@ -62,6 +77,7 @@ export const NavBar = ({ currentView, changeView }) => {
           <div className="icons">{calendarIco}</div>
           Calendario
         </div>
+
         <div
           className={
             currentView === "Chat"
@@ -73,6 +89,7 @@ export const NavBar = ({ currentView, changeView }) => {
           <div className="icons">{messageIco}</div>
           Chat
         </div>
+
         <div
           className={
             currentView === "Notificaciones"
@@ -84,28 +101,58 @@ export const NavBar = ({ currentView, changeView }) => {
           <div className="icons">{envelopeIco}</div>
           Notificaciones
         </div>
+
         <div
           className={
             currentView === "Mis Proyectos"
               ? "navbar-element navbar-selected"
               : "navbar-element"
           }
-          onClick={() => changeView("Mis Proyectos")}
+          onClick={() => {
+            changeView("Mis Proyectos");
+            setShowActiveProjects(!showActiveProjects);
+            setShowFinishedProjects(false);
+          }}
         >
           <div className="icons">{fileIco}</div>
           Mis Proyectos
         </div>
+
+        {showActiveProjects && (
+          <div className="dropdown">
+            {activeProjects.map((proj) => (
+              <div key={proj.name} className="dropdown-item">
+                {proj.name}
+              </div>
+            ))}
+          </div>
+        )}
+
         <div
           className={
             currentView === "Proyectos Anteriores"
               ? "navbar-element navbar-selected"
               : "navbar-element"
           }
-          onClick={() => changeView("Proyectos Anteriores")}
+          onClick={() => {
+            changeView("Proyectos Anteriores");
+            setShowFinishedProjects(!showFinishedProjects);
+            setShowActiveProjects(false);
+          }}
         >
           <div className="icons">{previousIco}</div>
           Proyectos Anteriores
         </div>
+
+        {showFinishedProjects && (
+          <div className="dropdown">
+            {finishedProjects.map((proj) => (
+              <div key={proj.name} className="dropdown-item">
+                {proj.name}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

@@ -20,3 +20,8 @@
     color: white;
     background: blueviolet;
 }
+
+.view-container{
+    height: 85%;
+    width: 75vw;
+}
