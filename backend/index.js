@@ -1,6 +1,8 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import chatRoutes from './routes/chatRoutes.js';
+
 
 // Importar futuras rutas
 // import authRoutes from './routes/auth.js';
@@ -20,6 +22,9 @@ app.use(express.json()); // Permite a Express entender JSON en el body
 app.get('/api', (req, res) => {
   res.send('API de LogiTrack funciona');
 });
+
+//Rutas para chat
+app.use('/api/chat', chatRoutes);
 
 // Conectar las rutas
 // app.use('/api/auth', authRoutes);
