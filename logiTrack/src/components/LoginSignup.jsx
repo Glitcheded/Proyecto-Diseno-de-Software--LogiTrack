@@ -19,43 +19,51 @@ export const LoginSignup = () => {
 
   const navigate = useNavigate();
 
-  const handleSubmit = async () => {
-    // === REAL BACKEND CODE (to be implemented later) ===
-    /*
+  const handleSubmit = async () => { // Se cambió, falta probar***
+    const baseURL = "http://localhost:3001/api"; // URL del backend
+    let endpoint = "";
+    let payload = {};
+
     try {
       if (action === "Inciar Sesión") {
-        const response = await fetch("/api/login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password }),
-        });
-
-        if (response.ok) {
-          navigate("/home"); // successful login
-        } else {
-          alert("Credenciales incorrectas");
-        }
+        endpoint = "/auth/login";
+        payload = { email, password };
 
       } else if (action === "Crear Cuenta") {
-        const response = await fetch("/api/signup", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name, email, password }),
-        });
-
-        if (response.ok) {
-          navigate("/home"); // successful signup
-        } else {
-          alert("Error al crear la cuenta");
-        }
+        endpoint = "/auth/signup";
+        payload = { name, email, password }; // 'name' es el estado que él ya tiene
       }
+
+      const response = await fetch(baseURL + endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        if (action === "Inciar Sesión" && data.session.access_token) {
+          // Guarda el token para usarlo en otras peticiones
+          localStorage.setItem('supabaseToken', data.session.access_token);
+        }
+        if (action === "Crear Cuenta") {
+          alert("Cuenta creada. Por favor, inicia sesión.");
+          setAction("Inciar Sesión"); // Lo regresa al login
+          return;
+        }
+        
+        navigate("/home"); // Navegación exitosa
+
+      } else {
+        // 'data.error' viene de 'res.status(400).json({ error: ... })'
+        alert("Error: " + data.error);
+      }
+
     } catch (error) {
       console.error("Error en el envío:", error);
-      alert("Error de conexión con el servidor");
+      alert("Error de conexión con el servidor backend");
     }
-    */
-
-    navigate("/home");
   };
 
   return (
