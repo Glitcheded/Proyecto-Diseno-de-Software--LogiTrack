@@ -17,10 +17,10 @@ export const signUp = async (req, res) => {
     }
 
     if (authData.user) {
-      // Insertar usuario en tabla "Usuario"
+      // Inserta usuario en tabla "Usuario"
       const nuevoUsuario = await crearUsuarioLocal(nombre, apellido, email);
 
-      // Insertar en tabla "ConfiguracionUsuario"
+      // Inserta en tabla "ConfiguracionUsuario"
       await crearConfiguracionDefault(nuevoUsuario.idUsuario);
 
       res.status(201).json(authData);

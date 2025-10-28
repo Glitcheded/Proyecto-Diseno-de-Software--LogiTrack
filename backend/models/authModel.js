@@ -6,7 +6,7 @@ export async function crearUsuarioLocal(nombre, apellido, email) {
     .from('Usuario')
     .insert({
       nombre: nombre,
-      apellido: apellido || '',
+      apellido: apellido || '', //
       email: email,
       contrasena: 'AuthManejado'
     })
