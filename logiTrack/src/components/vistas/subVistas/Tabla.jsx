@@ -19,7 +19,6 @@ export const Tabla = ({ dataList }) => {
     }
   };
 
-  // Build hierarchy but flatten it for display
   const buildFlatHierarchy = (tasks) => {
     const map = {};
     const flatList = [];

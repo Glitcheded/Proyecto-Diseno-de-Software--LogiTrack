@@ -33,11 +33,9 @@ export const Calendario = ({ dataList }) => {
 
   const daysOfWeek = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
 
-  // Get number of days and first weekday of month
   const firstDay = new Date(currentYear, currentMonth, 1).getDay() || 7;
   const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
 
-  // Handle month navigation
   const prevMonth = () => {
     setCurrentMonth((m) => (m === 0 ? 11 : m - 1));
     if (currentMonth === 0) setCurrentYear(currentYear - 1);
@@ -48,7 +46,6 @@ export const Calendario = ({ dataList }) => {
     if (currentMonth === 11) setCurrentYear(currentYear + 1);
   };
 
-  // Filter tasks by due date
   const getTasksForDay = (day) => {
     const dateString = `${currentYear}-${String(currentMonth + 1).padStart(
       2,

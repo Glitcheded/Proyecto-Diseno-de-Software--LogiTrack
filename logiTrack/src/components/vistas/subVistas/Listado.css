@@ -1,23 +1,13 @@
 .listado-container {
   height: 75vh;
   width: 75vw;
-
-  /* Layout */
   display: flex;
   flex-direction: column;
-
-  /* Spacing */
   margin-top: 5px;
   box-sizing: border-box;
-
-  /* Style */
   color: black;
-
-  /* Prevent overflow stretch */
   overflow-y: auto;
   overflow-x: hidden;
-
-  /* Prevent scrollbar from increasing width */
   scrollbar-gutter: stable both-edges;
 }
 
@@ -53,7 +43,6 @@
   background-color: #d3d3d3;
 }
 
-/* Proper alignment and nesting */
 .task-name {
   display: flex;
   align-items: center;

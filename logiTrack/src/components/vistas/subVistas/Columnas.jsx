@@ -8,18 +8,15 @@ export const Columnas = ({ dataList }) => {
     setExpandedTasks((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
-  // Group tasks by state
   const groupedTasks = {
     "Sin Iniciar": dataList.filter((t) => t.state === "Sin Iniciar"),
     "En Proceso": dataList.filter((t) => t.state === "En proceso"),
     Hecho: dataList.filter((t) => t.state === "Hecho"),
   };
 
-  // Helper for finding subtasks of a task
   const getSubtasks = (parentId) =>
     dataList.filter((task) => task.parentId === parentId);
 
-  // Recursive render for nested subtasks
   const renderTask = (task, level = 0) => {
     const subtasks = getSubtasks(task.id);
     const isExpanded = expandedTasks[task.id];
@@ -32,7 +29,6 @@ export const Columnas = ({ dataList }) => {
         className={`task-card level-${level}`}
         onClick={() => toggleExpand(task.id)}
       >
-        {/* --- Preview Mode --- */}
         <div className="task-preview">
           <span className="priority">{priorityColor}</span>
           <span className="task-name">{task.name}</span>
@@ -40,7 +36,6 @@ export const Columnas = ({ dataList }) => {
           <span className="task-date">{task.dueDate}</span>
         </div>
 
-        {/* --- Expanded Info --- */}
         {isExpanded && (
           <div className="task-details" onClick={(e) => e.stopPropagation()}>
             <div>
@@ -81,9 +76,7 @@ export const Columnas = ({ dataList }) => {
         <div className="column" key={state}>
           <h2>{state}</h2>
           <div className="column-tasks">
-            {tasks
-              .filter((t) => !t.parentId) // top-level only
-              .map((task) => renderTask(task))}
+            {tasks.filter((t) => !t.parentId).map((task) => renderTask(task))}
           </div>
         </div>
       ))}
