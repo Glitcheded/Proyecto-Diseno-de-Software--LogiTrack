@@ -4,9 +4,9 @@ import dotenv from 'dotenv';
 
 // Importar rutas
 import chatRoutes from './routes/chatRoutes.js';
-import authRoutes from './routes/auth.js';
-import taskRoutes from './routes/tasks.js';
-import projectRoutes from './routes/projects.js';
+import authRoutes from './routes/authRoutes.js';
+import taskRoutes from './routes/taskRoutes.js';
+import projectRoutes from './routes/projectRoutes.js';
 
 dotenv.config();
 
