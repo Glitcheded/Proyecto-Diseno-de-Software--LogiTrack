@@ -1,3 +1,78 @@
-.listado-container{
-    background: yellow;
+.listado-container {
+  height: 75vh;
+  width: 75vw;
+
+  /* Layout */
+  display: flex;
+  flex-direction: column;
+
+  /* Spacing */
+  margin-top: 5px;
+  box-sizing: border-box;
+
+  /* Style */
+  color: black;
+
+  /* Prevent overflow stretch */
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  /* Prevent scrollbar from increasing width */
+  scrollbar-gutter: stable both-edges;
+}
+
+.listado-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  max-height: 100%;
+}
+
+.listado-table th,
+.listado-table td {
+  border-bottom: 1px solid #666;
+  padding: 0.4rem;
+  text-align: left;
+  vertical-align: top;
+  word-wrap: break-word;
+  box-sizing: border-box;
+}
+
+.listado-table th {
+  background-color: #d3d3d3;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.task-row {
+  transition: background 0.2s;
+}
+
+.task-row:hover {
+  background-color: #d3d3d3;
+}
+
+/* Proper alignment and nesting */
+.task-name {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.dropdown-toggle {
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: #000000;
+  user-select: none;
+}
+
+.level-1 td {
+  padding-left: 1.5rem;
+}
+.level-2 td {
+  padding-left: 3rem;
+}
+.level-3 td {
+  padding-left: 4.5rem;
 }

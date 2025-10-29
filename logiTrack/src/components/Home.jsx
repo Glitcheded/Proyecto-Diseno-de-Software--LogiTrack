@@ -8,6 +8,7 @@ import { Chat } from "./vistas/Chat";
 import { Notificaciones } from "./vistas/Notificaciones";
 import { MisProyectos } from "./vistas/MisProyectos";
 import { ProyectosAnteriores } from "./vistas/ProyectosAnteriores";
+import { Opciones } from "./vistas/Opciones";
 
 export const Home = () => {
   const [selectedView, setSelectedView] = useState("Mis Tareas");
@@ -26,6 +27,8 @@ export const Home = () => {
         return <MisProyectos />;
       case "Proyectos Anteriores":
         return <ProyectosAnteriores />;
+      case "Opciones":
+        return <Opciones />;
       default:
         return <div>Seleccione una vista</div>;
     }

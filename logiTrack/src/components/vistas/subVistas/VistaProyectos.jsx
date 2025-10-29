@@ -9,25 +9,8 @@ import { Bitacora } from "./Bitacora";
 
 export const VistaProyectos = ({ ViewMode }) => {
   const [activeViewMode, setActiveViewMode] = useState("Listado");
+
   let dataList = [];
-
-  const renderSubView = () => {
-    switch (activeViewMode) {
-      case "Listado":
-        return <Listado />;
-      case "Columnas":
-        return <Columnas />;
-      case "Calendario":
-        return <Calendario />;
-      case "Tabla":
-        return <Tabla />;
-      case "Bitacora":
-        return <Bitacora />;
-      default:
-        return <div>Seleccione una vista</div>;
-    }
-  };
-
   if (ViewMode === "Mis Tareas") {
     dataList = [
       {
@@ -35,7 +18,7 @@ export const VistaProyectos = ({ ViewMode }) => {
         name: "Diseñar interfaz principal",
         project: "Plataforma Web",
         state: "En proceso",
-        prioridad: 1,
+        priority: 1,
         dueDate: "2025-10-25",
         members: ["Giovanni", "Carlos", "Sofía"],
         comments: [
@@ -51,7 +34,7 @@ export const VistaProyectos = ({ ViewMode }) => {
         name: "Preparar reunión inicial",
         project: "Plataforma Web",
         state: "Hecho",
-        prioridad: 2,
+        priority: 2,
         dueDate: "2025-10-18",
         members: ["Giovanni", "Sofía"],
         comments: [
@@ -63,7 +46,7 @@ export const VistaProyectos = ({ ViewMode }) => {
         name: "Crear mockups",
         project: "App Móvil",
         state: "En proceso",
-        prioridad: 1,
+        priority: 1,
         dueDate: "2025-10-26",
         members: ["Giovanni", "María"],
         comments: [],
@@ -73,7 +56,7 @@ export const VistaProyectos = ({ ViewMode }) => {
         name: "Diseñar pantalla de login",
         project: "App Móvil",
         state: "Sin iniciar",
-        prioridad: 2,
+        priority: 2,
         dueDate: "2025-10-30",
         members: ["Giovanni"],
         comments: [],
@@ -84,7 +67,7 @@ export const VistaProyectos = ({ ViewMode }) => {
         name: "Actualizar documentación",
         project: "API REST",
         state: "Hecho",
-        prioridad: 3,
+        priority: 3,
         dueDate: "2025-10-10",
         members: ["Giovanni", "Pablo"],
         comments: [{ author: "Pablo", text: "Documentación actualizada." }],
@@ -94,7 +77,7 @@ export const VistaProyectos = ({ ViewMode }) => {
         name: "Refactorizar controladores",
         project: "API REST",
         state: "En proceso",
-        prioridad: 1,
+        priority: 1,
         dueDate: "2025-10-28",
         members: ["Giovanni", "Pablo", "Andrea"],
         comments: [],
@@ -104,7 +87,7 @@ export const VistaProyectos = ({ ViewMode }) => {
         name: "Test unitarios",
         project: "API REST",
         state: "Sin iniciar",
-        prioridad: 2,
+        priority: 2,
         dueDate: "2025-11-02",
         members: ["Giovanni", "Andrea"],
         comments: [],
@@ -115,7 +98,7 @@ export const VistaProyectos = ({ ViewMode }) => {
         name: "Optimizar rendimiento",
         project: "Dashboard",
         state: "En proceso",
-        prioridad: 1,
+        priority: 1,
         dueDate: "2025-10-29",
         members: ["Giovanni", "Sofía"],
         comments: [],
@@ -125,7 +108,7 @@ export const VistaProyectos = ({ ViewMode }) => {
         name: "Validar endpoints",
         project: "Dashboard",
         state: "Hecho",
-        prioridad: 3,
+        priority: 3,
         dueDate: "2025-10-15",
         members: ["Giovanni"],
         comments: [],
@@ -135,7 +118,7 @@ export const VistaProyectos = ({ ViewMode }) => {
         name: "Configurar entorno de pruebas",
         project: "API REST",
         state: "En proceso",
-        prioridad: 2,
+        priority: 2,
         dueDate: "2025-10-25",
         members: ["Giovanni", "Pablo"],
         comments: [],
@@ -147,7 +130,7 @@ export const VistaProyectos = ({ ViewMode }) => {
         id: 1,
         name: "Análisis de requerimientos",
         state: "En proceso",
-        prioridad: 1,
+        priority: 1,
         dueDate: "2025-10-30",
         members: ["Giovanni", "Sofía", "Pablo"],
         comments: [],
@@ -156,7 +139,7 @@ export const VistaProyectos = ({ ViewMode }) => {
         id: 2,
         name: "Desarrollo módulo de pagos",
         state: "En proceso",
-        prioridad: 2,
+        priority: 2,
         dueDate: "2025-11-10",
         members: ["Carlos", "Sofía"],
         comments: [{ author: "Carlos", text: "Integrando Stripe." }],
@@ -165,7 +148,7 @@ export const VistaProyectos = ({ ViewMode }) => {
         id: 3,
         name: "Testing funcional",
         state: "Sin iniciar",
-        prioridad: 3,
+        priority: 3,
         dueDate: "2025-11-18",
         members: ["Giovanni", "María"],
         comments: [],
@@ -174,7 +157,7 @@ export const VistaProyectos = ({ ViewMode }) => {
         id: 4,
         name: "Diseño del dashboard",
         state: "En proceso",
-        prioridad: 2,
+        priority: 2,
         dueDate: "2025-11-02",
         members: ["Sofía"],
         comments: [],
@@ -184,7 +167,7 @@ export const VistaProyectos = ({ ViewMode }) => {
         id: 5,
         name: "Implementar notificaciones",
         state: "En proceso",
-        prioridad: 1,
+        priority: 1,
         dueDate: "2025-10-27",
         members: ["Giovanni", "Carlos"],
         comments: [],
@@ -193,7 +176,7 @@ export const VistaProyectos = ({ ViewMode }) => {
         id: 6,
         name: "Actualizar logo del sitio",
         state: "Hecho",
-        prioridad: 3,
+        priority: 3,
         dueDate: "2025-10-20",
         members: ["María"],
         comments: [],
@@ -202,7 +185,7 @@ export const VistaProyectos = ({ ViewMode }) => {
         id: 7,
         name: "Implementar API externa",
         state: "En proceso",
-        prioridad: 2,
+        priority: 2,
         dueDate: "2025-10-31",
         members: ["Andrea", "Giovanni"],
         comments: [],
@@ -211,7 +194,7 @@ export const VistaProyectos = ({ ViewMode }) => {
         id: 8,
         name: "Optimizar consultas SQL",
         state: "Sin iniciar",
-        prioridad: 3,
+        priority: 3,
         dueDate: "2025-11-05",
         members: ["Carlos"],
         comments: [],
@@ -220,7 +203,7 @@ export const VistaProyectos = ({ ViewMode }) => {
         id: 9,
         name: "Documentar endpoints",
         state: "Hecho",
-        prioridad: 2,
+        priority: 2,
         dueDate: "2025-10-22",
         members: ["Giovanni", "Pablo"],
         comments: [],
@@ -229,7 +212,7 @@ export const VistaProyectos = ({ ViewMode }) => {
         id: 10,
         name: "Integrar autenticación OAuth",
         state: "En proceso",
-        prioridad: 1,
+        priority: 1,
         dueDate: "2025-11-08",
         members: ["Giovanni", "Sofía"],
         comments: [],
@@ -241,7 +224,7 @@ export const VistaProyectos = ({ ViewMode }) => {
         id: 1,
         name: "Migración de base de datos",
         state: "Terminado",
-        prioridad: 2,
+        priority: 2,
         dueDate: "2025-09-15",
         members: ["Carlos", "María"],
         comments: [
@@ -252,7 +235,7 @@ export const VistaProyectos = ({ ViewMode }) => {
         id: 2,
         name: "Revisión de seguridad",
         state: "Terminado",
-        prioridad: 1,
+        priority: 1,
         dueDate: "2025-08-30",
         members: ["Andrea"],
         comments: [],
@@ -261,7 +244,7 @@ export const VistaProyectos = ({ ViewMode }) => {
         id: 3,
         name: "Optimización de UI",
         state: "Terminado",
-        prioridad: 3,
+        priority: 3,
         dueDate: "2025-09-05",
         members: ["Giovanni", "Sofía"],
         comments: [],
@@ -270,7 +253,7 @@ export const VistaProyectos = ({ ViewMode }) => {
         id: 4,
         name: "Refactorización de código legacy",
         state: "Terminado",
-        prioridad: 2,
+        priority: 2,
         dueDate: "2025-08-15",
         members: ["Carlos", "Pablo"],
         comments: [],
@@ -279,7 +262,7 @@ export const VistaProyectos = ({ ViewMode }) => {
         id: 5,
         name: "Configuración CI/CD",
         state: "Terminado",
-        prioridad: 1,
+        priority: 1,
         dueDate: "2025-09-20",
         members: ["Giovanni", "Sofía"],
         comments: [],
@@ -288,7 +271,7 @@ export const VistaProyectos = ({ ViewMode }) => {
         id: 6,
         name: "Despliegue en producción",
         state: "Terminado",
-        prioridad: 2,
+        priority: 2,
         dueDate: "2025-09-22",
         members: ["Pablo", "Andrea"],
         comments: [],
@@ -297,7 +280,7 @@ export const VistaProyectos = ({ ViewMode }) => {
         id: 7,
         name: "Mejorar logs del sistema",
         state: "Terminado",
-        prioridad: 3,
+        priority: 3,
         dueDate: "2025-08-25",
         members: ["María"],
         comments: [],
@@ -306,7 +289,7 @@ export const VistaProyectos = ({ ViewMode }) => {
         id: 8,
         name: "Auditoría de rendimiento",
         state: "Terminado",
-        prioridad: 2,
+        priority: 2,
         dueDate: "2025-09-10",
         members: ["Giovanni"],
         comments: [],
@@ -315,7 +298,7 @@ export const VistaProyectos = ({ ViewMode }) => {
         id: 9,
         name: "Limpieza de assets antiguos",
         state: "Terminado",
-        prioridad: 3,
+        priority: 3,
         dueDate: "2025-08-18",
         members: ["Sofía"],
         comments: [],
@@ -324,13 +307,31 @@ export const VistaProyectos = ({ ViewMode }) => {
         id: 10,
         name: "Actualizar dependencias",
         state: "Terminado",
-        prioridad: 2,
+        priority: 2,
         dueDate: "2025-09-02",
         members: ["Giovanni", "Carlos"],
         comments: [],
       },
     ];
   }
+  const commonProps = { dataList };
+
+  const renderSubView = () => {
+    switch (activeViewMode) {
+      case "Listado":
+        return <Listado {...commonProps} />;
+      case "Columnas":
+        return <Columnas {...commonProps} />;
+      case "Calendario":
+        return <Calendario {...commonProps} />;
+      case "Tabla":
+        return <Tabla {...commonProps} />;
+      case "Bitacora":
+        return <Bitacora />;
+      default:
+        return <div>Seleccione una vista</div>;
+    }
+  };
 
   return (
     <div className="vista-container">
@@ -388,7 +389,7 @@ export const VistaProyectos = ({ ViewMode }) => {
           </div>
         )}
       </div>
-      {renderSubView()}
+      <div className="vista-display">{renderSubView()}</div>
     </div>
   );
 };

@@ -19,7 +19,8 @@ export const LoginSignup = () => {
 
   const navigate = useNavigate();
 
-  const handleSubmit = async () => { // Se cambió, falta probar***
+  const handleSubmit = async () => {
+    // Se cambió, falta probar***
     const baseURL = "http://localhost:3001/api"; // URL del backend
     let endpoint = "";
     let payload = {};
@@ -28,7 +29,6 @@ export const LoginSignup = () => {
       if (action === "Inciar Sesión") {
         endpoint = "/auth/login";
         payload = { email, password };
-
       } else if (action === "Crear Cuenta") {
         endpoint = "/auth/signup";
         payload = { name, email, password }; // 'name' es el estado que él ya tiene
@@ -45,21 +45,19 @@ export const LoginSignup = () => {
       if (response.ok) {
         if (action === "Inciar Sesión" && data.session.access_token) {
           // Guarda el token para usarlo en otras peticiones
-          localStorage.setItem('supabaseToken', data.session.access_token);
+          localStorage.setItem("supabaseToken", data.session.access_token);
         }
         if (action === "Crear Cuenta") {
           alert("Cuenta creada. Por favor, inicia sesión.");
           setAction("Inciar Sesión"); // Lo regresa al login
           return;
         }
-        
-        navigate("/home"); // Navegación exitosa
 
+        navigate("/home"); // Navegación exitosa
       } else {
         // 'data.error' viene de 'res.status(400).json({ error: ... })'
         alert("Error: " + data.error);
       }
-
     } catch (error) {
       console.error("Error en el envío:", error);
       alert("Error de conexión con el servidor backend");
@@ -143,6 +141,10 @@ export const LoginSignup = () => {
             <div className="submit-button" onClick={handleSubmit}>
               <div className="text">{action}</div>
             </div>
+          </div>
+          {/* Quitar este después */}
+          <div className="tempLogin" onClick={() => navigate("/home")}>
+            Temp Login
           </div>
         </div>
         <div className="background-image"></div>
