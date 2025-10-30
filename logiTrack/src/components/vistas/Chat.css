@@ -1,0 +1,54 @@
+/* CSS START */
+.contact-name{font-size:14px}
+
+
+.project{display:flex;align-items:center;gap:12px;padding:12px;border-top:1px solid rgba(255,255,255,0.03);margin-top:8px}
+.file-icon{width:28px}
+.file-name{opacity:0.95}
+.dot{width:12px;height:12px;border-radius:50%;background:#fff;margin-left:auto}
+
+
+.sidebar-bottom{margin-top:auto;display:flex;align-items:center;justify-content:space-between;padding-top:10px}
+.logo-compact{opacity:0.9}
+.sidebar-actions button{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:6px;border-radius:6px;margin-left:6px;color:var(--white)}
+
+
+/* Chat area */
+.chat-area{flex:1;background:#fff;padding:28px 48px;display:flex;flex-direction:column;position:relative}
+.messages{flex:1;display:flex;flex-direction:column;gap:22px;padding-top:10px}
+
+
+.message-row{display:flex;align-items:flex-end;gap:18px}
+.message-row.left{justify-content:flex-start}
+.message-row.right{justify-content:flex-end}
+
+
+.msg-avatar{width:36px;height:36px;border-radius:50%}
+.msg-avatar.green{background:var(--accent-green)}
+.msg-avatar.cyan{background:var(--accent-cyan)}
+.msg-avatar.purple{background:var(--bubble-right)}
+
+
+.bubble{max-width:520px;padding:20px 26px;border-radius:18px;background:var(--panel-purple);color:var(--white);font-size:16px;line-height:1.5}
+.bubble.left{border-bottom-left-radius:6px}
+.bubble.right{background:var(--bubble-right);border-bottom-right-radius:6px}
+.bubble.file{display:inline-flex;align-items:center;justify-content:space-between;gap:12px}
+.file-actions{margin-left:12px;opacity:0.95}
+
+
+/* Composer */
+.composer{height:64px;background:var(--muted);display:flex;align-items:center;padding:8px 12px;border-top:4px solid #36203b}
+.attach{background:transparent;border:0;font-size:20px;padding:8px}
+.text-input{flex:1;border:0;padding:12px 16px;border-radius:4px;font-size:16px;background:transparent}
+.send{background:var(--bg-dark);color:var(--white);border:0;padding:10px 14px;border-radius:6px;margin-left:8px}
+
+
+/* Desktop-only: sizes fixed for visual parity */
+@media(min-width:1200px){
+.chat-area{padding:48px 72px}
+.bubble{max-width:520px}
+}
+
+
+/* End CSS */
+/* CSS END */

@@ -34,15 +34,25 @@ export const Home = () => {
     }
   };
 
+  const isFullScreenView = selectedView === "Chat";
+
   return (
     <div className="home-container">
-      <NavBar currentView={selectedView} changeView={setSelectedView} />
-      <div className="right-container">
-        <div className="menu-header">
-          <h1>{selectedView}</h1>
+      {!isFullScreenView && (
+        <NavBar currentView={selectedView} changeView={setSelectedView} />
+      )}
+
+      {!isFullScreenView ? (
+        <div className="right-container">
+          <div className="menu-header">
+            <h1>{selectedView}</h1>
+          </div>
+          <div className="view-container">{renderView()}</div>
         </div>
-        <div className="view-container">{renderView()}</div>
-      </div>
+      ) : (
+        <div className="fullscreen-view">{renderView()}</div>
+      )}
     </div>
   );
+
 };
