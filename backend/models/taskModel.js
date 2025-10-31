@@ -47,10 +47,86 @@ export const getTareasPorUsuario = async (idUsuario) => {
             )
         `)
         .eq('idUsuario', idUsuario)
-        .neq('Tarea.EstadoTarea.nombre', 'Terminado'); // Solo tareas activas
+        .neq('Tarea.EstadoTarea.nombre', 'Hecho'); // Solo tareas activas
 
     if (error) throw error;
     
     // Formateamos los datos antes de devolverlos, justo como está en el frontend
     return formatTaskData(data);
+};
+
+// Crea una nueva tarea
+export const crearTarea = async (taskData) => {
+    const { data, error } = await supabase
+        .from('Tarea')
+        .insert(taskData)
+        .select()
+        .single();
+    
+    if (error) throw error;
+    return data;
+};
+
+//Asigna un usuario a una tarea
+export const asignarTarea = async (idUsuario, idTarea) => {
+    const { error } = await supabase
+        .from('UsuarioPorTarea')
+        .insert({ idUsuario, idTarea });
+    
+    if (error) throw error;
+};
+
+//Obtiene una tarea por su ID
+export const getTareaPorId = async (idTarea) => {
+    const { data, error } = await supabase
+        .from('Tarea')
+        .select(`
+            *,
+            Proyecto ( nombre ),
+            EstadoTarea ( nombre ),
+            Prioridad ( nivel ),
+            Comentario ( *, Usuario ( nombre, apellido ) ),
+            UsuarioPorTarea ( Usuario ( idUsuario, nombre, apellido ) )
+        `)
+        .eq('idTarea', idTarea)
+        .single();
+    
+    if (error) throw error;
+    return data;
+};
+
+//Actualiza una tarea
+export const actualizarTarea = async (idTarea, updates) => {
+    const { data, error } = await supabase
+        .from('Tarea')
+        .update(updates)
+        .eq('idTarea', idTarea)
+        .select()
+        .single();
+    
+    if (error) throw error;
+    return data;
+};
+
+//Eliminar una tarea de manera lógica
+export const eliminarTarea = async (idTarea) => {
+    const { data, error } = await supabase
+        .from('Tarea')
+        .update({ activado: false })
+        .eq('idTarea', idTarea);
+        
+    if (error) throw error;
+    return data;
+};
+
+//Añadir un comentario a una tarea
+export const crearComentario = async (idTarea, idUsuario, comentario) => {
+    const { data, error } = await supabase
+        .from('Comentario')
+        .insert({ idTarea, idUsuario, comentario })
+        .select()
+        .single();
+    
+    if (error) throw error;
+    return data;
 };
