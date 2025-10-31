@@ -34,3 +34,77 @@ export const getMisProyectos = (req, res) => {
 export const getProyectosAnteriores = (req, res) => {
     getProjectTasks(req, res, 'Terminadas');
 };
+
+// Crea un nuevo proyecto POST /api/projects
+export const crearProyecto = async (req, res) => {
+    try {
+        // Crea el proyecto
+        const nuevoProyecto = await projectModel.crearProyecto(req.body);
+        
+        // Asigna al usuario que lo creó como Administrador
+        const idUsuarioCreador = req.idUsuario;
+        const idRolAdmin = 1;
+        
+        await projectModel.asignarProyecto(idUsuarioCreador, nuevoProyecto.idProyecto, idRolAdmin);
+        
+        res.status(201).json(nuevoProyecto);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+//Obtiene un proyecto específico por ID GET /api/projects/:id
+export const getProyectoPorId = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const proyecto = await projectModel.getProyectoPorId(id);
+        
+        if (!proyecto) {
+            return res.status(404).json({ error: 'Proyecto no encontrado' });
+        }
+        
+        res.status(200).json(proyecto);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+//Actualiza un proyecto PUT /api/projects/:id
+export const actualizarProyecto = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const proyectoActualizado = await projectModel.actualizarProyecto(id, req.body);
+        res.status(200).json(proyectoActualizado);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+//Eliminar un proyecto DELETE /api/projects/:id
+export const eliminarProyecto = async (req, res) => {
+    try {
+        const { id } = req.params;
+        await projectModel.eliminarProyecto(id);
+        res.status(200).json({ message: 'Proyecto eliminado (marcado como inactivo)' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+//Asignar un usuario a un proyecto POST /api/projects/:id/assign
+export const asignarUsuarioAProyecto = async (req, res) => {
+    try {
+        const { id } = req.params; // id del proyecto
+        const { idUsuario, idRol } = req.body; // id del usuario y rol
+
+        if (!idUsuario || !idRol) {
+            return res.status(400).json({ error: 'Se requiere idUsuario y idRol' });
+        }
+
+        await projectModel.asignarProyecto(idUsuario, id, idRol);
+        res.status(201).json({ message: 'Usuario asignado al proyecto' });
+
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};

@@ -3,11 +3,12 @@ import { getMisTareas } from '../controllers/taskController.js';
 import { checkAuth } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
+//Protejemos todas las rutas de tareas
+router.use(checkAuth);
 
-// rutas de tareas 
-// Usa el middleware para proteger la ruta y obtener el idUsuario GET /api/tasks/mis-tareas
-router.get('/mis-tareas', checkAuth, getMisTareas);
+// Rutas de tareas 
 
-// Aquí va el resto del CRUD
+// GET /api/tasks/mis-tareas
+router.get('/mis-tareas', getMisTareas);
 
 export default router;
