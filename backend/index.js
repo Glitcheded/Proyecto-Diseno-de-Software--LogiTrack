@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 
 // Importar rutas
 import chatRoutes from './routes/chatRoutes.js';
+import notificacionRoutes from './routes/notificacionRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 import taskRoutes from './routes/taskRoutes.js';
 import projectRoutes from './routes/projectRoutes.js';
@@ -24,6 +25,7 @@ app.get('/api', (req, res) => {
 
 // Conectar las rutas
 app.use('/api/chat', chatRoutes);
+app.use('/api/notificacion', notificacionRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/projects', projectRoutes);
