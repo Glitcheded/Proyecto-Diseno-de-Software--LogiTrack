@@ -18,7 +18,6 @@ import {
 const userIco = <FontAwesomeIcon icon={faUser} size="2x" />;
 const addFriendIco = <FontAwesomeIcon icon={faUserPlus} size="2x" />;
 const optionsIco = <FontAwesomeIcon icon={faGear} size="2x" />;
-
 const clipboardIco = (
   <FontAwesomeIcon icon={faClipboardList} style={{ fontSize: "1.6rem" }} />
 );
@@ -39,19 +38,20 @@ const previousIco = (
 );
 const arrowIco = <FontAwesomeIcon icon={faChevronUp} size="sm" />;
 
-const projects = [
-  { name: "Proyecto A", state: "En proceso" },
-  { name: "Proyecto B", state: "En proceso" },
-  { name: "Proyecto C", state: "Terminado" },
-  { name: "Proyecto D", state: "Terminado" },
-];
-
-export const NavBar = ({ currentView, changeView }) => {
+export const NavBar = ({
+  currentView,
+  changeView,
+  projectList,
+  selectedProject,
+  setSelectedProject,
+}) => {
   const [showActiveProjects, setShowActiveProjects] = useState(false);
   const [showFinishedProjects, setShowFinishedProjects] = useState(false);
 
-  const activeProjects = projects.filter((p) => p.state === "En proceso");
-  const finishedProjects = projects.filter((p) => p.state === "Terminado");
+  const activeProjects = projectList.filter((p) => p.state === "En proceso");
+  const finishedProjects = projectList.filter(
+    (p) => p.state === "Finalizado" || p.state === "Cancelado"
+  );
 
   return (
     <div className="NV-container">
@@ -130,7 +130,7 @@ export const NavBar = ({ currentView, changeView }) => {
           <div
             className={`arrow-icon ${showActiveProjects ? "open" : ""}`}
             onClick={(e) => {
-              e.stopPropagation(); // prevent triggering parent onClick
+              e.stopPropagation();
               setShowActiveProjects(!showActiveProjects);
               setShowFinishedProjects(false);
             }}
@@ -141,11 +141,29 @@ export const NavBar = ({ currentView, changeView }) => {
 
         {showActiveProjects && (
           <div className="dropdown">
-            {activeProjects.map((proj) => (
-              <div key={proj.name} className="dropdown-item">
-                {proj.name}
+            {activeProjects.length > 0 ? (
+              activeProjects.map((proj) => (
+                <div
+                  key={proj.id}
+                  className={`dropdown-item ${
+                    currentView === "Mis Proyectos / Proyecto" &&
+                    selectedProject === proj.name
+                      ? "selected-project"
+                      : ""
+                  }`}
+                  onClick={() => {
+                    changeView("Mis Proyectos / Proyecto");
+                    setSelectedProject(proj.name);
+                  }}
+                >
+                  {proj.name}
+                </div>
+              ))
+            ) : (
+              <div className="dropdown-item empty">
+                No hay proyectos activos
               </div>
-            ))}
+            )}
           </div>
         )}
 
@@ -173,11 +191,29 @@ export const NavBar = ({ currentView, changeView }) => {
 
         {showFinishedProjects && (
           <div className="dropdown">
-            {finishedProjects.map((proj) => (
-              <div key={proj.name} className="dropdown-item">
-                {proj.name}
+            {finishedProjects.length > 0 ? (
+              finishedProjects.map((proj) => (
+                <div
+                  key={proj.id}
+                  className={`dropdown-item ${
+                    currentView === "Proyectos Anteriores / Proyecto" &&
+                    selectedProject === proj.name
+                      ? "selected-project"
+                      : ""
+                  }`}
+                  onClick={() => {
+                    changeView("Proyectos Anteriores / Proyecto");
+                    setSelectedProject(proj.name);
+                  }}
+                >
+                  {proj.name}
+                </div>
+              ))
+            ) : (
+              <div className="dropdown-item empty">
+                No hay proyectos anteriores
               </div>
-            ))}
+            )}
           </div>
         )}
       </div>

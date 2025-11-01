@@ -1,12 +1,12 @@
 import React from "react";
 import "./MisTareas.css";
 
-import { VistaProyectos } from "./subVistas/VistaProyectos";
+import { VistaTareas } from "./subVistas/VistaTareas";
 
 export const MisTareas = () => {
   return (
     <div>
-      <VistaProyectos ViewMode="Mis Tareas" />
+      <VistaTareas ViewMode="Mis Tareas" />
     </div>
   );
 };

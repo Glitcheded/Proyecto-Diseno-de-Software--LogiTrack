@@ -28,6 +28,32 @@
   padding-bottom: 0.3rem;
 }
 
+.column-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.column-header h2 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.add-task-btn {
+  border: none;
+  border-radius: 6px;
+  color: white;
+  font-size: 1rem;
+  padding: 4px 10px;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.1s ease;
+}
+
+.add-task-btn:hover {
+  transform: scale(1.05);
+}
+
 .column-tasks {
   display: flex;
   flex-direction: column;
@@ -40,6 +66,7 @@
   padding: 0.5rem;
   cursor: pointer;
   transition: all 0.2s ease-in-out;
+  position: relative;
 }
 
 .task-card:hover {
@@ -81,4 +108,36 @@
 }
 .level-2 {
   margin-left: 2rem;
+}
+
+.subtask-row {
+  background-color: #f9f9f9;
+  border: 1px dashed #ccc;
+}
+
+.subtask-label {
+  font-size: 0.75rem;
+  color: #555;
+  margin-bottom: 0.2rem;
+}
+
+.edit-btn-col{
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  opacity: 0;
+  pointer-events: none;
+  font-size: 0.8rem;
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid #888;
+  background: white;
+  cursor: pointer;
+  
+}
+
+.task-card:hover .edit-btn-col {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
 }

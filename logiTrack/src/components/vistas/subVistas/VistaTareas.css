@@ -1,0 +1,28 @@
+.vista-container{
+    height: 100%;
+    width: 75vw;
+}
+
+.vista-selector{
+    display: flex;
+    height: 15%;
+    width: 100%;
+    border-bottom-style: solid;
+    border-radius: 1;
+    border-color: black;
+}
+
+.vista-options{
+    margin: 10px;
+    font-size: 17px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.vista-options-selected{
+    text-decoration: underline;
+}
+
+.vista-display{
+    height: 15%;
+}

@@ -116,3 +116,8 @@
 .dropdown-item:hover {
   text-decoration: underline;
 }
+
+.selected-project {
+  text-decoration: underline;
+  font-weight: bold;
+}
