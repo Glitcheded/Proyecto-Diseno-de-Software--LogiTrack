@@ -1,10 +1,11 @@
 import express from 'express';
-import { getNotificaciones, crearNotificacionChat, 
+import { obtenerCategoriasHandler, getNotificaciones, crearNotificacionChat, 
     crearNotificacionProyecto, crearNotificacionTarea,
     crearNotificacionSistema, getNotificacionesPorCategoria } from '../controllers/notificacionController.js';
 
 const router = express.Router();
 
+router.get('/categorias', obtenerCategoriasHandler);
 router.get('/notificaciones/categoria', getNotificacionesPorCategoria);
 router.get('/notificaciones/:correo', getNotificaciones);
 router.post('/notificaciones/chat', crearNotificacionChat);

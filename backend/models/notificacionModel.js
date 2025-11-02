@@ -1,5 +1,15 @@
 import { supabase } from '../supabaseClient.js';
 
+// Obtiene las categorias de notificaciones
+export async function getTodasLasCategorias() {
+  const { data, error } = await supabase
+    .from('CategoriaNotificacion')
+    .select('*');
+
+  if (error) throw error;
+  return data;
+}
+
 // Obtiene las notificaciones segun la categoria
 export async function getNotificacionesRecientesPorCategoria(idUsuario, idCategoria) {
   const { data, error } = await supabase.rpc('getnotificacionesporcategoria', {

@@ -1,6 +1,23 @@
-import { getNotificacionesPorUsuario, insertarNotificacionChat, 
+import { getTodasLasCategorias, getNotificacionesPorUsuario, insertarNotificacionChat, 
     insertarNotificacionProyecto, insertarNotificacionTarea,
     insertarNotificacionSistema, getNotificacionesRecientesPorCategoria } from '../models/notificacionModel.js';
+
+// Controlador para obtener las categorias
+export async function obtenerCategoriasHandler(req, res) {
+  try {
+    const categorias = await getTodasLasCategorias();
+
+    if (!categorias || categorias.length === 0) {
+      return res.status(404).json({ mensaje: 'No se encontraron categorías.' });
+    }
+
+    res.status(200).json(categorias);
+  } catch (error) {
+    console.error('❌ Error al obtener categorías:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+}
+
 
 // Controlador para obtener notificaciones por categoria
 export async function getNotificacionesPorCategoria(req, res) {
