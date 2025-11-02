@@ -23,9 +23,8 @@ export async function insertarNotificacionChat(correo, idChat, descripcion) {
 }
 
 // Crea notificaciones de proyectos
-export async function insertarNotificacionProyecto(correo, idProyecto, descripcion) {
+export async function insertarNotificacionProyecto(idProyecto, descripcion) {
   const { data, error } = await supabase.rpc('insertnotificacionproyecto', {
-    incorreousuario: correo,
     inidproyecto: idProyecto,
     indescripcion: descripcion
   });

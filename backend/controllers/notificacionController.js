@@ -36,13 +36,13 @@ export async function crearNotificacionChat(req, res) {
 // Controlador para crear notificaciones de proyectos
 export async function crearNotificacionProyecto(req, res) {
   try {
-    const { correo, idProyecto, descripcion } = req.body;
+    const { idProyecto, descripcion } = req.body;
 
-    if (!correo || !idProyecto || !descripcion) {
+    if (!idProyecto || !descripcion) {
       return res.status(400).json({ error: 'Faltan parámetros requeridos.' });
     }
 
-    const resultado = await insertarNotificacionProyecto(correo, idProyecto, descripcion);
+    const resultado = await insertarNotificacionProyecto(idProyecto, descripcion);
     res.status(200).json({ resultado });
   } catch (error) {
     res.status(500).json({ error: error.message });
