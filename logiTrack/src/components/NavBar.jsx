@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import "./NavBar.css";
+import { useNavigate } from "react-router-dom";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faUser,
-  faUserPlus,
   faGear,
   faClipboardList,
   faCalendar,
@@ -16,7 +16,6 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 
 const userIco = <FontAwesomeIcon icon={faUser} size="2x" />;
-const addFriendIco = <FontAwesomeIcon icon={faUserPlus} size="2x" />;
 const optionsIco = <FontAwesomeIcon icon={faGear} size="2x" />;
 const clipboardIco = (
   <FontAwesomeIcon icon={faClipboardList} style={{ fontSize: "1.6rem" }} />
@@ -45,6 +44,9 @@ export const NavBar = ({
   selectedProject,
   setSelectedProject,
 }) => {
+  const navigate = useNavigate();
+  const [showUserDropdown, setShowUserDropdown] = useState(false);
+
   const [showActiveProjects, setShowActiveProjects] = useState(false);
   const [showFinishedProjects, setShowFinishedProjects] = useState(false);
 
@@ -56,12 +58,40 @@ export const NavBar = ({
   return (
     <div className="NV-container">
       <div className="options-container">
-        <div className="user-icon" onClick={() => changeView("Opciones")}>
-          <div className="icons">{userIco}</div>
-          Usuario
+        <div className="user-icon-wrapper">
+          <div
+            className="user-icon"
+            onClick={() => setShowUserDropdown((prev) => !prev)}
+          >
+            <div className="icons">{userIco}</div>
+            Usuario
+          </div>
+
+          {showUserDropdown && (
+            <div className="user-dropdown">
+              <div
+                className="dropdown-item"
+                onClick={() => {
+                  changeView("Opciones");
+                  setShowUserDropdown(false);
+                }}
+              >
+                Configuración
+              </div>
+              <div
+                className="dropdown-item"
+                onClick={() => {
+                  navigate("/");
+                  setShowUserDropdown(false);
+                }}
+              >
+                Cerrar Sesión
+              </div>
+            </div>
+          )}
         </div>
+
         <div className="options-others">
-          <div className="icons">{addFriendIco}</div>
           <div className="icons" onClick={() => changeView("Opciones")}>
             {optionsIco}
           </div>

@@ -8,7 +8,7 @@ export const Listado = ({ dataList, ViewMode, selectedProject }) => {
     Array.isArray(dataList) ? dataList.slice() : []
   );
 
-  const [editingTask, setEditingTask] = useState(null); // object copy for editing
+  const [editingTask, setEditingTask] = useState(null);
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [availableMembers, setAvailableMembers] = useState([]);
 
@@ -16,10 +16,11 @@ export const Listado = ({ dataList, ViewMode, selectedProject }) => {
   const [newCommentText, setNewCommentText] = useState("");
 
   useEffect(() => {
-    if (!editingTask?.project) return;
+    if (!editingTask) return;
 
     const fetchProjectMembers = async () => {
       try {
+        // Simulated fetch (replace later with your real fetch)
         const response = await new Promise((resolve) =>
           setTimeout(
             () =>
@@ -52,7 +53,7 @@ export const Listado = ({ dataList, ViewMode, selectedProject }) => {
     };
 
     fetchProjectMembers();
-  }, [editingTask?.project, editingTask?.members]);
+  }, [editingTask]);
 
   const handleToggleMember = (member) => {
     setEditingTask((prev) => {
@@ -232,7 +233,7 @@ export const Listado = ({ dataList, ViewMode, selectedProject }) => {
             <th>Estado</th>
             <th>Fecha Entrega</th>
             <th>Integrantes</th>
-            {ViewMode !== "Proyectos Anteriores" && <th>Comentarios</th>}
+            <th>Comentarios</th>
           </tr>
         </thead>
         <tbody>
@@ -275,21 +276,21 @@ export const Listado = ({ dataList, ViewMode, selectedProject }) => {
                       {Array.isArray(t.members) ? t.members.join(", ") : ""}
                     </td>
 
-                    {ViewMode !== "Proyectos Anteriores" && (
-                      <td>
-                        {mostRecentCommentText(t) ? (
-                          <button
-                            className="comment-preview"
-                            onClick={() => openComments(t.id)}
-                            title="Ver todos los comentarios"
-                          >
-                            {mostRecentCommentText(t)}
-                          </button>
-                        ) : (
-                          <div className="no-comments-cell">
-                            <span className="no-comment-text">
-                              Sin comentarios
-                            </span>
+                    <td>
+                      {mostRecentCommentText(t) ? (
+                        <button
+                          className="comment-preview"
+                          onClick={() => openComments(t.id)}
+                          title="Ver todos los comentarios"
+                        >
+                          {mostRecentCommentText(t)}
+                        </button>
+                      ) : (
+                        <div className="no-comments-cell">
+                          <span className="no-comment-text">
+                            Sin comentarios
+                          </span>
+                          {ViewMode !== "Proyectos Anteriores" && (
                             <button
                               className="add-comment-btn"
                               onClick={() => openComments(t.id)}
@@ -297,10 +298,10 @@ export const Listado = ({ dataList, ViewMode, selectedProject }) => {
                             >
                               💬
                             </button>
-                          </div>
-                        )}
-                      </td>
-                    )}
+                          )}
+                        </div>
+                      )}
+                    </td>
                   </tr>
 
                   {hasSubtasks &&
@@ -457,14 +458,16 @@ export const Listado = ({ dataList, ViewMode, selectedProject }) => {
               )}
             </div>
 
-            <div className="add-comment">
-              <input
-                placeholder="Escribe un comentario..."
-                value={newCommentText}
-                onChange={(e) => setNewCommentText(e.target.value)}
-              />
-              <button onClick={sendComment}>Enviar</button>
-            </div>
+            {ViewMode !== "Proyectos Anteriores" && (
+              <div className="add-comment">
+                <input
+                  placeholder="Escribe un comentario..."
+                  value={newCommentText}
+                  onChange={(e) => setNewCommentText(e.target.value)}
+                />
+                <button onClick={sendComment}>Enviar</button>
+              </div>
+            )}
 
             <div style={{ marginTop: 8, textAlign: "right" }}>
               <button onClick={() => setCommentsTask(null)}>Cerrar</button>

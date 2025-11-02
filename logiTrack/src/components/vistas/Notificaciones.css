@@ -1,0 +1,40 @@
+.notificaciones-wrapper {
+  height: 80vh;
+  width: 72.5vw;
+  padding: 1rem;
+  overflow-y: auto;
+}
+
+.notificaciones-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.notificaciones-table th,
+.notificaciones-table td {
+  padding: 0.5rem;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+  vertical-align: top;
+}
+
+.notificaciones-table th {
+  background-color: #d3d3d3;
+  font-weight: bold;
+}
+
+.message-col {
+  width: 60%;
+  word-wrap: break-word;
+}
+
+.delete-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 1.1rem;
+}
+
+.delete-btn:hover {
+  color: red;
+}

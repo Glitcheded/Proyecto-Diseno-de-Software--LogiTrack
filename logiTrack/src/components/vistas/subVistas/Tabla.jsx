@@ -19,7 +19,7 @@ export const Tabla = ({ dataList, ViewMode, selectedProject }) => {
   };
 
   useEffect(() => {
-    if (!editingTask?.project) return;
+    if (!editingTask) return;
 
     const fetchProjectMembers = async () => {
       try {
@@ -55,7 +55,7 @@ export const Tabla = ({ dataList, ViewMode, selectedProject }) => {
     };
 
     fetchProjectMembers();
-  }, [editingTask?.project, editingTask?.members]);
+  }, [editingTask]);
 
   const makeId = () =>
     Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -154,7 +154,7 @@ export const Tabla = ({ dataList, ViewMode, selectedProject }) => {
         <thead>
           <tr>
             <th>Nombre</th>
-            <th>Proyecto</th>
+            {ViewMode === "Mis Tareas" && <th>Proyecto</th>}
             <th>Prioridad</th>
             <th>Estado</th>
             <th>Fecha Entrega</th>
@@ -172,15 +172,18 @@ export const Tabla = ({ dataList, ViewMode, selectedProject }) => {
                   </div>
                 )}
                 <div className="task-name">{task.name}</div>
-                <button
-                  className="edit-btn"
-                  onClick={() => openEditor(task.id)}
-                  title="Editar tarea"
-                >
-                  Editar
-                </button>
+                {ViewMode !== "Proyectos Anteriores" && (
+                  <button
+                    className="edit-btn"
+                    onClick={() => openEditor(task.id)}
+                    title="Editar tarea"
+                  >
+                    Editar
+                  </button>
+                )}
               </td>
-              <td>{task.project || "-"}</td>
+
+              {ViewMode === "Mis Tareas" && <td>{task.project || "-"}</td>}
               <td>{getPriorityEmoji(task.priority)}</td>
               <td>{task.state}</td>
               <td>{task.dueDate}</td>
@@ -199,13 +202,15 @@ export const Tabla = ({ dataList, ViewMode, selectedProject }) => {
                 ) : (
                   <div className="no-comments-cell">
                     <span className="no-comment-text">Sin comentarios</span>
-                    <button
-                      className="add-comment-btn"
-                      onClick={() => openComments(task.id)}
-                      title="Agregar comentario"
-                    >
-                      💬
-                    </button>
+                    {ViewMode !== "Proyectos Anteriores" && (
+                      <button
+                        className="add-comment-btn"
+                        onClick={() => openComments(task.id)}
+                        title="Agregar comentario"
+                      >
+                        💬
+                      </button>
+                    )}
                   </div>
                 )}
               </td>
@@ -214,11 +219,13 @@ export const Tabla = ({ dataList, ViewMode, selectedProject }) => {
         </tbody>
       </table>
 
-      <div className="add-row">
-        <button className="add-btn" onClick={handleAddTask}>
-          ➕ Agregar tarea
-        </button>
-      </div>
+      {ViewMode === "Mis Proyectos" && (
+        <div className="add-row">
+          <button className="add-btn" onClick={handleAddTask}>
+            ➕ Agregar tarea
+          </button>
+        </div>
+      )}
 
       {isEditorOpen && editingTask && (
         <div className="modal-overlay" onClick={cancelEdits}>
@@ -335,14 +342,17 @@ export const Tabla = ({ dataList, ViewMode, selectedProject }) => {
                 <div>No hay comentarios</div>
               )}
             </div>
-            <div className="add-comment">
-              <input
-                placeholder="Escribe un comentario..."
-                value={newCommentText}
-                onChange={(e) => setNewCommentText(e.target.value)}
-              />
-              <button onClick={sendComment}>Enviar</button>
-            </div>
+            {ViewMode !== "Proyectos Anteriores" && (
+              <div className="add-comment">
+                <input
+                  placeholder="Escribe un comentario..."
+                  value={newCommentText}
+                  onChange={(e) => setNewCommentText(e.target.value)}
+                />
+                <button onClick={sendComment}>Enviar</button>
+              </div>
+            )}
+
             <div style={{ marginTop: 8, textAlign: "right" }}>
               <button onClick={() => setCommentsTask(null)}>Cerrar</button>
             </div>

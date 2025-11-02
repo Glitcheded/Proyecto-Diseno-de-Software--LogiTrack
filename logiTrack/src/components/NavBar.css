@@ -103,7 +103,6 @@
 }
 
 .dropdown-item {
-  color: white;
   padding: 8px 0;
   border-left-style: solid;
   border-left-width: 1px;
@@ -120,4 +119,36 @@
 .selected-project {
   text-decoration: underline;
   font-weight: bold;
+}
+
+.user-icon-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.user-dropdown {
+  position: absolute;
+  top: 90%;
+  left: 50%;
+  background-color: #ffffff;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  border-radius: 0.5rem;
+  overflow: hidden;
+  z-index: 999;
+  min-width: 150px;
+}
+
+.user-dropdown .dropdown-item {
+  padding: 0.5rem 1rem !important;
+  cursor: pointer;
+  white-space: nowrap;
+  color: black !important;
+  border-left: none !important;
+  text-indent: 0 !important;
+  background: none !important;
+  transition: background 0.2s;
+}
+
+.user-dropdown .dropdown-item:hover {
+  background-color: #f0f0f0 !important;
 }

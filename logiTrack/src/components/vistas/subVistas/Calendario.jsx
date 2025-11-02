@@ -42,7 +42,7 @@ export const Calendario = ({ dataList, ViewMode, selectedProject }) => {
   };
 
   useEffect(() => {
-    if (!editingTask?.project) return;
+    if (!editingTask) return;
 
     const fetchProjectMembers = async () => {
       try {
@@ -78,7 +78,7 @@ export const Calendario = ({ dataList, ViewMode, selectedProject }) => {
     };
 
     fetchProjectMembers();
-  }, [editingTask?.project, editingTask?.members]);
+  }, [editingTask]);
 
   const today = new Date();
   const daysOfWeek = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
@@ -244,17 +244,18 @@ export const Calendario = ({ dataList, ViewMode, selectedProject }) => {
         <div key={day} className="calendar-cell">
           <div className="day-header">
             <div className="day-number">{day}</div>
-
-            <button
-              className="add-task-day-btn"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleAddTaskForDay(day);
-              }}
-              title="Agregar tarea para este día"
-            >
-              ➕
-            </button>
+            {ViewMode === "Mis Proyectos" && (
+              <button
+                className="add-task-day-btn"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleAddTaskForDay(day);
+                }}
+                title="Agregar tarea para este día"
+              >
+                ➕
+              </button>
+            )}
           </div>
 
           {tasksForDay.map((task) => (
@@ -264,16 +265,18 @@ export const Calendario = ({ dataList, ViewMode, selectedProject }) => {
               onClick={() => handleTaskClick(task)}
             >
               <div className="task-preview">
-                <button
-                  className="edit-btn-col"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    openEditor(task.id);
-                  }}
-                  title="Editar tarea"
-                >
-                  Editar
-                </button>
+                {ViewMode !== "Proyectos Anteriores" && (
+                  <button
+                    className="edit-btn-col"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openEditor(task.id);
+                    }}
+                    title="Editar tarea"
+                  >
+                    Editar
+                  </button>
+                )}
 
                 {Boolean(task.subtaskOf) && (
                   <div className="subtask-label">
@@ -353,9 +356,12 @@ export const Calendario = ({ dataList, ViewMode, selectedProject }) => {
               {getParentName(selectedTask)}
             </p>
           )}
-          <p>
-            <strong>Proyecto:</strong> {selectedTask.project}
-          </p>
+          {ViewMode === "Mis Tareas" && (
+            <p>
+              <strong>Proyecto:</strong> {selectedTask.project}
+            </p>
+          )}
+
           <p>
             <strong>Prioridad:</strong> {selectedTask.priority}
           </p>
@@ -395,16 +401,18 @@ export const Calendario = ({ dataList, ViewMode, selectedProject }) => {
             ) : (
               <div className="no-comments-cell">
                 <span className="no-comment-text">Sin comentarios</span>
-                <button
-                  className="add-comment-btn-columnas"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    openComments(selectedTask.id);
-                  }}
-                  title="Agregar comentario"
-                >
-                  💬
-                </button>
+                {ViewMode !== "Proyectos Anteriores" && (
+                  <button
+                    className="add-comment-btn-columnas"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openComments(selectedTask.id);
+                    }}
+                    title="Agregar comentario"
+                  >
+                    💬
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -538,14 +546,16 @@ export const Calendario = ({ dataList, ViewMode, selectedProject }) => {
               )}
             </div>
 
-            <div className="add-comment">
-              <input
-                placeholder="Escribe un comentario..."
-                value={newCommentText}
-                onChange={(e) => setNewCommentText(e.target.value)}
-              />
-              <button onClick={sendComment}>Enviar</button>
-            </div>
+            {ViewMode !== "Proyectos Anteriores" && (
+              <div className="add-comment">
+                <input
+                  placeholder="Escribe un comentario..."
+                  value={newCommentText}
+                  onChange={(e) => setNewCommentText(e.target.value)}
+                />
+                <button onClick={sendComment}>Enviar</button>
+              </div>
+            )}
 
             <div style={{ marginTop: 8, textAlign: "right" }}>
               <button onClick={() => setCommentsTask(null)}>Cerrar</button>

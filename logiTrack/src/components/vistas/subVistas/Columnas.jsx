@@ -16,7 +16,7 @@ export const Columnas = ({ dataList, ViewMode, selectedProject }) => {
     Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 
   useEffect(() => {
-    if (!editingTask?.project) return;
+    if (!editingTask) return;
 
     const fetchProjectMembers = async () => {
       try {
@@ -52,27 +52,10 @@ export const Columnas = ({ dataList, ViewMode, selectedProject }) => {
     };
 
     fetchProjectMembers();
-  }, [editingTask?.project, editingTask?.members]);
+  }, [editingTask]);
 
   const toggleExpand = (id) => {
     setExpandedTasks((prev) => ({ ...prev, [id]: !prev[id] }));
-  };
-
-  const handleAddTask = () => {
-    const newTask = {
-      id: makeId(),
-      name: "Nueva tarea",
-      project: "-",
-      priority: 2,
-      state: "Sin iniciar",
-      dueDate: new Date().toISOString().slice(0, 10),
-      members: [],
-      comments: [],
-      subtaskOf: null,
-    };
-    setTasks((prev) => [...prev, newTask]);
-    setEditingTask({ ...newTask });
-    setIsEditorOpen(true);
   };
 
   const handleAddTaskToState = (state) => {
@@ -216,16 +199,18 @@ export const Columnas = ({ dataList, ViewMode, selectedProject }) => {
         className={`task-card ${isSubtask ? "subtask-row" : ""}`}
         onClick={() => toggleExpand(task.id)}
       >
-        <button
-          className="edit-btn-col"
-          onClick={(e) => {
-            e.stopPropagation();
-            openEditor(task.id);
-          }}
-          title="Editar tarea"
-        >
-          Editar
-        </button>
+        {ViewMode !== "Proyectos Anteriores" && (
+          <button
+            className="edit-btn-col"
+            onClick={(e) => {
+              e.stopPropagation();
+              openEditor(task.id);
+            }}
+            title="Editar tarea"
+          >
+            Editar
+          </button>
+        )}
 
         <div className="task-preview">
           {isSubtask && (
@@ -275,16 +260,18 @@ export const Columnas = ({ dataList, ViewMode, selectedProject }) => {
               ) : (
                 <div className="no-comments-cell">
                   <span className="no-comment-text">Sin comentarios</span>
-                  <button
-                    className="add-comment-btn-columnas"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      openComments(task.id);
-                    }}
-                    title="Agregar comentario"
-                  >
-                    💬
-                  </button>
+                  {ViewMode !== "Proyectos Anteriores" && (
+                    <button
+                      className="add-comment-btn-columnas"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openComments(task.id);
+                      }}
+                      title="Agregar comentario"
+                    >
+                      💬
+                    </button>
+                  )}
                 </div>
               )}
             </div>
@@ -300,14 +287,19 @@ export const Columnas = ({ dataList, ViewMode, selectedProject }) => {
         <div className="column" key={state}>
           <div className="column-header">
             <h2>{state}</h2>
-            <button
-              className="add-task-btn"
-              title={`Agregar tarea a ${state}`}
-              onClick={() => handleAddTaskToState(state)}
-            >
-              ➕
-            </button>
+
+            {ViewMode !== "Mis Tareas" &&
+              ViewMode !== "Proyectos Anteriores" && (
+                <button
+                  className="add-task-btn"
+                  title={`Agregar tarea a ${state}`}
+                  onClick={() => handleAddTaskToState(state)}
+                >
+                  ➕
+                </button>
+              )}
           </div>
+
           <div className="column-tasks">
             {tasksByState.map((task) => renderTask(task))}
           </div>
@@ -440,15 +432,16 @@ export const Columnas = ({ dataList, ViewMode, selectedProject }) => {
                 <div>No hay comentarios</div>
               )}
             </div>
-
-            <div className="add-comment">
-              <input
-                placeholder="Escribe un comentario..."
-                value={newCommentText}
-                onChange={(e) => setNewCommentText(e.target.value)}
-              />
-              <button onClick={sendComment}>Enviar</button>
-            </div>
+            {ViewMode !== "Proyectos Anteriores" && (
+              <div className="add-comment">
+                <input
+                  placeholder="Escribe un comentario..."
+                  value={newCommentText}
+                  onChange={(e) => setNewCommentText(e.target.value)}
+                />
+                <button onClick={sendComment}>Enviar</button>
+              </div>
+            )}
 
             <div style={{ marginTop: 8, textAlign: "right" }}>
               <button onClick={() => setCommentsTask(null)}>Cerrar</button>

@@ -223,7 +223,7 @@ export const VistaTareas = ({ ViewMode, selectedProject = null }) => {
       {
         id: 1,
         name: "Migración de base de datos",
-        state: "Terminado",
+        state: "Hecho",
         priority: 2,
         dueDate: "2025-09-15",
         members: ["Carlos", "María"],
@@ -234,7 +234,7 @@ export const VistaTareas = ({ ViewMode, selectedProject = null }) => {
       {
         id: 2,
         name: "Revisión de seguridad",
-        state: "Terminado",
+        state: "Hecho",
         priority: 1,
         dueDate: "2025-08-30",
         members: ["Andrea"],
@@ -243,7 +243,7 @@ export const VistaTareas = ({ ViewMode, selectedProject = null }) => {
       {
         id: 3,
         name: "Optimización de UI",
-        state: "Terminado",
+        state: "Hecho",
         priority: 3,
         dueDate: "2025-09-05",
         members: ["Giovanni", "Sofía"],
@@ -252,7 +252,7 @@ export const VistaTareas = ({ ViewMode, selectedProject = null }) => {
       {
         id: 4,
         name: "Refactorización de código legacy",
-        state: "Terminado",
+        state: "Hecho",
         priority: 2,
         dueDate: "2025-08-15",
         members: ["Carlos", "Pablo"],
@@ -261,7 +261,7 @@ export const VistaTareas = ({ ViewMode, selectedProject = null }) => {
       {
         id: 5,
         name: "Configuración CI/CD",
-        state: "Terminado",
+        state: "Hecho",
         priority: 1,
         dueDate: "2025-09-20",
         members: ["Giovanni", "Sofía"],
@@ -270,7 +270,7 @@ export const VistaTareas = ({ ViewMode, selectedProject = null }) => {
       {
         id: 6,
         name: "Despliegue en producción",
-        state: "Terminado",
+        state: "Hecho",
         priority: 2,
         dueDate: "2025-09-22",
         members: ["Pablo", "Andrea"],
@@ -279,7 +279,7 @@ export const VistaTareas = ({ ViewMode, selectedProject = null }) => {
       {
         id: 7,
         name: "Mejorar logs del sistema",
-        state: "Terminado",
+        state: "Hecho",
         priority: 3,
         dueDate: "2025-08-25",
         members: ["María"],
@@ -288,7 +288,7 @@ export const VistaTareas = ({ ViewMode, selectedProject = null }) => {
       {
         id: 8,
         name: "Auditoría de rendimiento",
-        state: "Terminado",
+        state: "Hecho",
         priority: 2,
         dueDate: "2025-09-10",
         members: ["Giovanni"],
@@ -297,7 +297,7 @@ export const VistaTareas = ({ ViewMode, selectedProject = null }) => {
       {
         id: 9,
         name: "Limpieza de assets antiguos",
-        state: "Terminado",
+        state: "Hecho",
         priority: 3,
         dueDate: "2025-08-18",
         members: ["Sofía"],
@@ -306,7 +306,7 @@ export const VistaTareas = ({ ViewMode, selectedProject = null }) => {
       {
         id: 10,
         name: "Actualizar dependencias",
-        state: "Terminado",
+        state: "Hecho",
         priority: 2,
         dueDate: "2025-09-02",
         members: ["Giovanni", "Carlos"],
@@ -314,6 +314,7 @@ export const VistaTareas = ({ ViewMode, selectedProject = null }) => {
       },
     ];
   }
+
   const commonProps = { dataList, ViewMode, selectedProject };
 
   const renderSubView = () => {
@@ -327,7 +328,7 @@ export const VistaTareas = ({ ViewMode, selectedProject = null }) => {
       case "Tabla":
         return <Tabla {...commonProps} />;
       case "Bitacora":
-        return <Bitacora />;
+        return <Bitacora {...commonProps} />;
       default:
         return <div>Seleccione una vista</div>;
     }

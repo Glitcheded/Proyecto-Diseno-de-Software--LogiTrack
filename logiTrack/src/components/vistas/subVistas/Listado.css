@@ -94,6 +94,7 @@
   margin-top: 8px;
   display: flex;
   justify-content: flex-start;
+  width: fit-content;
 }
 .add-btn {
   padding: 8px 12px;
@@ -178,7 +179,6 @@
   font-weight: 500;
 }
 
-/* Added members at the top look distinct */
 .member-item.added span {
   font-weight: bold;
   color: #2b2b2b;
