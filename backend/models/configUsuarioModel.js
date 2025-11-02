@@ -11,4 +11,18 @@ export async function obtenerConfiguracionPorUsuario(idUsuario) {
   return data;
 }
 
-// Actualizar cambios a configuraciones (los toggles)
+// Actualizar cambios a configuraciones (los toggles) 
+export async function actualizarConfiguracionUsuario(idUsuario, nuevosValores) {
+  const { data, error } = await supabase
+    .from('ConfiguracionUsuario')
+    .update(nuevosValores)
+    .eq('idUsuario', idUsuario)
+    .select();
+
+  if (error) throw error;
+  return data;
+}
+
+// Actualizar cambios de usuario (nombre, correo, etc)
+// !usar upsert 
+
