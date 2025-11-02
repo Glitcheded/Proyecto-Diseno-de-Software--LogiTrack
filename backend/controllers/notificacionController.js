@@ -1,6 +1,7 @@
 import { getTodasLasCategorias, getNotificacionesPorUsuario, insertarNotificacionChat, 
     insertarNotificacionProyecto, insertarNotificacionTarea,
-    insertarNotificacionSistema, getNotificacionesRecientesPorCategoria } from '../models/notificacionModel.js';
+    insertarNotificacionSistema, getNotificacionesRecientesPorCategoria,
+    borrarNotificacionesPorId } from '../models/notificacionModel.js';
 
 // Controlador para obtener las categorias
 export async function obtenerCategoriasHandler(req, res) {
@@ -32,9 +33,9 @@ export async function getNotificacionesPorCategoria(req, res) {
     const idUsuario = Number(usuario);
     const idCategoria = Number(categoria);
 
-    console.log('🔍 Parámetros recibidos:', idUsuario, idCategoria);
+    //console.log('🔍 Parámetros recibidos:', idUsuario, idCategoria);
 
-    //const notificaciones = await getNotificacionesRecientesPorCategoria(idUsuario, idCategoria);
+    const notificaciones = await getNotificacionesRecientesPorCategoria(idUsuario, idCategoria);
     
     if (!notificaciones || notificaciones.length === 0) {
       return res.status(404).json({ mensaje: 'No se encontraron notificaciones.' });
@@ -122,6 +123,29 @@ export async function crearNotificacionSistema(req, res) {
     const resultado = await insertarNotificacionSistema(correo, descripcion);
     res.status(200).json({ resultado });
   } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+}
+
+// Controlador para borrar notificaciones
+export async function borrarNotificacionesHandler(req, res) {
+  try {
+    const { ids } = req.body;
+
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ error: 'Debes proporcionar uno o más IDs en un array.' });
+    }
+
+    const idsNumericos = ids.map(Number).filter(id => !isNaN(id));
+
+    if (idsNumericos.length === 0) {
+      return res.status(400).json({ error: 'Los IDs deben ser números válidos.' });
+    }
+
+    const resultado = await borrarNotificacionesPorId(idsNumericos);
+    res.status(200).json(resultado);
+  } catch (error) {
+    console.error('❌ Error al borrar notificaciones:', error.message);
     res.status(500).json({ error: error.message });
   }
 }

@@ -76,3 +76,13 @@ export async function insertarNotificacionSistema(correo, descripcion) {
   return data;
 }
 
+// Borra notificaciones
+export async function borrarNotificacionesPorId(ids) {
+  const { error } = await supabase
+    .from('Notificacion')
+    .delete()
+    .in('idNotificacion', ids);
+
+  if (error) throw error;
+  return { mensaje: `Se eliminaron ${ids.length} notificaciones.` };
+}
