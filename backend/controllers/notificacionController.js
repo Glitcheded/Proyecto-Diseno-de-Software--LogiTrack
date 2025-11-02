@@ -1,5 +1,6 @@
 import { getNotificacionesPorUsuario, insertarNotificacionChat, 
-    insertarNotificacionProyecto, insertarNotificacionTarea } from '../models/notificacionModel.js';
+    insertarNotificacionProyecto, insertarNotificacionTarea,
+    insertarNotificacionSistema } from '../models/notificacionModel.js';
 
 // Controlador para obtener notificaciones
 export async function getNotificaciones(req, res) {
@@ -59,6 +60,22 @@ export async function crearNotificacionTarea(req, res) {
     }
 
     const resultado = await insertarNotificacionTarea(idTarea, descripcion);
+    res.status(200).json({ resultado });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+}
+
+// Controlador para crear notificaciones de sistema
+export async function crearNotificacionSistema(req, res) {
+  try {
+    const { correo, descripcion } = req.body;
+
+    if (!correo || !descripcion) {
+      return res.status(400).json({ error: 'Faltan parámetros requeridos.' });
+    }
+
+    const resultado = await insertarNotificacionSistema(correo, descripcion);
     res.status(200).json({ resultado });
   } catch (error) {
     res.status(500).json({ error: error.message });
