@@ -56,6 +56,46 @@ export const getTareasPorProyectoIDs = async (idProyectos, taskState) => {
     return formatTaskData(data.map(item => ({ Tarea: item })));
 };
 
+//Obtiene las tareas de un proyecto, buscado por su nombre
+export const getTareasPorNombreProyecto = async (nombreProyecto) => {
+    // 1. Encontrar el ID del proyecto a partir de su nombre
+    const { data: proyecto, error: projError } = await supabase
+        .from('Proyecto')
+        .select('idProyecto')
+        .eq('nombre', nombreProyecto)
+        .single();
+    
+    if (projError || !proyecto) {
+        throw new Error('Proyecto no encontrado con ese nombre');
+    }
+
+    // Obtener las tareas de ese ID de proyecto
+    let { data, error } = await supabase
+        .from('Tarea')
+        .select(`
+            idTarea,
+            nombre,
+            fechaEntrega,
+            idTareaMadre,
+            Proyecto ( nombre ),
+            EstadoTarea ( nombre ),
+            Prioridad ( nivel ),
+            Comentario ( 
+                comentario,
+                Usuario ( nombre, apellido )
+            ),
+            UsuarioPorTarea (
+                Usuario ( nombre, apellido )
+            )
+        `)
+        .eq('idProyecto', proyecto.idProyecto);
+    
+    if (error) throw error;
+
+    // Formatea y devuelve
+    return formatTaskData(data.map(item => ({ Tarea: item })));
+};
+
 export const crearProyecto = async (projectData) => {
     const { data, error } = await supabase
         .from('Proyecto')
@@ -85,7 +125,7 @@ export const getProyectoPorId = async (idProyecto) => {
             EstadoProyecto ( nombre ),
             UsuarioPorProyecto ( 
                 Rol ( nombre ),
-                Usuario ( idUsuario, nombre, apellido ) 
+                Usuario ( idUsuario, nombre, apellido, email, enlaceLikedIn ) 
             )
         `)
         .eq('idProyecto', idProyecto)
@@ -115,6 +155,19 @@ export const eliminarProyecto = async (idProyecto) => {
         .update({ activado: false })
         .eq('idProyecto', idProyecto);
         
+    if (error) throw error;
+    return data;
+};
+
+
+//Obtiene los proyectos de un usuariovcon la fecha de entrega más próxima de tareas.
+//Llama a una función RPC de Supabase.
+export const getProyectosPorUsuario = async (idUsuario) => {
+    const { data, error } = await supabase.rpc(
+        'get_proyectos_con_fecha_proxima', 
+        { p_id_usuario: idUsuario }
+    );
+
     if (error) throw error;
     return data;
 };

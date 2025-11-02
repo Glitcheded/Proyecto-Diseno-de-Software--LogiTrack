@@ -69,6 +69,20 @@ export const getProyectoPorId = async (req, res) => {
     }
 };
 
+//Obtiene las tareas por nombre de proyecto GET /api/projects/por-nombre/:nombreProyecto
+export const getTareasPorNombre = async (req, res) => {
+    try {
+        const { nombreProyecto } = req.params;
+        const tareas = await projectModel.getTareasPorNombreProyecto(nombreProyecto);
+        res.status(200).json(tareas);
+    } catch (error) {
+        if (error.message.includes('Proyecto no encontrado')) {
+            return res.status(404).json({ error: error.message });
+        }
+        res.status(500).json({ error: error.message });
+    }
+};
+
 //Actualiza un proyecto PUT /api/projects/:id
 export const actualizarProyecto = async (req, res) => {
     try {
@@ -104,6 +118,17 @@ export const asignarUsuarioAProyecto = async (req, res) => {
         await projectModel.asignarProyecto(idUsuario, id, idRol);
         res.status(201).json({ message: 'Usuario asignado al proyecto' });
 
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+//Obtiene los datos de los proyectos del usuario GET /api/projects/datos-proyectos
+export const getMisProyectosDatos = async (req, res) => {
+    try {
+        const idUsuario = req.idUsuario;
+        const proyectos = await projectModel.getProyectosPorUsuario(idUsuario);
+        res.status(200).json(proyectos);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }

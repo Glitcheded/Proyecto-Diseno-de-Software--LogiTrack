@@ -56,3 +56,36 @@ export const logIn = async (req, res) => {
 
   res.status(200).json(data);
 };
+
+export const logOut = async (req, res) => {
+    const { error } = await supabase.auth.signOut();
+
+    if (error) {
+        return res.status(500).json({ error: error.message });
+    }
+    
+    res.status(200).json({ message: "Sesión cerrada exitosamente" });
+};
+
+//Obtiene la información del usuario actual basado en el token (Middleware checkAuth)
+export const getUserInfo = async (req, res) => {
+    // No necesitamos validar el token, el middleware ya lo hizo.
+    try {
+        const idUsuario = req.idUsuario;
+        
+        const { data, error } = await supabase
+            .from('Usuario')
+            .select('idUsuario, nombre, apellido, email, "enlaceLikedIn"')
+            .eq('idUsuario', idUsuario)
+            .single();
+
+        if (error || !data) {
+            return res.status(404).json({ error: 'Usuario no encontrado' });
+        }
+        
+        res.status(200).json(data);
+
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};

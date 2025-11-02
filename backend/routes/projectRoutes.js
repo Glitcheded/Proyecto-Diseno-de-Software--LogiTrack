@@ -1,6 +1,5 @@
-// backend/routes/projects.js
 import express from 'express';
-import {getMisProyectos, getProyectosAnteriores, crearProyecto, getProyectoPorId, actualizarProyecto, eliminarProyecto, asignarUsuarioAProyecto} from '../controllers/projectController.js';
+import {getMisProyectos, getProyectosAnteriores, crearProyecto, getProyectoPorId, actualizarProyecto, eliminarProyecto, asignarUsuarioAProyecto, getMisProyectosDatos, getTareasPorNombre} from '../controllers/projectController.js';
 import { checkAuth } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
@@ -21,6 +20,9 @@ router.post('/', crearProyecto);
 // GET /api/projects/:id 
 router.get('/:id', getProyectoPorId);
 
+// GET /api/projects/por-nombre/:nombreProyecto
+router.get('/por-nombre/:nombreProyecto', getTareasPorNombre);
+
 // PUT /api/projects/:id 
 router.put('/:id', actualizarProyecto);
 
@@ -29,5 +31,9 @@ router.delete('/:id', eliminarProyecto);
 
 // POST /api/projects/:id/assign
 router.post('/:id/assign', asignarUsuarioAProyecto);
+
+// GET /api/projects/datos-proyectos (NUEVA)
+router.get('/datos-proyectos', getMisProyectosDatos);
+
 
 export default router;

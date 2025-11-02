@@ -55,7 +55,6 @@ export const LoginSignup = () => {
 
         navigate("/home"); // Navegación exitosa
       } else {
-        // 'data.error' viene de 'res.status(400).json({ error: ... })'
         alert("Error: " + data.error);
       }
     } catch (error) {

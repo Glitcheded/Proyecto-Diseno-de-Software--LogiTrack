@@ -10,7 +10,7 @@ export const formatTaskData = (data) => {
                 name: tarea.nombre,
                 project: tarea.Proyecto?.nombre || 'Sin Proyecto',
                 state: tarea.EstadoTarea?.nombre || 'Sin Estado',
-                prioridad: tarea.Prioridad?.nivel || 'Sin Prioridad',
+                prioridad: tarea.idPrioridad,
                 dueDate: tarea.fechaEntrega,
                 members: tarea.UsuarioPorTarea.map(upt =>
                     `${upt.Usuario.nombre} ${upt.Usuario.apellido}`.trim()
