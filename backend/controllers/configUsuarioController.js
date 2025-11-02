@@ -1,4 +1,5 @@
-import { obtenerConfiguracionPorUsuario, actualizarConfiguracionUsuario } from '../models/configUsuarioModel.js'
+import { obtenerConfiguracionPorUsuario, actualizarConfiguracionUsuario,
+    actualizarUsuario } from '../models/configUsuarioModel.js'
 
 // Controlador para obtener las configuraciones actuales del usuario (los toggles)
 export async function obtenerConfiguracionUsuarioHandler(req, res) {
@@ -40,6 +41,11 @@ export async function actualizarConfiguracionHandler(req, res) {
       return res.status(400).json({ error: 'No se proporcionaron campos para actualizar.' });
     }
 
+    if ('idConfiguracionUsuario' in camposActualizados || 'idUsuario' in camposActualizados 
+    || 'contrasena' in camposActualizados || 'activado' in camposActualizados) {
+        return res.status(403).json({ error: 'Los campos "idConfiguracionUsuario" y "idUsuario" no pueden ser modificados.'})
+    }
+
     const resultado = await actualizarConfiguracionUsuario(usuario, camposActualizados);
 
     if (!resultado || resultado.length === 0) {
@@ -54,3 +60,32 @@ export async function actualizarConfiguracionHandler(req, res) {
 }
 
 // Controlador para actualizar cambios de usuario (nombre, correo, etc)
+export async function actualizarUsuarioHandler(req, res) {
+  try {
+    const { usuario, ...camposActualizados } = req.body;
+
+    if (!usuario || typeof usuario !== 'number') {
+      return res.status(400).json({ error: 'Debes proporcionar un idUsuario válido.' });
+    }
+
+    if (Object.keys(camposActualizados).length === 0) {
+      return res.status(400).json({ error: 'No se proporcionaron campos para actualizar.' });
+    }
+
+    if ('email' in camposActualizados || 'idUsuario' in camposActualizados 
+        || 'contrasena' in camposActualizados || 'activado' in camposActualizados) {
+      return res.status(403).json({ error: 'Los campos "email", "idUsuario","contrasena" y "activado" no pueden ser modificados.' });
+    }
+
+    const resultado = await actualizarUsuario(usuario, camposActualizados);
+
+    if (!resultado || resultado.length === 0) {
+      return res.status(404).json({ mensaje: 'No se encontró información para actualizar.' });
+    }
+
+    res.status(200).json(resultado);
+  } catch (error) {
+    console.error('❌ Error al actualizar información:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+}

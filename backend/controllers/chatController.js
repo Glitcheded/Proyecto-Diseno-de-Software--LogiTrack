@@ -1,11 +1,19 @@
-import { nuevoChat } from '../models/chatModel.js';
+import { crearChatPrivado } from '../models/chatModel.js';
 
-export async function crearChat(req, res) {
+// Controlador para crear un nuevo registro de chat privado
+export async function crearChatPrivadoHandler(req, res) {
   try {
-    const { esGrupo, nombreChat } = req.body;
-    const data = await nuevoChat({ esGrupo, nombreChat });
-    res.status(201).json(data);
+    const { correoUsuario1, correoUsuario2 } = req.body;
+
+    if (!correoUsuario1 || !correoUsuario2) {
+      return res.status(400).json({ error: 'Debes proporcionar ambos correos de usuario.' });
+    }
+
+    const resultado = await crearChatPrivado(correoUsuario1, correoUsuario2);
+
+    res.status(200).json(resultado);
   } catch (error) {
+    console.error('❌ Error al crear chat privado:', error.message);
     res.status(500).json({ error: error.message });
   }
 }
