@@ -1,5 +1,16 @@
 import { supabase } from '../supabaseClient.js';
 
+// Obtiene las notificaciones segun la categoria
+export async function getNotificacionesRecientesPorCategoria(idUsuario, idCategoria) {
+  const { data, error } = await supabase.rpc('getnotificacionesporcategoria', {
+    in_id_usuario: idUsuario,
+    in_id_categoria: idCategoria,
+  });
+
+  if (error) throw error;
+  return data;
+}
+
 // Obtiene las notificaciones de los ultimos 15 dias
 export async function getNotificacionesPorUsuario(correo) {
   const { data, error } = await supabase.rpc('getnotificacionesporusuario', {
@@ -54,3 +65,4 @@ export async function insertarNotificacionSistema(correo, descripcion) {
   if (error) throw error;
   return data;
 }
+

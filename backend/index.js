@@ -8,6 +8,7 @@ import notificacionRoutes from './routes/notificacionRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 import taskRoutes from './routes/taskRoutes.js';
 import projectRoutes from './routes/projectRoutes.js';
+import { supabase } from './supabaseClient.js';
 
 dotenv.config();
 
@@ -29,6 +30,17 @@ app.use('/api/notificacion', notificacionRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/projects', projectRoutes);
+
+app.get('/api/test-rpc', async (req, res) => {
+  const { data, error } = await supabase.rpc('getnotificacionesporcategoria', {
+    in_id_usuario: 2,
+    in_id_categoria: 1,
+  });
+
+  console.log('RPC:', { data, error });
+  res.json({ data, error });
+});
+
 
 
 app.listen(port, () => {

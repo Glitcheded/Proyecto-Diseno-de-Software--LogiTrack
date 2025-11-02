@@ -1,6 +1,33 @@
 import { getNotificacionesPorUsuario, insertarNotificacionChat, 
     insertarNotificacionProyecto, insertarNotificacionTarea,
-    insertarNotificacionSistema } from '../models/notificacionModel.js';
+    insertarNotificacionSistema, getNotificacionesRecientesPorCategoria } from '../models/notificacionModel.js';
+
+// Controlador para obtener notificaciones por categoria
+export async function getNotificacionesPorCategoria(req, res) {
+  try {
+    const { usuario, categoria } = req.query;
+    console.log('🔍 Parámetros recibidos:', req.query);
+
+    if (!usuario || !categoria) {
+      return res.status(400).json({ error: 'Faltan parámetros: usuario y categoria.' });
+    }
+
+    const idUsuario = Number(usuario);
+    const idCategoria = Number(categoria);
+
+    console.log('🔍 Parámetros recibidos:', idUsuario, idCategoria);
+
+    //const notificaciones = await getNotificacionesRecientesPorCategoria(idUsuario, idCategoria);
+    
+    if (!notificaciones || notificaciones.length === 0) {
+      return res.status(404).json({ mensaje: 'No se encontraron notificaciones.' });
+    }
+
+    res.status(200).json(notificaciones);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+}
 
 // Controlador para obtener notificaciones
 export async function getNotificaciones(req, res) {
