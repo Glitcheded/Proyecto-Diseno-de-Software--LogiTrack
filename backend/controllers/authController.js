@@ -69,7 +69,6 @@ export const logOut = async (req, res) => {
 
 //Obtiene la información del usuario actual basado en el token (Middleware checkAuth)
 export const getUserInfo = async (req, res) => {
-    // No necesitamos validar el token, el middleware ya lo hizo.
     try {
         const idUsuario = req.idUsuario;
         

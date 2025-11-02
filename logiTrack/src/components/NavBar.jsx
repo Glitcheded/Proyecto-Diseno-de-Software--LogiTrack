@@ -81,6 +81,7 @@ export const NavBar = ({
               <div
                 className="dropdown-item"
                 onClick={() => {
+                  localStorage.removeItem('supabaseToken');
                   navigate("/");
                   setShowUserDropdown(false);
                 }}
