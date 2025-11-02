@@ -32,3 +32,14 @@ export async function insertarNotificacionProyecto(idProyecto, descripcion) {
   if (error) throw error;
   return data;
 }
+
+// Crea notificaciones de tareas
+export async function insertarNotificacionTarea(idTarea, descripcion) {
+  const { data, error } = await supabase.rpc('insertnotificaciontarea', {
+    inidtarea: idTarea,
+    indescripcion: descripcion
+  });
+
+  if (error) throw error;
+  return data;
+}

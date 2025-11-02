@@ -1,5 +1,5 @@
 import { getNotificacionesPorUsuario, insertarNotificacionChat, 
-    insertarNotificacionProyecto } from '../models/notificacionModel.js';
+    insertarNotificacionProyecto, insertarNotificacionTarea } from '../models/notificacionModel.js';
 
 // Controlador para obtener notificaciones
 export async function getNotificaciones(req, res) {
@@ -43,6 +43,22 @@ export async function crearNotificacionProyecto(req, res) {
     }
 
     const resultado = await insertarNotificacionProyecto(idProyecto, descripcion);
+    res.status(200).json({ resultado });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+}
+
+// Controlador para crear notificaciones de tareas
+export async function crearNotificacionTarea(req, res) {
+  try {
+    const { idTarea, descripcion } = req.body;
+
+    if (!idTarea || !descripcion) {
+      return res.status(400).json({ error: 'Faltan parámetros requeridos.' });
+    }
+
+    const resultado = await insertarNotificacionTarea(idTarea, descripcion);
     res.status(200).json({ resultado });
   } catch (error) {
     res.status(500).json({ error: error.message });
