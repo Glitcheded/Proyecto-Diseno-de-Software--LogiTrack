@@ -109,7 +109,7 @@ export const Chat = ({}) => {
         },
         body: JSON.stringify({
           idUsuario: idUsuario, // variable que debes tener en tu componente padre
-          idChat: idChat,       // chat seleccionado
+          idChat: chatSelected.id,       // chat seleccionado
           contenido: mensaje
         })
       });
