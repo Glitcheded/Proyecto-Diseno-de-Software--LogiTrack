@@ -43,18 +43,63 @@ export const signUp = async (req, res) => {
 };
 
 export const logIn = async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password } = req.body;
 
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email: email,
-    password: password,
-  });
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
-  if (error) {
-    return res.status(400).json({ error: error.message });
-  }
+    if (error) {
+      return res.status(400).json({ error: error.message });
+    }
 
-  res.status(200).json(data);
+    const user = data?.user;
+    if (!user) {
+      return res.status(400).json({ error: "No se pudo obtener el usuario" });
+    }
+
+    const { data: usuarios, error: localError } = await supabase
+      .from("Usuario")
+      .select("idUsuario, email")
+      .ilike("email", email);
+
+    if (localError) {
+      console.error("[auth] Error buscando usuario local:", localError);
+      return res.status(500).json({ error: localError.message });
+    }
+
+    if (!usuarios || usuarios.length === 0) {
+      console.log("[auth] Usuario no existe en DB local. Creando...");
+
+      const { data: newUser, error: insertError } = await supabase
+        .from("Usuario")
+        .insert([
+          {
+            email,
+            nombre: user.user_metadata?.name || null,
+            apellido: user.user_metadata?.apellido || null,
+          },
+        ])
+        .select("idUsuario, email")
+        .single();
+
+      if (insertError) {
+        console.error("[auth] Error creando usuario local:", insertError);
+        return res.status(500).json({ error: insertError.message });
+      }
+
+      console.log("[auth] Usuario local creado:", newUser);
+    } else {
+      console.log("[auth] Usuario ya existe en DB local:", usuarios[0].email);
+    }
+
+    res.status(200).json(data);
+  } catch (err) {
+    console.error("[auth] Error interno en login:", err);
+    res.status(500).json({ error: err.message });
+  }
 };
 
 export const logOut = async (req, res) => {
