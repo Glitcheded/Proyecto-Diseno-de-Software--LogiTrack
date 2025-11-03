@@ -6,8 +6,17 @@ import { ChatHeader } from './ChatHeader';
 import { ChatMessages } from "./ChatMessages";
 import { useNavigate } from "react-router-dom"; // for navigation (React Router)
 
+const baseURL = "http://localhost:3001/api";
+const usuarioGuardado = JSON.parse(localStorage.getItem('usuario'));
+const idUsuario = usuarioGuardado.idUsuario;
+const nombreUsuario = usuarioGuardado.nombre  + " " + usuarioGuardado.apellido;
+
 export const Chat = ({}) => {
-  const user = { name: "Susana Pérez", role: "Admin" };
+  console.log('ID:', idUsuario);
+  console.log('Nombre:', nombreUsuario);
+  console.log(Object.keys(usuarioGuardado));
+
+  const user = { name: nombreUsuario};
   const chats = [
     { id: 1, name: "Federico Granados", snippet: "¿Listo?", initials: "FG" },
     // ...
