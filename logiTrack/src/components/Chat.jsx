@@ -10,6 +10,8 @@ const baseURL = "http://localhost:3001/api";
 const usuarioGuardado = JSON.parse(localStorage.getItem('usuario'));
 const idUsuario = usuarioGuardado.idUsuario;
 const nombreUsuario = usuarioGuardado.nombre  + " " + usuarioGuardado.apellido;
+const usuarioEmail = usuarioGuardado.email;
+const chatSeleccionado = JSON.parse(localStorage.getItem("chatSeleccionado"));
 
 export const Chat = ({}) => {
   console.log('ID:', idUsuario);
@@ -17,10 +19,38 @@ export const Chat = ({}) => {
   console.log(Object.keys(usuarioGuardado));
 
   const user = { name: nombreUsuario};
-  const chats = [
-    { id: 1, name: "Federico Granados", snippet: "¿Listo?", initials: "FG" },
-    // ...
-  ];
+  const [chats, setChats] = useState([]);
+  const [chatSeleccionado, setChatSeleccionado] = useState(
+    JSON.parse(localStorage.getItem("chatSeleccionado")) || null
+  );
+
+  console.log(`EHHH ${chatSeleccionado?.name}`);
+
+  // Get chats
+  const obtenerChatsPorCorreo = async (correo, setChats) => {
+    try {
+      const response = await fetch(`${baseURL}/chat/${correo}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error HTTP ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log("Chats obtenidos:", data);
+
+      // Actualizar el estado
+      setChats(data);
+    } catch (error) {
+      console.error("Error al obtener los chats:", error);
+      // Si usas react-toastify, puedes avisar al usuario:
+      // toast.error("❌ No se pudieron cargar los chats");
+    }
+  };
 
   const handleSend = (mensaje) => {
     console.log("Mensaje enviado:", mensaje);
@@ -32,7 +62,27 @@ export const Chat = ({}) => {
     // lógica para abrir diálogo de adjuntos
   };
 
-  const chatName = "Nombre de chat";
+  const chatName = chatSeleccionado?.name || "";
+
+  useEffect(() => {
+    // Intentar leer el usuario guardado del localStorage
+    const usuarioGuardado = JSON.parse(localStorage.getItem("usuario"));
+    const correo = usuarioGuardado?.email; // <- usa "email", no "correo"
+
+    if (correo) {
+      obtenerChatsPorCorreo(correo, setChats);
+    }
+  }, []); // se ejecuta solo una vez al montar el componente
+
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const nuevoChat = JSON.parse(localStorage.getItem("chatSeleccionado"));
+      setChatSeleccionado(nuevoChat);
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, []);
 
   return (
     <div>
