@@ -1,0 +1,230 @@
+:root{
+  --bg: #6b46c1; /* púrpura */
+  --fg: #ffffff;
+  --muted: #f6f6f8;
+  --accent: #fff;
+  --item-hover: rgba(255,255,255,0.06);
+  --border: rgba(255,255,255,0.08);
+  --focus: 3px solid rgba(255,255,255,0.24);
+  --radius: 8px;
+  --gap: 12px;
+}
+
+/* Contenedor principal: sidebar ocupando toda la ventana */
+.app-sidebar {
+  width: 320px;
+  height: 100vh;
+  background: #2F0459;
+  color: var(--fg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+  padding: 16px;
+  box-sizing: border-box;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+}
+
+/* Secciones */
+.sidebar-top,
+.sidebar-middle,
+.sidebar-bottom {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Top: alineado arriba */
+.sidebar-top {
+  align-items: stretch;
+}
+
+/* Middle ocupa espacio mínimo; Bottom crece */
+.sidebar-middle {
+  flex: 0 0 auto;
+}
+
+/* Lista ocupa el espacio restante y hace scroll */
+.sidebar-bottom {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+/* Usuario */
+.user-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.user-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 999px;
+  background: #9303A6;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: var(--fg);
+  flex-shrink: 0;
+}
+.user-name {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* Botón de configuración */
+.btn-icon {
+  margin-left: auto;
+  background: transparent;
+  border: none;
+  color: var(--fg);
+  padding: 8px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+}
+.btn-icon:focus {   /*Esto es para el TAB*/
+  outline: none;
+  box-shadow: var(--focus);
+  background: var(--item-hover);
+  border: 2px solid #ffffff;
+}
+.btn-icon:hover {
+  background: var(--item-hover);
+}
+
+
+/* Middle: nuevo chat y búsqueda */
+.actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.btn-primary {
+  background: rgba(255,255,255,0.12);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  padding: 8px 12px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-weight: 600;
+  margin-left: auto;
+}
+.btn-back-arrow {
+  background: rgba(255,255,255,0.12);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  padding: 8px 12px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-weight: 600;
+}
+.btn-primary:focus {
+  outline: none;
+  box-shadow: var(--focus);
+  background: var(--item-hover);
+  border: 2px solid #ffffff;
+}
+
+/* Search form */
+.search-form {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+.search-input {
+  flex: 1 1 auto;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: rgba(255,255,255,0.06);
+  color: var(--fg);
+}
+.search-input::placeholder { color: rgba(255,255,255,0.6); }
+.search-input:focus {
+  outline: none;
+  border-color: rgba(255,255,255,0.12);
+  box-shadow: var(--focus);
+}
+.search-input:focus {   /*Esto es para el TAB*/
+  outline: none;
+  box-shadow: var(--focus);
+  background: var(--item-hover);
+  border: 2px solid #ffffff;
+}
+
+/* Listado de chats */
+.chats-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 6px;
+}
+.chat-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  background: transparent;
+}
+.chat-item:hover {
+  background: var(--item-hover);
+}
+.chat-item:focus {
+  outline: none;
+  box-shadow: var(--focus);
+  background: var(--item-hover);
+  border: 2px solid #ffffff;
+}
+.chat-thumb {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.12);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+.chat-meta {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.chat-title {
+  font-weight: 600;
+  font-size: 13px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+.chat-snippet {
+  font-size: 12px;
+  opacity: 0.9;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+/* Focus visible for keyboard-only users */
+:focus:not(:focus-visible) { box-shadow: none; }
+
+/* Scrollbar small, readable on dark */
+.sidebar-bottom::-webkit-scrollbar { width: 8px; }
+.sidebar-bottom::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.06); border-radius: 8px; }
+
+/* Responsive: si es más chico */
+@media (max-width: 360px) {
+  .app-sidebar { width: 100%; padding: 12px; }
+}
+
+

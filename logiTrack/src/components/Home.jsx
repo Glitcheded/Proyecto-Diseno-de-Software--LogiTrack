@@ -2,9 +2,10 @@ import React, { useState, useEffect } from "react";
 import { NavBar } from "./NavBar";
 import "./Home.css";
 
+import { useLocation, useNavigate } from "react-router-dom";
+
 import { MisTareas } from "./vistas/MisTareas";
 import { GoogleCalendario } from "./vistas/GoogleCalendario";
-import { Chat } from "./vistas/Chat";
 import { Notificaciones } from "./vistas/Notificaciones";
 import { MisProyectos } from "./vistas/MisProyectos";
 import { ProyectosAnteriores } from "./vistas/ProyectosAnteriores";
@@ -14,7 +15,11 @@ import { MisProyectosSub } from "./vistas/MisProyectosSub";
 import { ProyectosAnterioresSub } from "./vistas/ProyectosAnterioresSub";
 
 export const Home = () => {
-  const [selectedView, setSelectedView] = useState("Mis Tareas");
+  const location = useLocation();
+  const initialView = location.state?.view || "Mis Tareas";
+  const navigate = useNavigate();
+
+  const [selectedView, setSelectedView] = useState(initialView);
   const [selectedProject, setSelectedProject] = useState(null);
   const [projectList, setProjectList] = useState([]);
 
@@ -243,7 +248,12 @@ export const Home = () => {
     };
 
     fetchData();
-  }, []);
+
+    if (location.state?.view) {
+      setSelectedView(location.state.view);
+      navigate("/home", { replace: true }); // borra el estado del historial
+    }
+  }, [location.state?.view]);
 
   const renderView = () => {
     switch (selectedView) {
@@ -251,8 +261,6 @@ export const Home = () => {
         return <MisTareas />;
       case "Google Calendario":
         return <GoogleCalendario />;
-      case "Chat":
-        return <Chat />;
       case "Notificaciones":
         return <Notificaciones />;
       case "Mis Proyectos":
@@ -280,30 +288,23 @@ export const Home = () => {
     }
   };
 
-  const isFullScreenView = selectedView === "Chat";
-
   return (
     <div className="home-container">
-      {!isFullScreenView && (
-        <NavBar
-          currentView={selectedView}
-          changeView={setSelectedView}
-          projectList={projectList}
-          selectedProject={selectedProject}
-          setSelectedProject={setSelectedProject}
-        />
-      )}
+      <NavBar
+        currentView={selectedView}
+        changeView={setSelectedView}
+        projectList={projectList}
+        selectedProject={selectedProject}
+        setSelectedProject={setSelectedProject}
+      />
 
-      {!isFullScreenView ? (
-        <div className="right-container">
-          <div className="menu-header">
-            <h1>{selectedView}</h1>
-          </div>
-          <div className="view-container">{renderView()}</div>
+      <div className="right-container">
+        <div className="menu-header">
+          <h1>{selectedView}</h1>
         </div>
-      ) : (
-        <div className="fullscreen-view">{renderView()}</div>
-      )}
+        <div className="view-container">{renderView()}</div>
+      </div>
     </div>
   );
+
 };

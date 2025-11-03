@@ -130,7 +130,7 @@ export const NavBar = ({
               ? "navbar-element navbar-selected"
               : "navbar-element"
           }
-          onClick={() => changeView("Chat")}
+          onClick={() => navigate("/chat")}
         >
           <div className="icons">{messageIco}</div>
           Chat
