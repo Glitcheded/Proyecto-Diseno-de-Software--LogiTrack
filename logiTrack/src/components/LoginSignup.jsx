@@ -11,6 +11,18 @@ const mailIco = <FontAwesomeIcon icon={faEnvelope} size="1.5x" />;
 const lockIco = <FontAwesomeIcon icon={faLock} size="1.5x" />;
 import { useNavigate } from "react-router-dom"; // for navigation (React Router)
 
+//********************************************************************* */
+// Ejemplo de cómo leer el ID en cualquier componente:
+const usuarioGuardado = JSON.parse(localStorage.getItem('usuario'));
+
+if (usuarioGuardado) {
+  const idUsuario = usuarioGuardado.idUsuario;
+  const nombreUsuario = usuarioGuardado.nombre;
+  
+  console.log('ID:', idUsuario);
+  console.log('Nombre:', nombreUsuario);
+}
+//********************************************************************** */
 export const LoginSignup = () => {
   const [action, setAction] = useState("Inciar Sesión");
   const [email, setEmail] = useState("");
@@ -48,11 +60,8 @@ export const LoginSignup = () => {
           // Guarda el token
           if (data.session.access_token) {
             localStorage.setItem('supabaseToken', data.session.access_token);
-          }
-
-          // Guarda la info del usuario
-          if (data.user) {
-            localStorage.setItem('usuario', JSON.stringify(data.user));
+            // Guarda la info del usuario
+            localStorage.setItem('usuario', JSON.stringify(data.usuario));
           }
         }
 

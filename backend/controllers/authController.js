@@ -45,60 +45,36 @@ export const signUp = async (req, res) => {
 export const logIn = async (req, res) => {
   const { email, password } = req.body;
 
+  //Autenticar al usuario con Supabase Auth
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email: email,
+    password: password,
+  });
+
+  if (error) {
+    return res.status(400).json({ error: error.message });
+  }
+
+  // Si el login fue exitoso, busca los datos de la tabla Usuario
   try {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
+    const { data: usuarioLocal, error: localError } = await supabase
+      .from('Usuario')
+      .select('idUsuario, nombre, apellido, email') 
+      .eq('email', data.user.email)
+      .single();
+
+    if (localError || !usuarioLocal) {
+      return res.status(404).json({ error: "Perfil de usuario no encontrado en la tabla local" });
+    }
+
+    // Enviar ambas cosas al frontend: la sesión (token) y el perfil (usuarioLocal)
+    res.status(200).json({ 
+      session: data.session,
+      usuario: usuarioLocal  
     });
 
-    if (error) {
-      return res.status(400).json({ error: error.message });
-    }
-
-    const user = data?.user;
-    if (!user) {
-      return res.status(400).json({ error: "No se pudo obtener el usuario" });
-    }
-
-    const { data: usuarios, error: localError } = await supabase
-      .from("Usuario")
-      .select("idUsuario, email")
-      .ilike("email", email);
-
-    if (localError) {
-      console.error("[auth] Error buscando usuario local:", localError);
-      return res.status(500).json({ error: localError.message });
-    }
-
-    if (!usuarios || usuarios.length === 0) {
-      console.log("[auth] Usuario no existe en DB local. Creando...");
-
-      const { data: newUser, error: insertError } = await supabase
-        .from("Usuario")
-        .insert([
-          {
-            email,
-            nombre: user.user_metadata?.name || null,
-            apellido: user.user_metadata?.apellido || null,
-          },
-        ])
-        .select("idUsuario, email")
-        .single();
-
-      if (insertError) {
-        console.error("[auth] Error creando usuario local:", insertError);
-        return res.status(500).json({ error: insertError.message });
-      }
-
-      console.log("[auth] Usuario local creado:", newUser);
-    } else {
-      console.log("[auth] Usuario ya existe en DB local:", usuarios[0].email);
-    }
-
-    res.status(200).json(data);
-  } catch (err) {
-    console.error("[auth] Error interno en login:", err);
-    res.status(500).json({ error: err.message });
+  } catch (error) {
+    res.status(500).json({ error: "Error al buscar el perfil de usuario local", details: error.message });
   }
 };
 
