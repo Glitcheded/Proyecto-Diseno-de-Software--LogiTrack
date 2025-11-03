@@ -172,6 +172,7 @@ export const VistaProyectos = ({ ViewMode, dataList, setDataList }) => {
         body: JSON.stringify({
           nombre: editedProject.nombre,
           descripcion: editedProject.descripcion,
+          idEstadoProyecto: editedProject.idEstadoProyecto, // ✅ include state
         }),
       });
 
@@ -451,6 +452,20 @@ export const VistaProyectos = ({ ViewMode, dataList, setDataList }) => {
               />
             </label>
 
+            <label>
+              Estado del proyecto
+              <select
+                value={editedProject.idEstadoProyecto}
+                onChange={(e) =>
+                  handleFieldChange("idEstadoProyecto", Number(e.target.value))
+                }
+              >
+                <option value={1}>En proceso</option>
+                <option value={2}>Cancelado</option>
+                <option value={3}>Finalizado</option>
+              </select>
+            </label>
+
             <h4>Miembros del proyecto</h4>
             <table className="members-table">
               <thead>
@@ -498,6 +513,9 @@ export const VistaProyectos = ({ ViewMode, dataList, setDataList }) => {
                       </select>
                       <button onClick={handleAddMember}>+</button>
                     </div>
+                    {addMemberError && (
+                      <p className="error-message">{addMemberError}</p>
+                    )}
                   </td>
                 </tr>
               </tbody>
