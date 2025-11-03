@@ -9,21 +9,67 @@ export const Opciones = ({ userData, userSettings }) => {
   const idUsuario = usuarioGuardado.idUsuario;
   const nombreUsuario = usuarioGuardado.nombre + " " + usuarioGuardado.apellido;
   const usuarioEmail = usuarioGuardado.email;
+  const zonaHoraria = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  console.log(zonaHoraria);
+  const [configuraciones, setConfiguraciones] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [settings, setSettings] = useState(null);
+
+  const fetchConfiguraciones = async (usuarioId = idUsuario) => {
+    console.log(`Iniciando fetch de configuraciones para ${idUsuario}`);
+    try {
+      const response = await fetch(`http://localhost:3001/api/config/getConfiguraciones?usuario=${usuarioId}`);
+      console.log("Respuesta HTTP:", response.status);
+
+      if (!response.ok) throw new Error("Error al obtener configuraciones");
+
+      const data = await response.json();
+      console.log("Configuraciones recibidas:", data);
+      return data;
+    } catch (error) {
+      console.error("Error al cargar configuraciones:", error);
+      return null;
+    }
+  };
+
+  useEffect(() => {
+    const obtenerConfiguraciones = async () => {
+      try {
+        const data = await fetchConfiguraciones(idUsuario);
+        if (data) setConfiguraciones(data);
+      }
+      catch (error) {
+        console.error("Error al cargar configuraciones:", error);
+      }
+      finally {
+        setLoading(false);
+      }
+    };
+
+    obtenerConfiguraciones();
+  }, []);
+
+  useEffect(() => {
+    if (!configuraciones || configuraciones.length === 0) return;
+
+    setSettings({
+      notifsChat: configuraciones[0]?.notifsChat ?? true,
+      notifsProyectos: configuraciones[0]?.notifsProyectos ?? true,
+      notifsTareas: configuraciones[0]?.notifsTareas ?? true,
+      tiempoAlerta: configuraciones[0]?.tiempoAlerta ?? 1,
+      conteoSemana: configuraciones[0]?.conteoSemana ?? true,
+    });
+  }, [configuraciones]);
+
+
+  console.log(`Config: ${configuraciones[0]?.notifsChat}`);
 
   const [userInfo, setUserInfo] = useState({
     name: nombreUsuario,
     email: usuarioEmail,
     linkedin: "",
-    timezone: "GMT-6",
+    timezone: zonaHoraria,
     password: "password123",
-  });
-
-  const [settings, setSettings] = useState({
-    notifsChat: true,
-    notifsProyectos: true,
-    notifsTareas: true,
-    tiempoAlerta: 1,
-    conteoSemana: true,
   });
 
   const [editingField, setEditingField] = useState(null);
