@@ -133,3 +133,25 @@ export const getMisProyectosDatos = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+//Obtiene los miembros de un proyecto GET /api/projects/:id/members
+export const getMiembrosProyecto = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const miembros = await projectModel.getMiembrosProyecto(id);
+        res.status(200).json(miembros);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+//Quitar un miembro de un proyecto DELETE /api/projects/:idProyecto/members/:idUsuario
+export const removerMiembroProyecto = async (req, res) => {
+    try {
+        const { idProyecto, idUsuario } = req.params;
+        await projectModel.removerUsuarioDeProyecto(idProyecto, idUsuario);
+        res.status(200).json({ message: 'Usuario removido del proyecto' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};

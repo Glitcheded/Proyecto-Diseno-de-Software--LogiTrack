@@ -1,5 +1,12 @@
 import express from 'express';
-import {getMisProyectos, getProyectosAnteriores, crearProyecto, getProyectoPorId, actualizarProyecto, eliminarProyecto, asignarUsuarioAProyecto, getMisProyectosDatos, getTareasPorNombre} from '../controllers/projectController.js';
+import {
+    getMisProyectos, getProyectosAnteriores, 
+    crearProyecto, getProyectoPorId, 
+    actualizarProyecto, eliminarProyecto, 
+    asignarUsuarioAProyecto, getMisProyectosDatos, 
+    getTareasPorNombre, getMiembrosProyecto, 
+    removerMiembroProyecto
+} from '../controllers/projectController.js';
 import { checkAuth } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
@@ -32,8 +39,13 @@ router.delete('/:id', eliminarProyecto);
 // POST /api/projects/:id/assign
 router.post('/:id/assign', asignarUsuarioAProyecto);
 
-// GET /api/projects/datos-proyectos (NUEVA)
+// GET /api/projects/datos-proyectos 
 router.get('/datos-proyectos', getMisProyectosDatos);
 
+// GET /api/projects/:id/members
+router.get('/:id/members', getMiembrosProyecto);
+
+// DELETE /api/projects/:idProyecto/members/:idUsuario
+router.delete('/:idProyecto/members/:idUsuario', removerMiembroProyecto);
 
 export default router;

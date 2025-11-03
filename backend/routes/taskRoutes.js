@@ -1,12 +1,10 @@
 import express from 'express';
 import { 
-    getMisTareas,
-    crearTarea,
-    getTareaPorId,
-    actualizarTarea,
-    eliminarTarea,
-    asignarUsuarioATarea,
-    agregarComentario
+    getMisTareas, crearTarea,
+    getTareaPorId, actualizarTarea,
+    eliminarTarea, asignarUsuarioATarea,
+    agregarComentario, getMiembrosTarea,
+    removerMiembroTarea
 } from '../controllers/taskController.js';
 import { checkAuth } from '../middleware/authMiddleware.js';
 
@@ -37,5 +35,11 @@ router.post('/:id/assign', asignarUsuarioATarea);
 
 // POST /api/tasks/:id/comment 
 router.post('/:id/comment', agregarComentario);
+
+// GET /api/tasks/:id/members
+router.get('/:id/members', getMiembrosTarea);
+
+// DELETE /api/tasks/:idTarea/members/:idUsuario
+router.delete('/:idTarea/members/:idUsuario', removerMiembroTarea);
 
 export default router;

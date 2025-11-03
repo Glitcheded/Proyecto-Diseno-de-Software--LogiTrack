@@ -107,3 +107,25 @@ export const agregarComentario = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+//Obtiene los miembros de una tarea GET /api/tasks/:id/members
+export const getMiembrosTarea = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const miembros = await taskModel.getMiembrosTarea(id);
+        res.status(200).json(miembros);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+//Quita un miembro de una tarea DELETE /api/tasks/:idTarea/members/:idUsuario
+export const removerMiembroTarea = async (req, res) => {
+    try {
+        const { idTarea, idUsuario } = req.params;
+        await taskModel.removerUsuarioDeTarea(idTarea, idUsuario);
+        res.status(200).json({ message: 'Usuario removido de la tarea' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};

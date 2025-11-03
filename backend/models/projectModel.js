@@ -171,3 +171,27 @@ export const getProyectosPorUsuario = async (idUsuario) => {
     if (error) throw error;
     return data;
 };
+
+//Obtiene los miembros de un proyecto
+export const getMiembrosProyecto = async (idProyecto) => {
+    const { data, error } = await supabase
+        .from('UsuarioPorProyecto')
+        .select(`
+            Rol ( nombre ),
+            Usuario ( idUsuario, nombre, apellido, email ) 
+        `)
+        .eq('idProyecto', idProyecto);
+        
+    if (error) throw error;
+    return data;
+};
+
+//Quitar un usuario de un proyecto
+export const removerUsuarioDeProyecto = async (idProyecto, idUsuario) => {
+    const { error } = await supabase
+        .from('UsuarioPorProyecto')
+        .delete()
+        .match({ idProyecto: idProyecto, idUsuario: idUsuario });
+    
+    if (error) throw error;
+};

@@ -130,3 +130,26 @@ export const crearComentario = async (idTarea, idUsuario, comentario) => {
     if (error) throw error;
     return data;
 };
+
+//Obtiene los miembros de una tarea
+export const getMiembrosTarea = async (idTarea) => {
+    const { data, error } = await supabase
+        .from('UsuarioPorTarea')
+        .select(`
+            Usuario ( idUsuario, nombre, apellido, email ) 
+        `)
+        .eq('idTarea', idTarea);
+        
+    if (error) throw error;
+    return data;
+};
+
+//Quita un usuario de una tarea
+export const removerUsuarioDeTarea = async (idTarea, idUsuario) => {
+    const { error } = await supabase
+        .from('UsuarioPorTarea')
+        .delete()
+        .match({ idTarea: idTarea, idUsuario: idUsuario });
+    
+    if (error) throw error;
+};
