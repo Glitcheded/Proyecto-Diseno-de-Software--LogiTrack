@@ -1,14 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "./Opciones.css";
 import { useNavigate } from "react-router-dom";
 
 export const Opciones = ({ userData, userSettings }) => {
   const navigate = useNavigate();
 
-  const baseURL = "http://localhost:3001/api";
-  const usuarioGuardado = JSON.parse(localStorage.getItem('usuario'));
+  const usuarioGuardado = JSON.parse(localStorage.getItem("usuario"));
   const idUsuario = usuarioGuardado.idUsuario;
-  const nombreUsuario = usuarioGuardado.nombre  + " " + usuarioGuardado.apellido;
+  const nombreUsuario = usuarioGuardado.nombre + " " + usuarioGuardado.apellido;
   const usuarioEmail = usuarioGuardado.email;
 
   const [userInfo, setUserInfo] = useState({
@@ -56,9 +55,15 @@ export const Opciones = ({ userData, userSettings }) => {
     confirmPassword: "",
   });
 
+  const passwordRef = useRef(null);
+
+  useEffect(() => {
+    if (showPasswordPopup && passwordRef.current) {
+      passwordRef.current.focus();
+    }
+  }, [showPasswordPopup]);
+
   const handleSaveChanges = () => {
-    console.log("Saved user info:", userInfo);
-    console.log("Saved settings:", settings);
     alert("Cambios guardados exitosamente");
   };
 
@@ -94,13 +99,21 @@ export const Opciones = ({ userData, userSettings }) => {
   return (
     <>
       <div className="emptySpace"></div>
-      <div className="opciones-wrapper">
-        <div className="user-info">
+      <div
+        className="opciones-wrapper"
+        role="main"
+        aria-label="Configuración del usuario"
+      >
+        <section className="user-info" aria-labelledby="user-info-title">
+          <h2 id="user-info-title">Información del usuario</h2>
           <div>
-            <strong>Nombre:</strong>{" "}
+            <label htmlFor="name-input">
+              <strong>Nombre:</strong>
+            </label>{" "}
             {editingField === "name" ? (
               <>
                 <input
+                  id="name-input"
                   type="text"
                   value={tempValue}
                   onChange={(e) => setTempValue(e.target.value)}
@@ -121,10 +134,13 @@ export const Opciones = ({ userData, userSettings }) => {
           </div>
 
           <div>
-            <strong>LinkedIn:</strong>{" "}
+            <label htmlFor="linkedin-input">
+              <strong>LinkedIn:</strong>
+            </label>{" "}
             {editingField === "linkedin" ? (
               <>
                 <input
+                  id="linkedin-input"
                   type="text"
                   value={tempValue}
                   onChange={(e) => setTempValue(e.target.value)}
@@ -143,17 +159,25 @@ export const Opciones = ({ userData, userSettings }) => {
           <div>
             <strong>Zona Horaria:</strong> {userInfo.timezone}
           </div>
-        </div>
+        </section>
 
+        {/* Notifications Dropdown */}
         <div className="dropdown-wrapper">
           <button
             className="dropdown-button"
+            aria-expanded={showNotifications}
+            aria-controls="notifications-dropdown"
             onClick={() => setShowNotifications(!showNotifications)}
           >
-            Notifications
+            Notificaciones
           </button>
           {showNotifications && (
-            <div className="dropdown-content">
+            <div
+              id="notifications-dropdown"
+              className="dropdown-content"
+              role="region"
+              aria-label="Configuración de notificaciones"
+            >
               <label>
                 <input
                   type="checkbox"
@@ -195,10 +219,10 @@ export const Opciones = ({ userData, userSettings }) => {
               </label>
 
               <div className="alert-settings">
-                <label>
-                  Configura cuántos días antes deseas recibir alertas de
-                  vencimiento:
+                <label htmlFor="alert-days">
+                  Días antes de alerta:
                   <input
+                    id="alert-days"
                     type="number"
                     min="1"
                     value={settings.tiempoAlerta}
@@ -210,8 +234,10 @@ export const Opciones = ({ userData, userSettings }) => {
                     }
                   />
                 </label>
-                <label>
+                <label htmlFor="alert-type">
+                  Tipo de conteo:
                   <select
+                    id="alert-type"
                     value={settings.conteoSemana ? "Semana/s" : "Dia/s"}
                     onChange={(e) =>
                       setSettings((prev) => ({
@@ -229,15 +255,23 @@ export const Opciones = ({ userData, userSettings }) => {
           )}
         </div>
 
+        {/* Privacy Dropdown */}
         <div className="dropdown-wrapper">
           <button
             className="dropdown-button"
+            aria-expanded={showPrivacy}
+            aria-controls="privacy-dropdown"
             onClick={() => setShowPrivacy(!showPrivacy)}
           >
             Privacidad
           </button>
           {showPrivacy && (
-            <div className="dropdown-content">
+            <div
+              id="privacy-dropdown"
+              className="dropdown-content"
+              role="region"
+              aria-label="Opciones de privacidad"
+            >
               <button onClick={() => setShowPasswordPopup(true)}>
                 Cambiar Contraseña
               </button>
@@ -246,13 +280,21 @@ export const Opciones = ({ userData, userSettings }) => {
           )}
         </div>
 
+        {/* Password Popup */}
         {showPasswordPopup && (
-          <div className="password-popup">
+          <div
+            className="password-popup"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="password-popup-title"
+          >
             <div className="popup-content">
-              <h3>Cambiar Contraseña</h3>
+              <h3 id="password-popup-title">Cambiar Contraseña</h3>
+              <label htmlFor="old-password">Contraseña antigua</label>
               <input
+                id="old-password"
                 type="password"
-                placeholder="Contraseña antigua"
+                ref={passwordRef}
                 value={passwordInputs.oldPassword}
                 onChange={(e) =>
                   setPasswordInputs((prev) => ({
@@ -261,9 +303,10 @@ export const Opciones = ({ userData, userSettings }) => {
                   }))
                 }
               />
+              <label htmlFor="new-password">Nueva contraseña</label>
               <input
+                id="new-password"
                 type="password"
-                placeholder="Nueva contraseña"
                 value={passwordInputs.newPassword}
                 onChange={(e) =>
                   setPasswordInputs((prev) => ({
@@ -272,9 +315,12 @@ export const Opciones = ({ userData, userSettings }) => {
                   }))
                 }
               />
+              <label htmlFor="confirm-password">
+                Confirmar nueva contraseña
+              </label>
               <input
+                id="confirm-password"
                 type="password"
-                placeholder="Confirmar nueva contraseña"
                 value={passwordInputs.confirmPassword}
                 onChange={(e) =>
                   setPasswordInputs((prev) => ({

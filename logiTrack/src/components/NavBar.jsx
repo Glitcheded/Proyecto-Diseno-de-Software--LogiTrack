@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import "./NavBar.css";
 import { useNavigate } from "react-router-dom";
-
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faUser,
@@ -15,27 +14,7 @@ import {
   faChevronUp,
 } from "@fortawesome/free-solid-svg-icons";
 
-const userIco = <FontAwesomeIcon icon={faUser} size="2x" />;
-const optionsIco = <FontAwesomeIcon icon={faGear} size="2x" />;
-const clipboardIco = (
-  <FontAwesomeIcon icon={faClipboardList} style={{ fontSize: "1.6rem" }} />
-);
-const calendarIco = (
-  <FontAwesomeIcon icon={faCalendar} style={{ fontSize: "1.6rem" }} />
-);
-const messageIco = (
-  <FontAwesomeIcon icon={faMessage} style={{ fontSize: "1.6rem" }} />
-);
-const envelopeIco = (
-  <FontAwesomeIcon icon={faEnvelope} style={{ fontSize: "1.6rem" }} />
-);
-const fileIco = (
-  <FontAwesomeIcon icon={faFile} style={{ fontSize: "1.6rem" }} />
-);
-const previousIco = (
-  <FontAwesomeIcon icon={faClockRotateLeft} style={{ fontSize: "1.6rem" }} />
-);
-const arrowIco = <FontAwesomeIcon icon={faChevronUp} size="sm" />;
+const iconStyles = { fontSize: "1.6rem" };
 
 export const NavBar = ({
   currentView,
@@ -48,14 +27,12 @@ export const NavBar = ({
 }) => {
   const navigate = useNavigate();
   const [showUserDropdown, setShowUserDropdown] = useState(false);
-
   const [showActiveProjects, setShowActiveProjects] = useState(false);
   const [showFinishedProjects, setShowFinishedProjects] = useState(false);
 
-  const handleLogout = async (navigate, setShowUserDropdown) => {
+  const handleLogout = async () => {
     try {
       const token = localStorage.getItem("supabaseToken");
-
       const res = await fetch("http://localhost:3001/api/auth/logout", {
         method: "POST",
         headers: {
@@ -63,217 +40,248 @@ export const NavBar = ({
           Authorization: `Bearer ${token}`,
         },
       });
-
       const data = await res.json();
-
-      if (!res.ok) {
-        console.error("Logout error:", data.error);
-        alert("Error al cerrar sesión");
-        return;
-      }
-
-      console.log("Logout successful:", data.message);
+      if (!res.ok) throw new Error(data.error || "Error al cerrar sesión");
 
       localStorage.removeItem("supabaseToken");
       localStorage.removeItem("usuario");
       setShowUserDropdown(false);
       navigate("/");
     } catch (error) {
-      console.error("Error en logout:", error);
+      console.error("Logout error:", error);
       alert("Error al cerrar sesión");
     }
   };
 
   return (
-    <div className="NV-container">
+    <nav className="NV-container" aria-label="Barra de navegación principal">
+      {/* USER & OPTIONS HEADER */}
       <div className="options-container">
         <div className="user-icon-wrapper">
-          <div
+          <button
             className="user-icon"
             onClick={() => setShowUserDropdown((prev) => !prev)}
+            aria-haspopup="true"
+            aria-expanded={showUserDropdown}
+            aria-label={`Menú de usuario para ${userName}`}
           >
-            <div className="icons">{userIco}</div>
-            {userName}
-          </div>
+            <FontAwesomeIcon icon={faUser} size="2x" aria-hidden="true" />
+            <span>{userName}</span>
+          </button>
 
           {showUserDropdown && (
-            <div className="user-dropdown">
-              <div
+            <div
+              className="user-dropdown"
+              role="menu"
+              aria-label="Opciones de usuario"
+            >
+              <button
                 className="dropdown-item"
-                onClick={() => handleLogout(navigate, setShowUserDropdown)}
-              >
-                Configuración
-              </div>
-              <div
-                className="dropdown-item"
+                role="menuitem"
                 onClick={() => {
-                  localStorage.removeItem("supabaseToken");
-                  navigate("/");
                   setShowUserDropdown(false);
+                  changeView("Configuración");
                 }}
               >
+                Configuración
+              </button>
+              <button
+                className="dropdown-item"
+                role="menuitem"
+                onClick={handleLogout}
+              >
                 Cerrar Sesión
-              </div>
+              </button>
             </div>
           )}
         </div>
 
         <div className="options-others">
-          <div className="icons" onClick={() => changeView("Opciones")}>
-            {optionsIco}
-          </div>
+          <button
+            className="icons"
+            onClick={() => changeView("Opciones")}
+            aria-label="Abrir opciones"
+          >
+            <FontAwesomeIcon icon={faGear} size="2x" aria-hidden="true" />
+          </button>
         </div>
       </div>
 
-      <div className="navbar-container">
-        <div
-          className={
-            currentView === "Mis Tareas"
-              ? "navbar-element navbar-selected"
-              : "navbar-element"
-          }
-          onClick={() => changeView("Mis Tareas")}
-        >
-          <div className="icons">{clipboardIco}</div>
-          Mis Tareas
-        </div>
-
-        <div
-          className={
-            currentView === "Google Calendario"
-              ? "navbar-element navbar-selected"
-              : "navbar-element"
-          }
-          onClick={() => changeView("Google Calendario")}
-        >
-          <div className="icons">{calendarIco}</div>
-          Google Calendario
-        </div>
-
-        <div
-          className={
-            currentView === "Chat"
-              ? "navbar-element navbar-selected"
-              : "navbar-element"
-          }
-          onClick={() => navigate("/chat")}
-        >
-          <div className="icons">{messageIco}</div>
-          Chat
-        </div>
-
-        <div
-          className={
-            currentView === "Notificaciones"
-              ? "navbar-element navbar-selected"
-              : "navbar-element"
-          }
-          onClick={() => changeView("Notificaciones")}
-        >
-          <div className="icons">{envelopeIco}</div>
-          Notificaciones
-        </div>
-
-        <div
-          className={
-            currentView === "Mis Proyectos"
-              ? "navbar-element navbar-selected"
-              : "navbar-element"
-          }
-          onClick={() => changeView("Mis Proyectos")}
-        >
-          <div className="icons">{fileIco}</div>
-          <span>Mis Proyectos</span>
-          <div
-            className={`arrow-icon ${showActiveProjects ? "open" : ""}`}
-            onClick={(e) => {
-              e.stopPropagation();
-              setShowActiveProjects(!showActiveProjects);
-              setShowFinishedProjects(false);
-            }}
+      {/* NAVIGATION MENU */}
+      <ul className="navbar-container" role="menubar">
+        <li>
+          <button
+            className={`navbar-element ${
+              currentView === "Mis Tareas" ? "navbar-selected" : ""
+            }`}
+            onClick={() => changeView("Mis Tareas")}
+            role="menuitem"
+            aria-current={currentView === "Mis Tareas" ? "page" : undefined}
           >
-            {arrowIco}
-          </div>
-        </div>
+            <FontAwesomeIcon
+              icon={faClipboardList}
+              style={iconStyles}
+              aria-hidden="true"
+            />
+            <span>Mis Tareas</span>
+          </button>
+        </li>
 
-        {showActiveProjects && (
-          <div className="dropdown">
-            {misProyectos.length > 0 ? (
-              misProyectos.map((proj) => (
-                <div
-                  key={proj.idProyecto}
-                  className={`dropdown-item ${
-                    currentView === "Mis Proyectos / Proyecto" &&
-                    selectedProject === proj.nombre
-                      ? "selected-project"
-                      : ""
-                  }`}
-                  onClick={() => {
-                    changeView("Mis Proyectos / Proyecto");
-                    setSelectedProject(proj.nombre);
-                  }}
-                >
-                  {proj.nombre}
-                </div>
-              ))
-            ) : (
-              <div className="dropdown-item empty">
-                No hay proyectos activos
-              </div>
-            )}
-          </div>
-        )}
-
-        <div
-          className={
-            currentView === "Proyectos Anteriores"
-              ? "navbar-element navbar-selected"
-              : "navbar-element"
-          }
-          onClick={() => changeView("Proyectos Anteriores")}
-        >
-          <div className="icons">{previousIco}</div>
-          <span>Proyectos Anteriores</span>
-          <div
-            className={`arrow-icon ${showFinishedProjects ? "open" : ""}`}
-            onClick={(e) => {
-              e.stopPropagation();
-              setShowFinishedProjects(!showFinishedProjects);
-              setShowActiveProjects(false);
-            }}
+        <li>
+          <button
+            className={`navbar-element ${
+              currentView === "Chat" ? "navbar-selected" : ""
+            }`}
+            onClick={() => navigate("/chat")}
+            role="menuitem"
+            aria-current={currentView === "Chat" ? "page" : undefined}
           >
-            {arrowIco}
-          </div>
-        </div>
+            <FontAwesomeIcon
+              icon={faMessage}
+              style={iconStyles}
+              aria-hidden="true"
+            />
+            <span>Chat</span>
+          </button>
+        </li>
 
-        {showFinishedProjects && (
-          <div className="dropdown">
-            {proyectosAnteriores.length > 0 ? (
-              proyectosAnteriores.map((proj) => (
-                <div
-                  key={proj.idProyecto}
-                  className={`dropdown-item ${
-                    currentView === "Proyectos Anteriores / Proyecto" &&
-                    selectedProject === proj.nombre
-                      ? "selected-project"
-                      : ""
-                  }`}
-                  onClick={() => {
-                    changeView("Proyectos Anteriores / Proyecto");
-                    setSelectedProject(proj.nombre);
-                  }}
-                >
-                  {proj.nombre}
-                </div>
-              ))
-            ) : (
-              <div className="dropdown-item empty">
-                No hay proyectos anteriores
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-    </div>
+        <li>
+          <button
+            className={`navbar-element ${
+              currentView === "Notificaciones" ? "navbar-selected" : ""
+            }`}
+            onClick={() => changeView("Notificaciones")}
+            role="menuitem"
+          >
+            <FontAwesomeIcon
+              icon={faEnvelope}
+              style={iconStyles}
+              aria-hidden="true"
+            />
+            <span>Notificaciones</span>
+          </button>
+        </li>
+
+        {/* --- ACTIVE PROJECTS --- */}
+        <li>
+          <button
+            className={`navbar-element ${
+              currentView === "Mis Proyectos" ? "navbar-selected" : ""
+            }`}
+            onClick={() => changeView("Mis Proyectos")}
+            aria-haspopup="true"
+            aria-expanded={showActiveProjects}
+            role="menuitem"
+          >
+            <FontAwesomeIcon
+              icon={faFile}
+              style={iconStyles}
+              aria-hidden="true"
+            />
+            <span>Mis Proyectos</span>
+            <FontAwesomeIcon
+              icon={faChevronUp}
+              className={`arrow-icon ${showActiveProjects ? "open" : ""}`}
+              aria-hidden="true"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowActiveProjects(!showActiveProjects);
+                setShowFinishedProjects(false);
+              }}
+            />
+          </button>
+
+          {showActiveProjects && (
+            <ul className="dropdown" role="menu">
+              {misProyectos.length > 0 ? (
+                misProyectos.map((proj) => (
+                  <li key={proj.idProyecto}>
+                    <button
+                      className={`dropdown-item ${
+                        currentView === "Mis Proyectos / Proyecto" &&
+                        selectedProject === proj.idProyecto
+                          ? "selected-project"
+                          : ""
+                      }`}
+                      onClick={() => {
+                        changeView("Mis Proyectos / Proyecto");
+                        setSelectedProject(proj.idProyecto);
+                      }}
+                      role="menuitem"
+                    >
+                      {proj.nombre}
+                    </button>
+                  </li>
+                ))
+              ) : (
+                <li className="dropdown-item empty">
+                  No hay proyectos activos
+                </li>
+              )}
+            </ul>
+          )}
+        </li>
+
+        {/* --- FINISHED PROJECTS --- */}
+        <li>
+          <button
+            className={`navbar-element ${
+              currentView === "Proyectos Anteriores" ? "navbar-selected" : ""
+            }`}
+            onClick={() => changeView("Proyectos Anteriores")}
+            aria-haspopup="true"
+            aria-expanded={showFinishedProjects}
+            role="menuitem"
+          >
+            <FontAwesomeIcon
+              icon={faClockRotateLeft}
+              style={iconStyles}
+              aria-hidden="true"
+            />
+            <span>Proyectos Anteriores</span>
+            <FontAwesomeIcon
+              icon={faChevronUp}
+              className={`arrow-icon ${showFinishedProjects ? "open" : ""}`}
+              aria-hidden="true"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowFinishedProjects(!showFinishedProjects);
+                setShowActiveProjects(false);
+              }}
+            />
+          </button>
+
+          {showFinishedProjects && (
+            <ul className="dropdown" role="menu">
+              {proyectosAnteriores.length > 0 ? (
+                proyectosAnteriores.map((proj) => (
+                  <li key={proj.idProyecto}>
+                    <button
+                      className={`dropdown-item ${
+                        currentView === "Proyectos Anteriores / Proyecto" &&
+                        selectedProject === proj.idProyecto
+                          ? "selected-project"
+                          : ""
+                      }`}
+                      onClick={() => {
+                        changeView("Proyectos Anteriores / Proyecto");
+                        setSelectedProject(proj.idProyecto);
+                      }}
+                      role="menuitem"
+                    >
+                      {proj.nombre}
+                    </button>
+                  </li>
+                ))
+              ) : (
+                <li className="dropdown-item empty">
+                  No hay proyectos anteriores
+                </li>
+              )}
+            </ul>
+          )}
+        </li>
+      </ul>
+    </nav>
   );
 };

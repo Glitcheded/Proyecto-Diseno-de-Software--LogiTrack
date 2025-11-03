@@ -1,4 +1,5 @@
 import * as taskModel from '../models/taskModel.js';
+import { supabase } from "../supabaseClient.js";
 
 //Obtiene las tareas del usuario logueado GET /api/tasks/mis-tareas
 export const getMisTareas = async (req, res) => {
@@ -128,4 +129,86 @@ export const removerMiembroTarea = async (req, res) => {
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
+};
+
+// controllers/projects.js
+export const getTasksByProject = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) return res.status(400).json({ error: "Project ID is required" });
+
+    const { data, error } = await supabase
+      .from("Tarea")
+      .select(`
+        idTarea,
+        nombre,
+        fechaEntrega,
+        idEstadoTarea,
+        EstadoTarea ( nombre ),
+        idPrioridad,
+
+        idTareaMadre,
+        activado
+      `)
+      .eq("idProyecto", id)
+      .eq("activado", true)
+      .order("fechaEntrega", { ascending: true });
+
+    if (error) throw error;
+
+    // Map fields if needed for frontend
+    const tasks = data.map((task) => ({
+      id: task.idTarea,
+      nombre: task.nombre,
+      fechaEntrega: task.fechaEntrega,
+      estado: task.EstadoTarea.nombre,
+      idEstadoTarea: task.idEstadoTarea,
+      prioridad: task.Prioridad.nombre,
+      idPrioridad: task.idPrioridad,
+      idTareaMadre: task.idTareaMadre,
+      activado: task.activado,
+    }));
+
+    res.status(200).json(tasks);
+  } catch (error) {
+    console.error("[getTasksByProject] Error:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+
+// controllers/tasks.js
+export const getCommentsByTask = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) return res.status(400).json({ error: "Task ID is required" });
+
+    const { data, error } = await supabase
+      .from("Comentario")
+      .select(`
+        idComentario,
+        comentario,
+        idUsuario,
+        Usuario ( nombre, apellido, email )
+      `)
+      .eq("idTarea", id)
+      .order("idComentario", { ascending: true });
+
+    if (error) throw error;
+
+    const comments = data.map((c) => ({
+      id: c.idComentario,
+      comentario: c.comentario,
+      idUsuario: c.idUsuario,
+      nombreUsuario: `${c.Usuario.nombre} ${c.Usuario.apellido}`,
+      emailUsuario: c.Usuario.email,
+    }));
+
+    res.status(200).json(comments);
+  } catch (error) {
+    console.error("[getCommentsByTask] Error:", error);
+    res.status(500).json({ error: error.message });
+  }
 };
