@@ -1,14 +1,19 @@
 import React, { useState } from "react";
 import "./VistaProyectos.css";
+import { useUser } from "../../../context/UserContext";
+import { supabase } from "../../../../supabaseClient";
+
+const baseURL = "http://localhost:3001/api/projects"; // ensure correct endpoint
 
 export const VistaProyectos = ({ ViewMode, dataList, setDataList }) => {
+  const { userName, userEmail, userLastName, userId } = useUser();
+
   const [selectedDescription, setSelectedDescription] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editedProject, setEditedProject] = useState(null);
   const [newMemberEmail, setNewMemberEmail] = useState("");
   const [newMemberRole, setNewMemberRole] = useState("Colaborador");
-
   const [showCloseOptions, setShowCloseOptions] = useState(false);
 
   const isPrevious = ViewMode === "Proyectos Anteriores";
@@ -66,13 +71,7 @@ export const VistaProyectos = ({ ViewMode, dataList, setDataList }) => {
   const handleConfirm = () => {
     setDataList((prev) =>
       prev.map((proj) =>
-        proj.id === editedProject.id
-          ? {
-              ...editedProject,
-              members:
-                editedProject.memberList?.length || editedProject.members,
-            }
-          : proj
+        proj.idProyecto === editedProject.idProyecto ? editedProject : proj
       )
     );
     closeEditor();
@@ -81,36 +80,71 @@ export const VistaProyectos = ({ ViewMode, dataList, setDataList }) => {
   const handleDelete = () => {
     if (!confirm("¿Eliminar proyecto? Esta acción no se puede deshacer."))
       return;
-    setDataList((prev) => prev.filter((proj) => proj.id !== editedProject.id));
+    setDataList((prev) =>
+      prev.filter((proj) => proj.idProyecto !== editedProject.idProyecto)
+    );
     closeEditor();
   };
 
-  const handleAddProject = () => {
-    const newProject = {
-      id: Date.now(),
-      name: "Nuevo proyecto sin título",
-      description: "Descripción pendiente...",
-      lastModification: new Date().toISOString().split("T")[0],
-      nextDeliveryDate: "-",
-      state: "En proceso",
-      memberList: [
-        {
-          id: 1,
-          name: "Giovanni",
-          email: "giovanni@soltura.com",
-          role: "Administrador",
-        },
-      ],
-    };
+  const handleAddProject = async () => {
+    try {
+      // Get token directly from localStorage
+      const accessToken = localStorage.getItem("supabaseToken");
+      if (!accessToken) {
+        console.error("No token found, please log in again");
+        return;
+      }
 
-    setDataList((prev) => [...prev, newProject]);
+      const newProjectPayload = {
+        nombre: "Nuevo proyecto sin título",
+        descripcion: "",
+        ultimaModificacion: new Date().toISOString(),
+        fechaFinalizacion: null,
+        idEstadoProyecto: 1, // "En proceso"
+        activado: true,
+      };
+
+      const res = await fetch(`${baseURL}/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify(newProjectPayload),
+      });
+
+      if (!res.ok) throw new Error("Failed to create project");
+      const createdProject = await res.json();
+
+      const projectForTable = {
+        idProyecto: createdProject.idProyecto,
+        nombre: createdProject.nombre,
+        descripcion: createdProject.descripcion,
+        ultimaModificacion: createdProject.ultimaModificacion,
+        fechaFinalizacion: createdProject.fechaFinalizacion,
+        estado: "En proceso",
+        memberList: [
+          {
+            id: userId,
+            name: `${userName} ${userLastName}`,
+            email: userEmail,
+            role: "Administrador",
+          },
+        ],
+      };
+
+      setDataList((prev) => [...prev, projectForTable]);
+      console.log("Proyecto creado:", projectForTable);
+    } catch (err) {
+      console.error("Error creating project:", err);
+    }
   };
 
   const filteredProjects = Array.isArray(dataList)
     ? dataList.filter((project) =>
         isPrevious
-          ? project.state !== "En proceso"
-          : project.state === "En proceso"
+          ? project.estado !== "En proceso"
+          : project.estado === "En proceso"
       )
     : [];
 
@@ -124,16 +158,16 @@ export const VistaProyectos = ({ ViewMode, dataList, setDataList }) => {
             <th>Última modificación</th>
             <th>{isPrevious ? "Fecha de finalización" : "Próxima entrega"}</th>
             <th># de miembros</th>
-            {isPrevious && <th>Estado</th>} {/* New column */}
+            {isPrevious ? <th>Estado</th> : null}
           </tr>
         </thead>
 
         <tbody>
           {filteredProjects.length > 0 ? (
             filteredProjects.map((project) => (
-              <tr key={project.id} className="proyecto-row">
+              <tr key={project.idProyecto} className="proyecto-row">
                 <td className="proyecto-name-cell">
-                  {project.name}
+                  {project.nombre}
                   <button
                     className="proyecto-edit-btn"
                     onClick={() => openEditor(project)}
@@ -145,20 +179,20 @@ export const VistaProyectos = ({ ViewMode, dataList, setDataList }) => {
                 <td>
                   <button
                     className="proyecto-desc-btn"
-                    onClick={() => openDescription(project.description)}
+                    onClick={() => openDescription(project.descripcion)}
                     title="Ver descripción completa"
                   >
                     Ver descripción
                   </button>
                 </td>
-                <td>{project.lastModification}</td>
+                <td>{project.ultimaModificacion}</td>
                 <td>
                   {isPrevious
-                    ? project.finishDate || "-"
-                    : project.nextDeliveryDate || "-"}
+                    ? project.fechaFinalizacion || "-"
+                    : project.fechaEntregaProxima || "-"}
                 </td>
-                <td>{project.memberList?.length || project.members || 0}</td>
-                {isPrevious && <td>{project.state}</td>} {/* New cell */}
+                <td>{project.memberList?.length || 0}</td>
+                {isPrevious ? <td>{project.estado}</td> : null}
               </tr>
             ))
           ) : (
@@ -204,8 +238,8 @@ export const VistaProyectos = ({ ViewMode, dataList, setDataList }) => {
               Nombre del proyecto
               <input
                 type="text"
-                value={editedProject.name}
-                onChange={(e) => handleFieldChange("name", e.target.value)}
+                value={editedProject.nombre}
+                onChange={(e) => handleFieldChange("nombre", e.target.value)}
               />
             </label>
 
@@ -213,9 +247,9 @@ export const VistaProyectos = ({ ViewMode, dataList, setDataList }) => {
               Descripción
               <input
                 type="text"
-                value={editedProject.description}
+                value={editedProject.descripcion}
                 onChange={(e) =>
-                  handleFieldChange("description", e.target.value)
+                  handleFieldChange("descripcion", e.target.value)
                 }
               />
             </label>
@@ -282,80 +316,6 @@ export const VistaProyectos = ({ ViewMode, dataList, setDataList }) => {
               <button className="danger" onClick={handleDelete}>
                 Eliminar proyecto
               </button>
-
-              {ViewMode === "Mis Proyectos" && (
-                <>
-                  <button
-                    className="secondary"
-                    onClick={() => {
-                      if (
-                        confirm(
-                          "¿Estás seguro de que quieres cancelar este proyecto? Esta acción no se puede deshacer."
-                        )
-                      ) {
-                        const today = new Date().toISOString().split("T")[0];
-                        setDataList((prev) =>
-                          prev.map((p) =>
-                            p.id === editedProject.id
-                              ? { ...p, state: "Cancelado", finishDate: today }
-                              : p
-                          )
-                        );
-                        closeEditor();
-                      }
-                    }}
-                  >
-                    Cancelar proyecto
-                  </button>
-
-                  <button
-                    className="secondary"
-                    onClick={() => {
-                      if (
-                        confirm(
-                          "¿Estás seguro de que quieres finalizar este proyecto? Esta acción no se puede deshacer."
-                        )
-                      ) {
-                        const today = new Date().toISOString().split("T")[0];
-                        setDataList((prev) =>
-                          prev.map((p) =>
-                            p.id === editedProject.id
-                              ? { ...p, state: "Finalizado", finishDate: today }
-                              : p
-                          )
-                        );
-                        closeEditor();
-                      }
-                    }}
-                  >
-                    Finalizar proyecto
-                  </button>
-                </>
-              )}
-
-              {ViewMode === "Proyectos Anteriores" && (
-                <button
-                  className="secondary"
-                  onClick={() => {
-                    if (
-                      confirm(
-                        "¿Restaurar este proyecto y volverlo a marcar como 'En proceso'?"
-                      )
-                    ) {
-                      setDataList((prev) =>
-                        prev.map((p) =>
-                          p.id === editedProject.id
-                            ? { ...p, state: "En proceso" }
-                            : p
-                        )
-                      );
-                      closeEditor();
-                    }
-                  }}
-                >
-                  Restaurar proyecto
-                </button>
-              )}
             </div>
           </div>
         </div>

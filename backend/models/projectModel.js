@@ -44,9 +44,9 @@ export const getTareasPorProyectoIDs = async (idProyectos, taskState) => {
 
     // Aplicamos el filtro de estado
     if (taskState === 'Activas') {
-        query = query.neq('EstadoTarea.nombre', 'Terminado');
+        query = query.neq('idEstadoTarea', 3);
     } else if (taskState === 'Terminadas') {
-        query = query.eq('EstadoTarea.nombre', 'Terminado');
+        query = query.eq('idEstadoTarea', 3);
     }
 
     const { data, error } = await query;

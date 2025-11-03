@@ -16,7 +16,7 @@ export const getProjectTasks = async (req, res, taskState) => {
 
         // Obtiene las tareas de los proyectos
         const tareas = await projectModel.getTareasPorProyectoIDs(idProyectos, taskState);
-        
+
         // Formatea y envia
         res.status(200).json(tareas);
 
@@ -49,6 +49,7 @@ export const crearProyecto = async (req, res) => {
         
         res.status(201).json(nuevoProyecto);
     } catch (error) {
+        console.error(error);
         res.status(500).json({ error: error.message });
     }
 };

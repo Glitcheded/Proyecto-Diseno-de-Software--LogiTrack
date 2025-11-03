@@ -13,14 +13,14 @@ import { useNavigate } from "react-router-dom"; // for navigation (React Router)
 
 //********************************************************************* */
 // Ejemplo de cómo leer el ID en cualquier componente:
-const usuarioGuardado = JSON.parse(localStorage.getItem('usuario'));
+const usuarioGuardado = JSON.parse(localStorage.getItem("usuario"));
 
 if (usuarioGuardado) {
   const idUsuario = usuarioGuardado.idUsuario;
   const nombreUsuario = usuarioGuardado.nombre;
-  
-  console.log('ID:', idUsuario);
-  console.log('Nombre:', nombreUsuario);
+
+  console.log("ID:", idUsuario);
+  console.log("Nombre:", nombreUsuario);
 }
 //********************************************************************** */
 export const LoginSignup = () => {
@@ -56,12 +56,11 @@ export const LoginSignup = () => {
 
       if (response.ok) {
         if (action === "Inciar Sesión") {
-          
           // Guarda el token
           if (data.session.access_token) {
-            localStorage.setItem('supabaseToken', data.session.access_token);
+            localStorage.setItem("supabaseToken", data.session.access_token);
             // Guarda la info del usuario
-            localStorage.setItem('usuario', JSON.stringify(data.usuario));
+            localStorage.setItem("usuario", JSON.stringify(data.usuario));
           }
         }
 

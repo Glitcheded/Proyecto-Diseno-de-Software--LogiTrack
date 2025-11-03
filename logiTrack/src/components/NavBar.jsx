@@ -2,8 +2,6 @@ import React, { useState, useEffect } from "react";
 import "./NavBar.css";
 import { useNavigate } from "react-router-dom";
 
-const baseURL = "http://localhost:3001/api";
-
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faUser,
@@ -42,7 +40,8 @@ const arrowIco = <FontAwesomeIcon icon={faChevronUp} size="sm" />;
 export const NavBar = ({
   currentView,
   changeView,
-  projectList,
+  misProyectos,
+  proyectosAnteriores,
   selectedProject,
   setSelectedProject,
   userName,
@@ -52,11 +51,6 @@ export const NavBar = ({
 
   const [showActiveProjects, setShowActiveProjects] = useState(false);
   const [showFinishedProjects, setShowFinishedProjects] = useState(false);
-
-  const activeProjects = projectList.filter((p) => p.state === "En proceso");
-  const finishedProjects = projectList.filter(
-    (p) => p.state === "Finalizado" || p.state === "Cancelado"
-  );
 
   const handleLogout = async (navigate, setShowUserDropdown) => {
     try {
@@ -204,22 +198,22 @@ export const NavBar = ({
 
         {showActiveProjects && (
           <div className="dropdown">
-            {activeProjects.length > 0 ? (
-              activeProjects.map((proj) => (
+            {misProyectos.length > 0 ? (
+              misProyectos.map((proj) => (
                 <div
                   key={proj.id}
                   className={`dropdown-item ${
                     currentView === "Mis Proyectos / Proyecto" &&
-                    selectedProject === proj.name
+                    selectedProject === proj.nombre
                       ? "selected-project"
                       : ""
                   }`}
                   onClick={() => {
                     changeView("Mis Proyectos / Proyecto");
-                    setSelectedProject(proj.name);
+                    setSelectedProject(proj.nombre);
                   }}
                 >
-                  {proj.name}
+                  {proj.nombre}
                 </div>
               ))
             ) : (
@@ -254,22 +248,22 @@ export const NavBar = ({
 
         {showFinishedProjects && (
           <div className="dropdown">
-            {finishedProjects.length > 0 ? (
-              finishedProjects.map((proj) => (
+            {proyectosAnteriores.length > 0 ? (
+              proyectosAnteriores.map((proj) => (
                 <div
                   key={proj.id}
                   className={`dropdown-item ${
                     currentView === "Proyectos Anteriores / Proyecto" &&
-                    selectedProject === proj.name
+                    selectedProject === proj.nombre
                       ? "selected-project"
                       : ""
                   }`}
                   onClick={() => {
                     changeView("Proyectos Anteriores / Proyecto");
-                    setSelectedProject(proj.name);
+                    setSelectedProject(proj.nombre);
                   }}
                 >
-                  {proj.name}
+                  {proj.nombre}
                 </div>
               ))
             ) : (
