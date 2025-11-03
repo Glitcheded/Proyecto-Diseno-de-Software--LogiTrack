@@ -14,10 +14,13 @@ import { Opciones } from "./vistas/Opciones";
 import { MisProyectosSub } from "./vistas/MisProyectosSub";
 import { ProyectosAnterioresSub } from "./vistas/ProyectosAnterioresSub";
 
+const baseURL = "http://localhost:3001/api";
+
 export const Home = () => {
   const location = useLocation();
   const initialView = location.state?.view || "Mis Tareas";
   const navigate = useNavigate();
+  const [userName, setUserName] = useState("");
 
   const [selectedView, setSelectedView] = useState(initialView);
   const [selectedProject, setSelectedProject] = useState(null);
@@ -255,6 +258,57 @@ export const Home = () => {
     }
   }, [location.state?.view]);
 
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const token = localStorage.getItem("supabaseToken");
+
+        if (!token) {
+          console.warn("No token found in localStorage");
+          return;
+        }
+
+        const userData = await fetch(`${baseURL}/auth/me`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!userData.ok) {
+          console.error("Error fetching user:", userData.statusText);
+          return;
+        }
+
+        if (userData.status === 401) {
+          console.warn("Token expired, refreshing...");
+          const { data, error } = await supabase.auth.refreshSession();
+
+          if (!error && data?.session?.access_token) {
+            localStorage.setItem("supabaseToken", data.session.access_token);
+            return fetchUser();
+          } else {
+            console.error("Session refresh failed, logging out...");
+            await supabase.auth.signOut();
+            return;
+          }
+        }
+
+        const data = await userData.json();
+        console.log("User data:", data);
+
+        if (data?.nombre) {
+          setUserName(data.nombre);
+        }
+      } catch (error) {
+        console.error("Fetch user failed:", error);
+      }
+    };
+
+    fetchUser();
+  }, []);
+
   const renderView = () => {
     switch (selectedView) {
       case "Mis Tareas":
@@ -296,6 +350,7 @@ export const Home = () => {
         projectList={projectList}
         selectedProject={selectedProject}
         setSelectedProject={setSelectedProject}
+        userName={userName}
       />
 
       <div className="right-container">
@@ -306,5 +361,4 @@ export const Home = () => {
       </div>
     </div>
   );
-
 };

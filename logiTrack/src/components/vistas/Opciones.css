@@ -1,13 +1,20 @@
+.emptySpace{
+  height: 20px;
+}
+
 .opciones-wrapper {
   width: 80%;
   max-width: 800px;
-  margin: 1rem auto;
+  max-height: 85%;
+  overflow-y: scroll;
+  margin: auto;
   padding: 1rem;
-  background-color: #4b0082; /* dark purple, matches your NavBar */
+  background-color: #4b0082;
   color: white;
   font-family: Arial, sans-serif;
   border-radius: 0.5rem;
 }
+
 
 .user-info {
   display: flex;

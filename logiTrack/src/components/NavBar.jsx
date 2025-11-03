@@ -45,10 +45,10 @@ export const NavBar = ({
   projectList,
   selectedProject,
   setSelectedProject,
+  userName,
 }) => {
   const navigate = useNavigate();
   const [showUserDropdown, setShowUserDropdown] = useState(false);
-  const [userName, setUserName] = useState("Usuario");
 
   const [showActiveProjects, setShowActiveProjects] = useState(false);
   const [showFinishedProjects, setShowFinishedProjects] = useState(false);
@@ -57,58 +57,6 @@ export const NavBar = ({
   const finishedProjects = projectList.filter(
     (p) => p.state === "Finalizado" || p.state === "Cancelado"
   );
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const token = localStorage.getItem("supabaseToken");
-
-        if (!token) {
-          console.warn("No token found in localStorage");
-          return;
-        }
-
-        const res = await fetch(`${baseURL}/auth/me`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (!res.ok) {
-          console.error("Error fetching user:", res.statusText);
-          return;
-        }
-
-        if (res.status === 401) {
-          console.warn("Token expired, refreshing...");
-          const { data, error } = await supabase.auth.refreshSession();
-
-          if (!error && data?.session?.access_token) {
-            localStorage.setItem("supabaseToken", data.session.access_token);
-            // Retry the request
-            return fetchUser();
-          } else {
-            console.error("Session refresh failed, logging out...");
-            await supabase.auth.signOut();
-            return;
-          }
-        }
-
-        const data = await res.json();
-        console.log("User data:", data);
-
-        if (data?.nombre) {
-          setUserName(data.nombre);
-        }
-      } catch (error) {
-        console.error("Fetch user failed:", error);
-      }
-    };
-
-    fetchUser();
-  }, []);
 
   const handleLogout = async (navigate, setShowUserDropdown) => {
     try {
@@ -132,7 +80,6 @@ export const NavBar = ({
 
       console.log("Logout successful:", data.message);
 
-      // Clear token and UI state
       localStorage.removeItem("supabaseToken");
       localStorage.removeItem("usuario");
       setShowUserDropdown(false);
