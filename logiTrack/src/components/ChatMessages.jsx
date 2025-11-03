@@ -8,7 +8,7 @@ export const ChatMessages = ({ mensajes, currentUser }) => {
     <div className="chat-messages-container">
     <div className="chat-messages-content">
       {mensajes.map((msg, index) => {
-        const isCurrentUser = msg.Usuario?.nombre === currentUser.name;
+        const isCurrentUser = msg.Usuario?.nombre === currentUser.nombre;
 
         return (
           <div
