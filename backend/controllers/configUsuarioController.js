@@ -1,6 +1,8 @@
 import { obtenerConfiguracionPorUsuario, actualizarConfiguracionUsuario,
     actualizarUsuario } from '../models/configUsuarioModel.js'
 
+import { supabase } from "../supabaseClient.js";
+
 // Controlador para obtener las configuraciones actuales del usuario (los toggles)
 export async function obtenerConfiguracionUsuarioHandler(req, res) {
   try {
@@ -89,3 +91,39 @@ export async function actualizarUsuarioHandler(req, res) {
     res.status(500).json({ error: error.message });
   }
 }
+
+export const getUserByEmail = async (req, res) => {
+  try {
+    const { email } = req.params;
+    console.log("📩 [getUserByEmail] Request received with email:", email);
+
+    if (!email) {
+      console.warn("⚠️ No email parameter provided");
+      return res.status(400).json({ error: "Se requiere un email" });
+    }
+
+    console.log("🔍 Querying Supabase for user...");
+    const { data, error } = await supabase
+      .from("Usuario")
+      .select("idUsuario, nombre, apellido, email")
+      .eq("email", email)
+      .single();
+
+    if (error) {
+      console.error("❌ Supabase error while fetching user:", error.message);
+      return res.status(500).json({ error: error.message });
+    }
+
+    if (!data) {
+      console.warn("⚠️ No user found for email:", email);
+      return res.status(404).json({ error: "Usuario no encontrado" });
+    }
+
+    console.log("✅ User found:", data);
+    res.status(200).json(data);
+
+  } catch (err) {
+    console.error("🔥 [getUserByEmail] Unexpected error:", err.message);
+    res.status(500).json({ error: err.message });
+  }
+};

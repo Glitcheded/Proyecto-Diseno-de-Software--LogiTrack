@@ -164,7 +164,7 @@ export const eliminarProyecto = async (idProyecto) => {
 //Llama a una función RPC de Supabase.
 export const getProyectosPorUsuario = async (idUsuario) => {
     const { data, error } = await supabase.rpc(
-        'get_proyectos_con_fecha_proxima', 
+        'get_proyectos_completos_con_fecha_proxima', // updated function name
         { p_id_usuario: idUsuario }
     );
 

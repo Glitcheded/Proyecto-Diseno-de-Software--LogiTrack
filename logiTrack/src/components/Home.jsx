@@ -79,35 +79,38 @@ const HomeContent = () => {
 
     const fetchProjects = async () => {
       try {
-        const [misRes, anterioresRes] = await Promise.all([
-          fetch(`${baseURL}/projects/mis-proyectos`, {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-          fetch(`${baseURL}/projects/anteriores`, {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-        ]);
-
-        if (misRes.ok) {
-          const misData = await misRes.json();
-          console.log("Mis proyectos data:", misData);
-          setMisProyectos(misData);
-        } else {
-          const misError = await misRes.text();
-          console.warn("Failed to fetch mis-proyectos:", misError);
+        const token = localStorage.getItem("supabaseToken");
+        if (!token) {
+          console.warn("No token found in localStorage");
+          return;
         }
 
-        if (anterioresRes.ok) {
-          const anterioresData = await anterioresRes.json();
-          console.log("Proyectos anteriores data:", anterioresData);
-          setProyectosAnteriores(anterioresData);
-        } else {
-          const anterioresError = await anterioresRes.text();
-          console.warn(
-            "Failed to fetch proyectos anteriores:",
-            anterioresError
-          );
+        const res = await fetch(`${baseURL}/projects/datos-proyectos`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (!res.ok) {
+          const errorText = await res.text();
+          console.warn("Failed to fetch datos-proyectos:", errorText);
+          return;
         }
+
+        const proyectos = await res.json();
+        console.log("All proyectos data:", proyectos);
+
+        // Split into active (idEstadoProyecto === 1) and others
+        const misProyectosList = proyectos.filter(
+          (p) => p.idEstadoProyecto === 1
+        );
+        const proyectosAnterioresList = proyectos.filter(
+          (p) => p.idEstadoProyecto !== 1
+        );
+
+        console.log("Mis proyectos:", misProyectosList);
+        console.log("Proyectos anteriores:", proyectosAnterioresList);
+
+        setMisProyectos(misProyectosList);
+        setProyectosAnteriores(proyectosAnterioresList);
       } catch (err) {
         console.error("Failed to fetch projects:", err);
       }

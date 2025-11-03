@@ -15,6 +15,9 @@ router.use(checkAuth);
 
 // Rutas de proyectos
 
+// GET /api/projects/datos-proyectos 
+router.get('/datos-proyectos', getMisProyectosDatos);
+
 // GET /api/projects/mis-proyectos
 router.get('/mis-proyectos', getMisProyectos);
 
@@ -38,9 +41,6 @@ router.delete('/:id', eliminarProyecto);
 
 // POST /api/projects/:id/assign
 router.post('/:id/assign', asignarUsuarioAProyecto);
-
-// GET /api/projects/datos-proyectos 
-router.get('/datos-proyectos', getMisProyectosDatos);
 
 // GET /api/projects/:id/members
 router.get('/:id/members', getMiembrosProyecto);

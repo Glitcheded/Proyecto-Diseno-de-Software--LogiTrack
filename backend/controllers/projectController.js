@@ -108,21 +108,47 @@ export const eliminarProyecto = async (req, res) => {
 
 //Asignar un usuario a un proyecto POST /api/projects/:id/assign
 export const asignarUsuarioAProyecto = async (req, res) => {
-    try {
-        const { id } = req.params; // id del proyecto
-        const { idUsuario, idRol } = req.body; // id del usuario y rol
+  try {
+    console.log("📩 [asignarUsuarioAProyecto] Request received");
 
-        if (!idUsuario || !idRol) {
-            return res.status(400).json({ error: 'Se requiere idUsuario y idRol' });
-        }
+    const { id } = req.params; // id del proyecto
+    const { idUsuario, idRol } = req.body; // puede venir como número o nombre
+    console.log("➡️ Proyecto ID:", id);
+    console.log("👤 idUsuario:", idUsuario);
+    console.log("🎭 idRol recibido:", idRol);
 
-        await projectModel.asignarProyecto(idUsuario, id, idRol);
-        res.status(201).json({ message: 'Usuario asignado al proyecto' });
+    // 🔹 Mapeo de roles por nombre → ID numérico
+    const roleMap = {
+      "Administrador": 1,
+      "Gestor de Proyectos": 2,
+      "Colaborador": 3,
+      "Observador": 4,
+    };
 
-    } catch (error) {
-        res.status(500).json({ error: error.message });
+    // Si el idRol es string, conviértelo usando el mapa
+    const numericRol = isNaN(idRol) ? roleMap[idRol] : Number(idRol);
+
+    if (!numericRol) {
+      console.error("❌ Rol inválido:", idRol);
+      return res.status(400).json({ error: `Rol inválido: ${idRol}` });
     }
+
+    console.log("✅ Rol numérico final:", numericRol);
+    console.log("🧠 Llamando projectModel.asignarProyecto...");
+
+    // Ejecuta la asignación
+    await projectModel.asignarProyecto(idUsuario, id, numericRol);
+
+    console.log("✅ Usuario asignado correctamente al proyecto");
+    res.status(201).json({ message: "Usuario asignado al proyecto" });
+
+  } catch (error) {
+    console.error("🔥 Error en asignarUsuarioAProyecto:", error.message);
+    res.status(500).json({ error: error.message });
+  }
 };
+
+
 
 //Obtiene los datos de los proyectos del usuario GET /api/projects/datos-proyectos
 export const getMisProyectosDatos = async (req, res) => {

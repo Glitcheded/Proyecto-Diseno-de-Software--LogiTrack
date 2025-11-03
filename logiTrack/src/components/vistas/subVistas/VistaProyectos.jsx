@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./VistaProyectos.css";
 import { useUser } from "../../../context/UserContext";
 import { supabase } from "../../../../supabaseClient";
@@ -14,9 +14,65 @@ export const VistaProyectos = ({ ViewMode, dataList, setDataList }) => {
   const [editedProject, setEditedProject] = useState(null);
   const [newMemberEmail, setNewMemberEmail] = useState("");
   const [newMemberRole, setNewMemberRole] = useState("Colaborador");
-  const [showCloseOptions, setShowCloseOptions] = useState(false);
+
+  const [addMemberError, setAddMemberError] = useState("");
+
+  // Map to hold project members: { [idProyecto]: [members...] }
+  const [projectMembers, setProjectMembers] = useState({});
 
   const isPrevious = ViewMode === "Proyectos Anteriores";
+
+  const formatDate = (dateString) => {
+    if (!dateString) return "-";
+    return dateString.split("T")[0];
+  };
+
+  const mapEstado = (idEstado) => {
+    switch (idEstado) {
+      case 1:
+        return "En proceso";
+      case 2:
+        return "Cancelado";
+      case 3:
+        return "Finalizado";
+      default:
+        return "Desconocido";
+    }
+  };
+
+  // Fetch members for a project
+  const fetchMembers = async (idProyecto) => {
+    try {
+      const { data, error } = await supabase
+        .from("UsuarioPorProyecto")
+        .select(
+          `
+          Rol ( nombre ),
+          Usuario ( idUsuario, nombre, apellido, email )
+        `
+        )
+        .eq("idProyecto", idProyecto);
+
+      if (error) throw error;
+
+      const members = data.map((item) => ({
+        id: item.Usuario.idUsuario,
+        name: `${item.Usuario.nombre} ${item.Usuario.apellido}`,
+        email: item.Usuario.email,
+        role: item.Rol.nombre,
+      }));
+
+      setProjectMembers((prev) => ({ ...prev, [idProyecto]: members }));
+    } catch (err) {
+      console.error(`Error fetching members for project ${idProyecto}:`, err);
+      setProjectMembers((prev) => ({ ...prev, [idProyecto]: [] }));
+    }
+  };
+
+  // Fetch members for all projects on mount
+  useEffect(() => {
+    dataList.forEach((project) => fetchMembers(project.idProyecto));
+  }, [dataList]);
 
   const openDescription = (description) => {
     setSelectedDescription(description);
@@ -29,10 +85,8 @@ export const VistaProyectos = ({ ViewMode, dataList, setDataList }) => {
   };
 
   const openEditor = (project) => {
-    setEditedProject({
-      ...project,
-      memberList: project.memberList ? [...project.memberList] : [],
-    });
+    const members = projectMembers[project.idProyecto] || [];
+    setEditedProject({ ...project, memberList: [...members] });
     setEditModalOpen(true);
   };
 
@@ -53,42 +107,182 @@ export const VistaProyectos = ({ ViewMode, dataList, setDataList }) => {
     });
   };
 
-  const handleAddMember = () => {
-    if (!newMemberEmail.trim()) return;
-    const newMember = {
-      id: Date.now(),
-      name: "Usuario Placeholder",
-      email: newMemberEmail,
-      role: newMemberRole,
-    };
-    setEditedProject({
-      ...editedProject,
-      memberList: [...editedProject.memberList, newMember],
-    });
-    setNewMemberEmail("");
+  const handleAddMember = async () => {
+    const email = newMemberEmail.trim();
+    if (!email) return;
+
+    try {
+      // Call your new API route to get user info by email
+      const res = await fetch(
+        `http://localhost:3001/api/config/email/${email}`
+      );
+      if (!res.ok) {
+        if (res.status === 404) {
+          setAddMemberError("Usuario no encontrado con ese correo");
+          return;
+        } else {
+          throw new Error("Error al buscar usuario");
+        }
+      }
+
+      const user = await res.json();
+
+      if (editedProject.memberList.some((m) => m.id === user.idUsuario)) {
+        setAddMemberError("Usuario ya está en el proyecto");
+        return;
+      }
+
+      const newMember = {
+        id: user.idUsuario,
+        name: `${user.nombre} ${user.apellido}`,
+        email: user.email,
+        role: newMemberRole,
+      };
+
+      setEditedProject({
+        ...editedProject,
+        memberList: [...editedProject.memberList, newMember],
+      });
+
+      setNewMemberEmail("");
+      setAddMemberError(""); // clear error if successful
+    } catch (err) {
+      console.error("Error al agregar miembro:", err);
+      setAddMemberError("Error al agregar miembro");
+    }
   };
 
-  const handleConfirm = () => {
-    setDataList((prev) =>
-      prev.map((proj) =>
-        proj.idProyecto === editedProject.idProyecto ? editedProject : proj
-      )
-    );
-    closeEditor();
+  const handleConfirm = async () => {
+    try {
+      const accessToken = localStorage.getItem("supabaseToken");
+      if (!accessToken) {
+        console.error("No token found, please log in again");
+        return;
+      }
+
+      const projectId = editedProject.idProyecto;
+
+      // 1️⃣ Update project info (name & description)
+      await fetch(`${baseURL}/${projectId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+          nombre: editedProject.nombre,
+          descripcion: editedProject.descripcion,
+        }),
+      });
+
+      // 2️⃣ Handle member removals
+      const originalMembers = projectMembers[projectId] || [];
+      const removedMembers = originalMembers.filter(
+        (m) => !editedProject.memberList.some((em) => em.id === m.id)
+      );
+
+      for (const member of removedMembers) {
+        await fetch(`${baseURL}/${projectId}/members/${member.id}`, {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
+      }
+
+      // 3️⃣ Handle newly added members
+      const addedMembers = editedProject.memberList.filter(
+        (m) => !originalMembers.some((om) => om.id === m.id)
+      );
+
+      for (const member of addedMembers) {
+        // Here we now send idUsuario + idRol (instead of just email)
+        await fetch(`${baseURL}/${projectId}/assign`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify({
+            idUsuario: member.id,
+            idRol: member.role, // ⚠️ make sure this is the role ID, not the name
+          }),
+        });
+      }
+
+      // 4️⃣ Update local state
+      setDataList((prev) =>
+        prev.map((proj) =>
+          proj.idProyecto === projectId ? editedProject : proj
+        )
+      );
+      setProjectMembers((prev) => ({
+        ...prev,
+        [projectId]: editedProject.memberList,
+      }));
+
+      closeEditor();
+      console.log("Proyecto y miembros actualizados correctamente");
+    } catch (err) {
+      console.error("Error al guardar cambios del proyecto:", err);
+      alert("Ocurrió un error al guardar los cambios. Revisa la consola.");
+    }
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!confirm("¿Eliminar proyecto? Esta acción no se puede deshacer."))
       return;
-    setDataList((prev) =>
-      prev.filter((proj) => proj.idProyecto !== editedProject.idProyecto)
-    );
-    closeEditor();
+
+    try {
+      const accessToken = localStorage.getItem("supabaseToken");
+      if (!accessToken) {
+        console.error("No token found, please log in again");
+        alert("No se encontró token, por favor inicia sesión nuevamente.");
+        return;
+      }
+
+      const projectId = editedProject.idProyecto;
+
+      const res = await fetch(
+        `http://localhost:3001/api/projects/${projectId}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || "Error al eliminar proyecto");
+      }
+
+      console.log(`Proyecto ${projectId} eliminado correctamente`);
+
+      // 🔹 Eliminar localmente del estado para reflejar el cambio en UI
+      setDataList((prev) =>
+        prev.filter((proj) => proj.idProyecto !== projectId)
+      );
+
+      setProjectMembers((prev) => {
+        const updated = { ...prev };
+        delete updated[projectId];
+        return updated;
+      });
+
+      closeEditor();
+      alert("Proyecto eliminado exitosamente.");
+    } catch (err) {
+      console.error("Error al eliminar proyecto:", err);
+      alert("Ocurrió un error al eliminar el proyecto. Revisa la consola.");
+    }
   };
 
   const handleAddProject = async () => {
     try {
-      // Get token directly from localStorage
       const accessToken = localStorage.getItem("supabaseToken");
       if (!accessToken) {
         console.error("No token found, please log in again");
@@ -100,7 +294,7 @@ export const VistaProyectos = ({ ViewMode, dataList, setDataList }) => {
         descripcion: "",
         ultimaModificacion: new Date().toISOString(),
         fechaFinalizacion: null,
-        idEstadoProyecto: 1, // "En proceso"
+        idEstadoProyecto: 1,
         activado: true,
       };
 
@@ -118,12 +312,22 @@ export const VistaProyectos = ({ ViewMode, dataList, setDataList }) => {
 
       const projectForTable = {
         idProyecto: createdProject.idProyecto,
+        idEstadoProyecto: createdProject.idEstadoProyecto,
         nombre: createdProject.nombre,
-        descripcion: createdProject.descripcion,
-        ultimaModificacion: createdProject.ultimaModificacion,
-        fechaFinalizacion: createdProject.fechaFinalizacion,
-        estado: "En proceso",
-        memberList: [
+        descripcion: createdProject.descripcion || "",
+        ultimaModificacion:
+          formatDate(createdProject.ultimaModificacion) ||
+          formatDate(new Date().toISOString()),
+        fechaFinalizacion: formatDate(createdProject.fechaFinalizacion),
+        activado: createdProject.activado ?? true,
+        fechaEntregaProxima: null,
+      };
+
+      setDataList((prev) => [...prev, projectForTable]);
+      // Add the current user as the first member
+      setProjectMembers((prev) => ({
+        ...prev,
+        [createdProject.idProyecto]: [
           {
             id: userId,
             name: `${userName} ${userLastName}`,
@@ -131,22 +335,13 @@ export const VistaProyectos = ({ ViewMode, dataList, setDataList }) => {
             role: "Administrador",
           },
         ],
-      };
+      }));
 
-      setDataList((prev) => [...prev, projectForTable]);
       console.log("Proyecto creado:", projectForTable);
     } catch (err) {
       console.error("Error creating project:", err);
     }
   };
-
-  const filteredProjects = Array.isArray(dataList)
-    ? dataList.filter((project) =>
-        isPrevious
-          ? project.estado !== "En proceso"
-          : project.estado === "En proceso"
-      )
-    : [];
 
   return (
     <div className="proyectos-container">
@@ -163,8 +358,8 @@ export const VistaProyectos = ({ ViewMode, dataList, setDataList }) => {
         </thead>
 
         <tbody>
-          {filteredProjects.length > 0 ? (
-            filteredProjects.map((project) => (
+          {dataList.length > 0 ? (
+            dataList.map((project) => (
               <tr key={project.idProyecto} className="proyecto-row">
                 <td className="proyecto-name-cell">
                   {project.nombre}
@@ -185,14 +380,16 @@ export const VistaProyectos = ({ ViewMode, dataList, setDataList }) => {
                     Ver descripción
                   </button>
                 </td>
-                <td>{project.ultimaModificacion}</td>
+                <td>{formatDate(project.ultimaModificacion)}</td>
                 <td>
                   {isPrevious
-                    ? project.fechaFinalizacion || "-"
-                    : project.fechaEntregaProxima || "-"}
+                    ? formatDate(project.fechaFinalizacion)
+                    : formatDate(project.fechaEntregaProxima)}
                 </td>
-                <td>{project.memberList?.length || 0}</td>
-                {isPrevious ? <td>{project.estado}</td> : null}
+                <td>{projectMembers[project.idProyecto]?.length || 0}</td>
+                {isPrevious ? (
+                  <td>{mapEstado(project.idEstadoProyecto)}</td>
+                ) : null}
               </tr>
             ))
           ) : (

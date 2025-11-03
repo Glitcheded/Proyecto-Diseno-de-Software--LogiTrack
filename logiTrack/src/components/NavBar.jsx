@@ -201,7 +201,7 @@ export const NavBar = ({
             {misProyectos.length > 0 ? (
               misProyectos.map((proj) => (
                 <div
-                  key={proj.id}
+                  key={proj.idProyecto}
                   className={`dropdown-item ${
                     currentView === "Mis Proyectos / Proyecto" &&
                     selectedProject === proj.nombre
@@ -251,7 +251,7 @@ export const NavBar = ({
             {proyectosAnteriores.length > 0 ? (
               proyectosAnteriores.map((proj) => (
                 <div
-                  key={proj.id}
+                  key={proj.idProyecto}
                   className={`dropdown-item ${
                     currentView === "Proyectos Anteriores / Proyecto" &&
                     selectedProject === proj.nombre
