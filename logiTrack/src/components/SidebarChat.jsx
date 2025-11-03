@@ -3,19 +3,12 @@ import "./SidebarChat.css";
 import { useNavigate } from "react-router-dom"; // for navigation (React Router)
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft, faGear, faPenToSquare, faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeft, faGear, faPenToSquare, faMagnifyingGlass, faPaperclip, faPaperPlane } from "@fortawesome/free-solid-svg-icons";
 
 const getBack = <FontAwesomeIcon icon={faArrowLeft} size="1pt" />;
 const gear = <FontAwesomeIcon icon={faGear} style={{ fontSize: "1.5rem" }} />;
 const newChat = <FontAwesomeIcon icon={faPenToSquare} size="1pt" />;
 const search = <FontAwesomeIcon icon={faMagnifyingGlass} size="1pt" />;
-
-const initialChats = [
-  { id: 1, name: "Federico Granados", snippet: "¿Listo para la reunión?", initials: "FG" },
-  { id: 2, name: "Ignacio Rodríguez", snippet: "Envíame el archivo", initials: "IR" },
-  { id: 3, name: "Antonio Murillo", snippet: "Confirmado el envío", initials: "AM" },
-  { id: 4, name: "Sistema Interactivo para Dis...", snippet: "Notificación del sistema", initials: "SI" },
-];
 
 export const SidebarChat = ({
   user = { name: "Usuario" },
@@ -151,5 +144,6 @@ export const SidebarChat = ({
         </div>
       </section>
     </aside>
+    
   );
 };
