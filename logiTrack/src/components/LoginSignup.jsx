@@ -43,10 +43,19 @@ export const LoginSignup = () => {
       const data = await response.json();
 
       if (response.ok) {
-        if (action === "Inciar Sesión" && data.session.access_token) {
-          // Guarda el token para usarlo en otras peticiones
-          localStorage.setItem("supabaseToken", data.session.access_token);
+        if (action === "Inciar Sesión") {
+          
+          // Guarda el token
+          if (data.session.access_token) {
+            localStorage.setItem('supabaseToken', data.session.access_token);
+          }
+
+          // Guarda la info del usuario
+          if (data.user) {
+            localStorage.setItem('usuario', JSON.stringify(data.user));
+          }
         }
+
         if (action === "Crear Cuenta") {
           alert("Cuenta creada. Por favor, inicia sesión.");
           setAction("Inciar Sesión"); // Lo regresa al login

@@ -134,6 +134,7 @@ export const NavBar = ({
 
       // Clear token and UI state
       localStorage.removeItem("supabaseToken");
+      localStorage.removeItem("usuario");
       setShowUserDropdown(false);
       navigate("/");
     } catch (error) {
