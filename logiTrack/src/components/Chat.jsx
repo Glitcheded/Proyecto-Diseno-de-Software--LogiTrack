@@ -62,7 +62,7 @@ export const Chat = ({}) => {
     // lógica para abrir diálogo de adjuntos
   };
 
-  const chatName = chatSeleccionado?.name || "";
+  let chatName = chatSeleccionado?.name || "";
 
   useEffect(() => {
     // Intentar leer el usuario guardado del localStorage
@@ -86,7 +86,7 @@ export const Chat = ({}) => {
 
   return (
     <div>
-      <SidebarChat user={user} chats={chats} />
+      <SidebarChat user={user} chats={chats}  />
       <ChatHeader chatName={chatName} />
       <main className="main-content">
         <ChatMessages chatId={1} currentUser={user} />
