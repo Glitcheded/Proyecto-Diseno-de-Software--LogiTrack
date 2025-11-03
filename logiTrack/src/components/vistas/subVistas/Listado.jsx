@@ -7,20 +7,17 @@ export const Listado = ({ dataList, ViewMode, selectedProject }) => {
   const [tasks, setTasks] = useState(() =>
     Array.isArray(dataList) ? dataList.slice() : []
   );
-
   const [editingTask, setEditingTask] = useState(null);
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [availableMembers, setAvailableMembers] = useState([]);
-
-  const [commentsTask, setCommentsTask] = useState(null); // task whose comments are shown
+  const [commentsTask, setCommentsTask] = useState(null);
   const [newCommentText, setNewCommentText] = useState("");
+  const [expandedTasks, setExpandedTasks] = useState({});
 
   useEffect(() => {
     if (!editingTask) return;
-
     const fetchProjectMembers = async () => {
       try {
-        // Simulated fetch (replace later with your real fetch)
         const response = await new Promise((resolve) =>
           setTimeout(
             () =>
@@ -39,46 +36,18 @@ export const Listado = ({ dataList, ViewMode, selectedProject }) => {
             200
           )
         );
-
         const sorted = response.sort((a, b) => {
           const aIsMember = editingTask?.members?.includes(a);
           const bIsMember = editingTask?.members?.includes(b);
           return aIsMember === bIsMember ? 0 : aIsMember ? -1 : 1;
         });
-
         setAvailableMembers(sorted);
       } catch (err) {
         console.error("Error fetching members:", err);
       }
     };
-
     fetchProjectMembers();
   }, [editingTask]);
-
-  const handleToggleMember = (member) => {
-    setEditingTask((prev) => {
-      const isMember = prev.members.includes(member);
-      const updatedMembers = isMember
-        ? prev.members.filter((m) => m !== member)
-        : [...prev.members, member];
-
-      return { ...prev, members: updatedMembers };
-    });
-
-    setAvailableMembers((prev) =>
-      [...prev].sort((a, b) => {
-        const aIsMember =
-          a === member
-            ? !editingTask.members.includes(a)
-            : editingTask.members.includes(a);
-        const bIsMember =
-          b === member
-            ? !editingTask.members.includes(b)
-            : editingTask.members.includes(b);
-        return aIsMember === bIsMember ? 0 : aIsMember ? -1 : 1;
-      })
-    );
-  };
 
   const makeId = () =>
     Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -192,9 +161,7 @@ export const Listado = ({ dataList, ViewMode, selectedProject }) => {
         if (map[task.subtaskOf])
           map[task.subtaskOf].subtasks.push(map[task.id]);
         else roots.push(map[task.id]);
-      } else {
-        roots.push(map[task.id]);
-      }
+      } else roots.push(map[task.id]);
     });
     return roots;
   };
@@ -215,106 +182,105 @@ export const Listado = ({ dataList, ViewMode, selectedProject }) => {
     }
   };
 
-  const [expandedTasks, setExpandedTasks] = useState({});
   const toggleExpand = (taskId) => {
     setExpandedTasks((prev) => ({ ...prev, [taskId]: !prev[taskId] }));
   };
 
   const roots = buildHierarchy(tasks);
 
+  const renderTaskRow = (t, level = 0) => {
+    const hasSubtasks = t.subtasks && t.subtasks.length > 0;
+    const isExpanded = !!expandedTasks[t.id];
+    return (
+      <React.Fragment key={t.id}>
+        <tr className={`task-row level-${level}`} role="row">
+          <td style={{ position: "relative" }} role="cell">
+            <div className="task-name">
+              {hasSubtasks && (
+                <button
+                  className="dropdown-toggle"
+                  onClick={() => toggleExpand(t.id)}
+                  aria-label={
+                    isExpanded ? "Colapsar subtareas" : "Expandir subtareas"
+                  }
+                >
+                  {isExpanded ? "▼" : "▶"}
+                </button>
+              )}
+              <span className="task-text">{t.name}</span>
+            </div>
+
+            {ViewMode !== "Proyectos Anteriores" && (
+              <button
+                className="edit-btn"
+                onClick={() => openEditor(t.id)}
+                title="Editar tarea"
+              >
+                Editar
+              </button>
+            )}
+          </td>
+          {ViewMode === "Mis Tareas" && <td role="cell">{t.project || "-"}</td>}
+          <td role="cell">{getPriorityEmoji(t.priority)}</td>
+          <td role="cell">{t.state}</td>
+          <td role="cell">{t.dueDate}</td>
+          <td role="cell">
+            {Array.isArray(t.members) ? t.members.join(", ") : ""}
+          </td>
+          <td role="cell">
+            {mostRecentCommentText(t) ? (
+              <button
+                className="comment-preview"
+                onClick={() => openComments(t.id)}
+                title="Ver todos los comentarios"
+              >
+                {mostRecentCommentText(t)}
+              </button>
+            ) : (
+              <div className="no-comments-cell">
+                <span className="no-comment-text">Sin comentarios</span>
+                {ViewMode !== "Proyectos Anteriores" && (
+                  <button
+                    className="add-comment-btn"
+                    onClick={() => openComments(t.id)}
+                    title="Agregar comentario"
+                  >
+                    💬
+                  </button>
+                )}
+              </div>
+            )}
+          </td>
+        </tr>
+
+        {hasSubtasks &&
+          isExpanded &&
+          t.subtasks.map((s) => renderTaskRow(s, level + 1))}
+      </React.Fragment>
+    );
+  };
+
   return (
     <div className="listado-container">
-      <table className="listado-table">
+      <table
+        className="listado-table"
+        role="table"
+        aria-label="Listado de tareas"
+      >
         <thead>
-          <tr>
-            <th>Nombre</th>
-            {ViewMode === "Mis Tareas" && <th>Proyecto</th>}
-            <th>Prioridad</th>
-            <th>Estado</th>
-            <th>Fecha Entrega</th>
-            <th>Integrantes</th>
-            <th>Comentarios</th>
+          <tr role="row">
+            <th scope="col">Nombre</th>
+            {ViewMode === "Mis Tareas" && <th scope="col">Proyecto</th>}
+            <th scope="col">Prioridad</th>
+            <th scope="col">Estado</th>
+            <th scope="col">Fecha Entrega</th>
+            <th scope="col">Integrantes</th>
+            <th scope="col">Comentarios</th>
           </tr>
         </thead>
-        <tbody>
-          {roots.map((task) => {
-            const renderTaskRow = (t, level = 0) => {
-              const hasSubtasks = t.subtasks && t.subtasks.length > 0;
-              const isExpanded = !!expandedTasks[t.id];
-              return (
-                <React.Fragment key={t.id}>
-                  <tr className={`task-row level-${level}`}>
-                    <td style={{ position: "relative" }}>
-                      <div className="task-name">
-                        {hasSubtasks && (
-                          <span
-                            className="dropdown-toggle"
-                            onClick={() => toggleExpand(t.id)}
-                          >
-                            {isExpanded ? "▼" : "▶"}
-                          </span>
-                        )}
-                        <span className="task-text">{t.name}</span>
-                      </div>
-
-                      {ViewMode !== "Proyectos Anteriores" && (
-                        <button
-                          className="edit-btn"
-                          onClick={() => openEditor(t.id)}
-                          title="Editar tarea"
-                        >
-                          Editar
-                        </button>
-                      )}
-                    </td>
-
-                    {ViewMode === "Mis Tareas" && <td>{t.project || "-"}</td>}
-                    <td>{getPriorityEmoji(t.priority)}</td>
-                    <td>{t.state}</td>
-                    <td>{t.dueDate}</td>
-                    <td>
-                      {Array.isArray(t.members) ? t.members.join(", ") : ""}
-                    </td>
-
-                    <td>
-                      {mostRecentCommentText(t) ? (
-                        <button
-                          className="comment-preview"
-                          onClick={() => openComments(t.id)}
-                          title="Ver todos los comentarios"
-                        >
-                          {mostRecentCommentText(t)}
-                        </button>
-                      ) : (
-                        <div className="no-comments-cell">
-                          <span className="no-comment-text">
-                            Sin comentarios
-                          </span>
-                          {ViewMode !== "Proyectos Anteriores" && (
-                            <button
-                              className="add-comment-btn"
-                              onClick={() => openComments(t.id)}
-                              title="Agregar comentario"
-                            >
-                              💬
-                            </button>
-                          )}
-                        </div>
-                      )}
-                    </td>
-                  </tr>
-
-                  {hasSubtasks &&
-                    isExpanded &&
-                    t.subtasks.map((s) => renderTaskRow(s, level + 1))}
-                </React.Fragment>
-              );
-            };
-
-            return renderTaskRow(task);
-          })}
-        </tbody>
+        <tbody>{roots.map((task) => renderTaskRow(task))}</tbody>
       </table>
+
       {ViewMode !== "Mis Tareas" && ViewMode !== "Proyectos Anteriores" && (
         <div className="add-row">
           <button
@@ -326,11 +292,18 @@ export const Listado = ({ dataList, ViewMode, selectedProject }) => {
           </button>
         </div>
       )}
-      {isEditorOpen && editingTask && (
-        <div className="modal-overlay" onClick={cancelEdits}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <h3>Editar tarea</h3>
 
+      {/* Editor Modal */}
+      {isEditorOpen && editingTask && (
+        <div
+          className="modal-overlay"
+          onClick={cancelEdits}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="edit-task-title"
+        >
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <h3 id="edit-task-title">Editar tarea</h3>
             <label>
               Nombre
               <input
@@ -390,7 +363,12 @@ export const Listado = ({ dataList, ViewMode, selectedProject }) => {
                 {availableMembers.map((member) => {
                   const isMember = editingTask.members?.includes(member);
                   return (
-                    <div key={member} className="member-item">
+                    <div
+                      key={member}
+                      className={`member-item ${
+                        isMember ? "member-selected" : ""
+                      }`}
+                    >
                       <span>{member}</span>
                       <button
                         className="small"
@@ -398,10 +376,13 @@ export const Listado = ({ dataList, ViewMode, selectedProject }) => {
                           setEditingTask((prev) => ({
                             ...prev,
                             members: isMember
-                              ? prev.members.filter((m) => m !== member) // remove
-                              : [...(prev.members || []), member], // add
+                              ? prev.members.filter((m) => m !== member)
+                              : [...(prev.members || []), member],
                           }));
                         }}
+                        aria-label={
+                          isMember ? `Quitar ${member}` : `Agregar ${member}`
+                        }
                       >
                         {isMember ? "-" : "+"}
                       </button>
@@ -419,19 +400,13 @@ export const Listado = ({ dataList, ViewMode, selectedProject }) => {
                 Cancelar
               </button>
               <button
-                onClick={() => {
-                  if (!editingTask) return;
-                  deleteTask(editingTask.id);
-                }}
+                onClick={() => deleteTask(editingTask.id)}
                 className="danger"
               >
                 Eliminar
               </button>
               <button
-                onClick={() => {
-                  if (!editingTask) return;
-                  handleAddSubtask(editingTask.id);
-                }}
+                onClick={() => handleAddSubtask(editingTask.id)}
                 className="subtask"
               >
                 Agregar subtarea
@@ -440,11 +415,18 @@ export const Listado = ({ dataList, ViewMode, selectedProject }) => {
           </div>
         </div>
       )}
-      {commentsTask && (
-        <div className="modal-overlay" onClick={() => setCommentsTask(null)}>
-          <div className="comments-modal" onClick={(e) => e.stopPropagation()}>
-            <h3>Comentarios</h3>
 
+      {/* Comments Modal */}
+      {commentsTask && (
+        <div
+          className="modal-overlay"
+          onClick={() => setCommentsTask(null)}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="comments-title"
+        >
+          <div className="comments-modal" onClick={(e) => e.stopPropagation()}>
+            <h3 id="comments-title">Comentarios</h3>
             <div className="comments-list">
               {Array.isArray(commentsTask.comments) &&
               commentsTask.comments.length ? (

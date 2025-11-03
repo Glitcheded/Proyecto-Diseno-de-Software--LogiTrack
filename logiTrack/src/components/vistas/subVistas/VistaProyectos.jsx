@@ -345,57 +345,75 @@ export const VistaProyectos = ({ ViewMode, dataList, setDataList }) => {
   };
 
   return (
-    <div className="proyectos-container">
-      <table className="proyectos-table">
+    <div
+      className="proyectos-container"
+      role="region"
+      aria-label="Vista de proyectos"
+    >
+      <table
+        className="proyectos-table"
+        role="table"
+        aria-label="Lista de proyectos"
+      >
         <thead>
-          <tr>
-            <th>Nombre del proyecto</th>
-            <th>Descripción</th>
-            <th>Última modificación</th>
-            <th>{isPrevious ? "Fecha de finalización" : "Próxima entrega"}</th>
-            <th># de miembros</th>
-            {isPrevious ? <th>Estado</th> : null}
+          <tr role="row">
+            <th role="columnheader">Nombre del proyecto</th>
+            <th role="columnheader">Descripción</th>
+            <th role="columnheader">Última modificación</th>
+            <th role="columnheader">
+              {isPrevious ? "Fecha de finalización" : "Próxima entrega"}
+            </th>
+            <th role="columnheader"># de miembros</th>
+            {isPrevious && <th role="columnheader">Estado</th>}
           </tr>
         </thead>
 
         <tbody>
           {dataList.length > 0 ? (
             dataList.map((project) => (
-              <tr key={project.idProyecto} className="proyecto-row">
-                <td className="proyecto-name-cell">
+              <tr key={project.idProyecto} className="proyecto-row" role="row">
+                <td role="cell" className="proyecto-name-cell">
                   {project.nombre}
                   <button
                     className="proyecto-edit-btn"
                     onClick={() => openEditor(project)}
-                    title="Editar proyecto"
+                    aria-label={`Editar proyecto ${project.nombre}`}
+                    tabIndex={0}
+                    onKeyDown={(e) => e.key === "Enter" && openEditor(project)}
                   >
                     Editar
                   </button>
                 </td>
-                <td>
+                <td role="cell">
                   <button
                     className="proyecto-desc-btn"
                     onClick={() => openDescription(project.descripcion)}
-                    title="Ver descripción completa"
+                    aria-label={`Ver descripción completa del proyecto ${project.nombre}`}
+                    tabIndex={0}
+                    onKeyDown={(e) =>
+                      e.key === "Enter" && openDescription(project.descripcion)
+                    }
                   >
                     Ver descripción
                   </button>
                 </td>
-                <td>{formatDate(project.ultimaModificacion)}</td>
-                <td>
+                <td role="cell">{formatDate(project.ultimaModificacion)}</td>
+                <td role="cell">
                   {isPrevious
                     ? formatDate(project.fechaFinalizacion)
                     : formatDate(project.fechaEntregaProxima)}
                 </td>
-                <td>{projectMembers[project.idProyecto]?.length || 0}</td>
-                {isPrevious ? (
-                  <td>{mapEstado(project.idEstadoProyecto)}</td>
-                ) : null}
+                <td role="cell">
+                  {projectMembers[project.idProyecto]?.length || 0}
+                </td>
+                {isPrevious && (
+                  <td role="cell">{mapEstado(project.idEstadoProyecto)}</td>
+                )}
               </tr>
             ))
           ) : (
             <tr>
-              <td colSpan={isPrevious ? "6" : "5"} className="proyectos-empty">
+              <td colSpan={isPrevious ? 6 : 5} className="proyectos-empty">
                 No hay proyectos para mostrar
               </td>
             </tr>
@@ -408,42 +426,69 @@ export const VistaProyectos = ({ ViewMode, dataList, setDataList }) => {
           <button
             className="add-btn"
             onClick={handleAddProject}
-            title="Nuevo proyecto"
+            aria-label="Crear nuevo proyecto"
+            tabIndex={0}
+            onKeyDown={(e) => e.key === "Enter" && handleAddProject()}
           >
             ➕ Nuevo proyecto
           </button>
         </div>
       )}
 
+      {/* Description Modal */}
       {isModalOpen && (
-        <div className="modal-overlay" onClick={closeModal}>
+        <div
+          className="modal-overlay"
+          onClick={closeModal}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="modal-title"
+          aria-describedby="modal-desc"
+        >
           <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <h3>Descripción del proyecto</h3>
-            <p>{selectedDescription}</p>
-            <button className="proyecto-close-btn" onClick={closeModal}>
+            <h3 id="modal-title">Descripción del proyecto</h3>
+            <p id="modal-desc">{selectedDescription}</p>
+            <button
+              className="proyecto-close-btn"
+              onClick={closeModal}
+              aria-label="Cerrar modal de descripción"
+            >
               Cerrar
             </button>
           </div>
         </div>
       )}
 
+      {/* Edit Project Modal */}
       {editModalOpen && editedProject && (
-        <div className="modal-overlay" onClick={closeEditor}>
+        <div
+          className="modal-overlay"
+          onClick={closeEditor}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="edit-modal-title"
+          aria-describedby="edit-modal-desc"
+        >
           <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <h3>Editar proyecto</h3>
+            <h3 id="edit-modal-title">Editar proyecto</h3>
+            <p id="edit-modal-desc">
+              Formulario para modificar información del proyecto y miembros
+            </p>
 
-            <label>
+            <label htmlFor="project-name">
               Nombre del proyecto
               <input
+                id="project-name"
                 type="text"
                 value={editedProject.nombre}
                 onChange={(e) => handleFieldChange("nombre", e.target.value)}
               />
             </label>
 
-            <label>
+            <label htmlFor="project-desc">
               Descripción
               <input
+                id="project-desc"
                 type="text"
                 value={editedProject.descripcion}
                 onChange={(e) =>
@@ -452,9 +497,10 @@ export const VistaProyectos = ({ ViewMode, dataList, setDataList }) => {
               />
             </label>
 
-            <label>
+            <label htmlFor="project-status">
               Estado del proyecto
               <select
+                id="project-status"
                 value={editedProject.idEstadoProyecto}
                 onChange={(e) =>
                   handleFieldChange("idEstadoProyecto", Number(e.target.value))
@@ -467,36 +513,49 @@ export const VistaProyectos = ({ ViewMode, dataList, setDataList }) => {
             </label>
 
             <h4>Miembros del proyecto</h4>
-            <table className="members-table">
+            <table
+              className="members-table"
+              role="table"
+              aria-label="Miembros del proyecto"
+            >
               <thead>
-                <tr>
-                  <th>Nombre</th>
-                  <th>Correo</th>
-                  <th>Rol</th>
-                  <th></th>
+                <tr role="row">
+                  <th role="columnheader">Nombre</th>
+                  <th role="columnheader">Correo</th>
+                  <th role="columnheader">Rol</th>
+                  <th role="columnheader">Acciones</th>
                 </tr>
               </thead>
               <tbody>
                 {editedProject.memberList?.map((member) => (
-                  <tr key={member.id} className="member-row">
-                    <td>{member.name}</td>
-                    <td>{member.email}</td>
-                    <td>{member.role}</td>
-                    <td>
+                  <tr key={member.id} role="row">
+                    <td role="cell">{member.name}</td>
+                    <td role="cell">{member.email}</td>
+                    <td role="cell">{member.role}</td>
+                    <td role="cell">
                       <button
                         className="small danger"
                         onClick={() => handleRemoveMember(member.id)}
-                        title="Eliminar miembro"
+                        aria-label={`Eliminar miembro ${member.name}`}
+                        tabIndex={0}
+                        onKeyDown={(e) =>
+                          e.key === "Enter" && handleRemoveMember(member.id)
+                        }
                       >
                         ✕
                       </button>
                     </td>
                   </tr>
                 ))}
+
                 <tr className="add-member-row">
                   <td colSpan="4">
                     <div className="add-member">
+                      <label className="sr-only" htmlFor="new-member-email">
+                        Correo del nuevo miembro
+                      </label>
                       <input
+                        id="new-member-email"
                         type="text"
                         placeholder="Correo del nuevo miembro"
                         value={newMemberEmail}
@@ -511,10 +570,17 @@ export const VistaProyectos = ({ ViewMode, dataList, setDataList }) => {
                         <option>Colaborador</option>
                         <option>Observador</option>
                       </select>
-                      <button onClick={handleAddMember}>+</button>
+                      <button
+                        onClick={handleAddMember}
+                        aria-label="Agregar nuevo miembro"
+                      >
+                        +
+                      </button>
                     </div>
                     {addMemberError && (
-                      <p className="error-message">{addMemberError}</p>
+                      <p className="error-message" role="alert">
+                        {addMemberError}
+                      </p>
                     )}
                   </td>
                 </tr>

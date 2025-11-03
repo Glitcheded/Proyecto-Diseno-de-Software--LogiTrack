@@ -116,7 +116,6 @@ export const Columnas = ({ dataList, ViewMode, selectedProject }) => {
 
   const deleteTask = (taskId) => {
     if (!confirm("¿Eliminar tarea? Esta acción no se puede deshacer.")) return;
-
     const toRemove = new Set([taskId]);
     let foundMore = true;
     while (foundMore) {
@@ -128,7 +127,6 @@ export const Columnas = ({ dataList, ViewMode, selectedProject }) => {
         }
       });
     }
-
     setTasks((prev) => prev.filter((t) => !toRemove.has(t.id)));
     setIsEditorOpen(false);
     setEditingTask(null);
@@ -287,7 +285,6 @@ export const Columnas = ({ dataList, ViewMode, selectedProject }) => {
         <div className="column" key={state}>
           <div className="column-header">
             <h2>{state}</h2>
-
             {ViewMode !== "Mis Tareas" &&
               ViewMode !== "Proyectos Anteriores" && (
                 <button
@@ -299,18 +296,23 @@ export const Columnas = ({ dataList, ViewMode, selectedProject }) => {
                 </button>
               )}
           </div>
-
           <div className="column-tasks">
             {tasksByState.map((task) => renderTask(task))}
           </div>
         </div>
       ))}
 
+      {/* Editor Modal */}
       {isEditorOpen && editingTask && (
-        <div className="modal-overlay" onClick={cancelEdits}>
+        <div
+          className="modal-overlay"
+          onClick={cancelEdits}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="edit-task-title"
+        >
           <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <h3>Editar tarea</h3>
-
+            <h3 id="edit-task-title">Editar tarea</h3>
             <label>
               Nombre
               <input
@@ -370,7 +372,12 @@ export const Columnas = ({ dataList, ViewMode, selectedProject }) => {
                 {availableMembers.map((member) => {
                   const isMember = editingTask.members?.includes(member);
                   return (
-                    <div key={member} className="member-item">
+                    <div
+                      key={member}
+                      className={`member-item ${
+                        isMember ? "member-selected" : ""
+                      }`}
+                    >
                       <span>{member}</span>
                       <button
                         className="small"
@@ -382,6 +389,9 @@ export const Columnas = ({ dataList, ViewMode, selectedProject }) => {
                               : [...(prev.members || []), member],
                           }));
                         }}
+                        aria-label={
+                          isMember ? `Quitar ${member}` : `Agregar ${member}`
+                        }
                       >
                         {isMember ? "-" : "+"}
                       </button>
@@ -415,11 +425,17 @@ export const Columnas = ({ dataList, ViewMode, selectedProject }) => {
         </div>
       )}
 
+      {/* Comments Modal */}
       {commentsTask && (
-        <div className="modal-overlay" onClick={() => setCommentsTask(null)}>
+        <div
+          className="modal-overlay"
+          onClick={() => setCommentsTask(null)}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="comments-title"
+        >
           <div className="comments-modal" onClick={(e) => e.stopPropagation()}>
-            <h3>Comentarios</h3>
-
+            <h3 id="comments-title">Comentarios</h3>
             <div className="comments-list">
               {Array.isArray(commentsTask.comments) &&
               commentsTask.comments.length ? (
@@ -432,6 +448,7 @@ export const Columnas = ({ dataList, ViewMode, selectedProject }) => {
                 <div>No hay comentarios</div>
               )}
             </div>
+
             {ViewMode !== "Proyectos Anteriores" && (
               <div className="add-comment">
                 <input

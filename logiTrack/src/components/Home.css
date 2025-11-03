@@ -14,11 +14,8 @@
     height: 15%;
     width: 75vw;
     padding: 0;
-    border-left-style: solid;
-    border-radius: 1px;
-    border-color: white;
     color: white;
-    background: blueviolet;
+    background: #2F0459;
 }
 
 .view-container{

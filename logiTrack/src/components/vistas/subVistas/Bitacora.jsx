@@ -213,61 +213,100 @@ export const Bitacora = ({ ViewMode, selectedProject }) => {
   };
 
   return (
-    <div className="bitacora-wrapper">
+    <div
+      className="bitacora-wrapper"
+      role="region"
+      aria-label={`Bitácora - ${ViewMode}`}
+    >
       <div className="bitacora-header">
         <label htmlFor="datePicker">
-          <strong>Seleccionar fecha:</strong>{" "}
+          <strong>Seleccionar fecha:</strong>
         </label>
         <input
           id="datePicker"
           type="date"
           value={viewDate}
           onChange={(e) => setViewDate(e.target.value)}
+          aria-label="Seleccionar fecha para la bitácora"
         />
-        <button className="generate-btn" onClick={handleGeneratePDF}>
+        <button
+          className="generate-btn"
+          onClick={handleGeneratePDF}
+          aria-label={`Generar reporte PDF de la bitácora para ${viewDate}`}
+          tabIndex={0}
+          onKeyDown={(e) => e.key === "Enter" && handleGeneratePDF()}
+        >
           Generar Reporte
         </button>
       </div>
 
-      <table className="bitacora-table">
+      <table
+        className="bitacora-table"
+        role="table"
+        aria-label="Tabla de bitácora diaria"
+      >
         <thead>
-          <tr>
-            <th>Hora</th>
-            <th>Tareas</th>
-            <th>Notas</th>
+          <tr role="row">
+            <th role="columnheader">Hora</th>
+            <th role="columnheader">Tareas</th>
+            <th role="columnheader">Notas</th>
           </tr>
         </thead>
         <tbody>
           {dataList.map((item) => (
-            <tr key={item.id}>
-              <td>
+            <tr key={item.id} role="row">
+              <td role="cell">
                 {editable ? (
                   <div className="time-column">
+                    <label className="sr-only" htmlFor={`start-${item.id}`}>
+                      Hora de inicio
+                    </label>
                     <input
+                      id={`start-${item.id}`}
                       type="time"
                       value={item.startTime}
                       onChange={(e) =>
                         handleChange(item.id, "startTime", e.target.value)
                       }
+                      aria-label="Hora de inicio"
                     />
                     {item.finishTime && (
-                      <input
-                        type="time"
-                        value={item.finishTime}
-                        onChange={(e) =>
-                          handleChange(item.id, "finishTime", e.target.value)
-                        }
-                      />
+                      <>
+                        <label
+                          className="sr-only"
+                          htmlFor={`finish-${item.id}`}
+                        >
+                          Hora de fin
+                        </label>
+                        <input
+                          id={`finish-${item.id}`}
+                          type="time"
+                          value={item.finishTime}
+                          onChange={(e) =>
+                            handleChange(item.id, "finishTime", e.target.value)
+                          }
+                          aria-label="Hora de fin"
+                        />
+                      </>
                     )}
                     <button
-                      className="add-btn"
+                      className="bitacora-finish-btn"
                       onClick={() => toggleFinishTime(item.id)}
+                      aria-label={
+                        item.finishTime
+                          ? "Eliminar hora de fin"
+                          : "Agregar hora de fin"
+                      }
+                      tabIndex={0}
+                      onKeyDown={(e) =>
+                        e.key === "Enter" && toggleFinishTime(item.id)
+                      }
                     >
                       {item.finishTime ? "Eliminar fin" : "Agregar fin"}
                     </button>
                   </div>
                 ) : (
-                  <>
+                  <div>
                     <div>
                       <strong>
                         {item.finishTime ? "Inicio" : "Realizado"}:
@@ -279,28 +318,32 @@ export const Bitacora = ({ ViewMode, selectedProject }) => {
                         <strong>Fin:</strong> {item.finishTime}
                       </div>
                     )}
-                  </>
+                  </div>
                 )}
               </td>
-              <td>
+
+              <td role="cell">
                 {editable ? (
                   <textarea
                     value={item.tasks}
                     onChange={(e) =>
                       handleChange(item.id, "tasks", e.target.value)
                     }
+                    aria-label="Tareas realizadas"
                   />
                 ) : (
                   item.tasks
                 )}
               </td>
-              <td>
+
+              <td role="cell">
                 {editable ? (
                   <textarea
                     value={item.notes}
                     onChange={(e) =>
                       handleChange(item.id, "notes", e.target.value)
                     }
+                    aria-label="Notas adicionales"
                   />
                 ) : (
                   item.notes
@@ -316,7 +359,9 @@ export const Bitacora = ({ ViewMode, selectedProject }) => {
           <button
             className="add-btn"
             onClick={handleAddEntry}
-            title="Agregar nueva entrada"
+            aria-label="Agregar nueva entrada a la bitácora"
+            tabIndex={0}
+            onKeyDown={(e) => e.key === "Enter" && handleAddEntry()}
           >
             ➕ Agregar entrada
           </button>

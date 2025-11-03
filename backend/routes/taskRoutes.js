@@ -1,6 +1,6 @@
 import express from 'express';
 import { 
-    getMisTareas, crearTarea,
+    getTasksByProject, getCommentsByTask, getMisTareas, crearTarea,
     getTareaPorId, actualizarTarea,
     eliminarTarea, asignarUsuarioATarea,
     agregarComentario, getMiembrosTarea,
@@ -41,5 +41,9 @@ router.get('/:id/members', getMiembrosTarea);
 
 // DELETE /api/tasks/:idTarea/members/:idUsuario
 router.delete('/:idTarea/members/:idUsuario', removerMiembroTarea);
+
+router.get('/:id/tasks', getTasksByProject);
+
+router.get('/:id/comments', getCommentsByTask);
 
 export default router;

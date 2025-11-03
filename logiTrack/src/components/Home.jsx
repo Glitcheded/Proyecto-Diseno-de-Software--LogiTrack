@@ -179,12 +179,26 @@ const HomeContent = () => {
         userName={userName}
       />
 
-      <div className="right-container">
-        <div className="menu-header">
-          <h1>{selectedView}</h1>
-        </div>
-        <div className="view-container">{renderView()}</div>
-      </div>
+      {/* Main content region */}
+      <main
+        className="right-container"
+        role="main"
+        aria-labelledby="main-heading"
+      >
+        <header className="menu-header">
+          <h1 id="main-heading" tabIndex="0">
+            {selectedView}
+          </h1>
+        </header>
+
+        <section
+          className="view-container"
+          aria-live="polite"
+          aria-busy={!selectedView}
+        >
+          {renderView()}
+        </section>
+      </main>
     </div>
   );
 };

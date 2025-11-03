@@ -336,49 +336,35 @@ export const VistaTareas = ({ ViewMode, selectedProject = null }) => {
 
   return (
     <div className="vista-container">
-      <div className="vista-selector">
-        <div
-          className={
-            activeViewMode === "Listado"
-              ? "vista-options vista-options-selected"
-              : "vista-options"
-          }
-          onClick={() => setActiveViewMode("Listado")}
-        >
-          Listado
-        </div>
-        <div
-          className={
-            activeViewMode === "Columnas"
-              ? "vista-options vista-options-selected"
-              : "vista-options"
-          }
-          onClick={() => setActiveViewMode("Columnas")}
-        >
-          Columnas
-        </div>
-        <div
-          className={
-            activeViewMode === "Calendario"
-              ? "vista-options vista-options-selected"
-              : "vista-options"
-          }
-          onClick={() => setActiveViewMode("Calendario")}
-        >
-          Calendario
-        </div>
-        <div
-          className={
-            activeViewMode === "Tabla"
-              ? "vista-options vista-options-selected"
-              : "vista-options"
-          }
-          onClick={() => setActiveViewMode("Tabla")}
-        >
-          Tabla
-        </div>
-        {ViewMode === "Mis Tareas" ? null : (
-          <div
+      <nav
+        className="vista-selector"
+        aria-label="Selector de vista de tareas"
+        role="tablist"
+      >
+        {["Listado", "Columnas", "Calendario", "Tabla"].map((view) => (
+          <button
+            key={view}
+            role="tab"
+            aria-selected={activeViewMode === view}
+            tabIndex={activeViewMode === view ? 0 : -1}
+            className={
+              activeViewMode === view
+                ? "vista-options vista-options-selected"
+                : "vista-options"
+            }
+            onClick={() => setActiveViewMode(view)}
+          >
+            {view}
+          </button>
+        ))}
+
+        {/* Render Bitácora only if ViewMode is not "Mis Tareas" */}
+        {ViewMode !== "Mis Tareas" && (
+          <button
+            key="Bitacora"
+            role="tab"
+            aria-selected={activeViewMode === "Bitacora"}
+            tabIndex={activeViewMode === "Bitacora" ? 0 : -1}
             className={
               activeViewMode === "Bitacora"
                 ? "vista-options vista-options-selected"
@@ -387,10 +373,17 @@ export const VistaTareas = ({ ViewMode, selectedProject = null }) => {
             onClick={() => setActiveViewMode("Bitacora")}
           >
             Bitácora
-          </div>
+          </button>
         )}
-      </div>
-      <div className="vista-display">{renderSubView()}</div>
+      </nav>
+
+      <section
+        className="vista-display"
+        role="tabpanel"
+        aria-label={`Vista actual: ${activeViewMode}`}
+      >
+        {renderSubView()}
+      </section>
     </div>
   );
 };
