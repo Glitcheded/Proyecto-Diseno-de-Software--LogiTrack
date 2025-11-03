@@ -9,23 +9,47 @@ import { faPaperclip, faPaperPlane } from "@fortawesome/free-solid-svg-icons";
 const clip = <FontAwesomeIcon icon={faPaperclip} style={{ fontSize: "1.5rem" }} />;
 const send = <FontAwesomeIcon icon={faPaperPlane} style={{ fontSize: "1.5rem" }} />;
 
-export const ChatInput = ({ onSend, onAttach, sidebarWidth = 320 }) => {
+const baseURL = "http://localhost:3001/api/chat";
+
+const enviarMensaje = async (idUsuario, idChat, contenido) => {
+  try {
+    const response = await fetch(`${baseURL}/enviarMsj`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ idUsuario, idChat, contenido }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Error HTTP ${response.status}: ${errorText}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error al enviar mensaje:", error);
+    throw error;
+  }
+};
+
+
+export const ChatInput = ({ idUsuario, idChat, onEnviar, sidebarWidth = 320 }) => {
   const [text, setText] = useState("");
   const liveRef = useRef(null);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const trimmed = text.trim();
-    if (!trimmed) {
-      // annnounce empty submission
-      if (liveRef.current) liveRef.current.textContent = "Escribe un mensaje antes de enviar";
-      return;
+  const handleSubmit = async () => {
+    const mensaje = text.trim();
+    if (!mensaje) return;
+
+    // Aquí podrías llamar al endpoint para enviar mensaje
+    await enviarMensaje(idUsuario, idChat, mensaje);
+
+    // Avisar al padre
+    if (onEnviar) {
+      onEnviar(mensaje);
     }
-    if (onSend) onSend(trimmed);
-    setText("");
-    if (liveRef.current) liveRef.current.textContent = "Mensaje enviado";
-    // clear live message after short time so it can be reused
-    setTimeout(() => { if (liveRef.current) liveRef.current.textContent = ""; }, 800);
+
+    setText(""); // Limpiar input
   };
 
   const handleAttach = (e) => {
@@ -44,7 +68,9 @@ export const ChatInput = ({ onSend, onAttach, sidebarWidth = 320 }) => {
 
       <input
         type="text"
+        value={text}
         placeholder="Escribe un mensaje"
+        onChange={(e) => setText(e.target.value)}
         className="message-input"
       />
 

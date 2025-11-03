@@ -5,10 +5,16 @@ import { useNavigate } from "react-router-dom";
 export const Opciones = ({ userData, userSettings }) => {
   const navigate = useNavigate();
 
+  const baseURL = "http://localhost:3001/api";
+  const usuarioGuardado = JSON.parse(localStorage.getItem('usuario'));
+  const idUsuario = usuarioGuardado.idUsuario;
+  const nombreUsuario = usuarioGuardado.nombre  + " " + usuarioGuardado.apellido;
+  const usuarioEmail = usuarioGuardado.email;
+
   const [userInfo, setUserInfo] = useState({
-    name: "John Doe",
-    email: "john.doe@example.com",
-    linkedin: "https://www.linkedin.com/in/johndoe",
+    name: nombreUsuario,
+    email: usuarioEmail,
+    linkedin: "",
     timezone: "GMT-6",
     password: "password123",
   });

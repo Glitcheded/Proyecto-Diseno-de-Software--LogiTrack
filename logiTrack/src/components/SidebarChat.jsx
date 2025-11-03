@@ -20,7 +20,8 @@ const chatSeleccionado = JSON.parse(localStorage.getItem("chatSeleccionado"));
 
 export const SidebarChat = ({
   user = { name: "Usuario" },
-  chats = initialChats
+  chats = initialChats,
+  onSeleccionarChat
 }) => {
   const [query, setQuery] = useState("");
   const [list, setList] = useState(chats);
@@ -30,8 +31,8 @@ export const SidebarChat = ({
   const [email, setEmail] = useState("");
   const dropdownRef = useRef(null);
   const [chatSeleccionado, setChatSeleccionado] = useState(
-  JSON.parse(localStorage.getItem("chatSeleccionado"))
-);
+    JSON.parse(localStorage.getItem("chatSeleccionado"))
+  );
 
   console.log(`AHHH ${chatSeleccionado?.name}`);
 
@@ -335,7 +336,8 @@ export const SidebarChat = ({
                 className="chat-item"
                 aria-label={`Chat con ${chat.name}. ${chat.snippet}`}
                 onClick={() => {setActiveId(chat.id);
-                  handleChatSelect(chat);}
+                  handleChatSelect(chat);
+                  onSeleccionarChat(chat);}
                 }
                 onKeyDown={(e) => { if (e.key === "Enter") setActiveId(chat.id); }}
                 data-active={chat.id === activeId}

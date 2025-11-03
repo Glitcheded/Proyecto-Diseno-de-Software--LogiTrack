@@ -50,7 +50,7 @@ export async function obtenerMensajesPorChat(idChat) {
       Usuario: idUsuario (nombre)
     `)
     .eq("idChat", idChat)
-    .order("fechaHora", { ascending: true });
+    .order("fechaHora", { descending: true });
 
   if (error) {
     throw new Error(`Error al obtener mensajes: ${error.message}`);
