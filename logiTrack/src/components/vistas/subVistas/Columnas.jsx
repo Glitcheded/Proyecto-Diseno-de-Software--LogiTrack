@@ -16,6 +16,12 @@ export const Columnas = ({ dataList, ViewMode, selectedProject }) => {
     Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 
   useEffect(() => {
+    if (Array.isArray(dataList)) {
+      setTasks(dataList);
+    }
+  }, [dataList]);
+
+  useEffect(() => {
     if (!editingTask) return;
 
     const fetchProjectMembers = async () => {

@@ -15,6 +15,12 @@ export const Listado = ({ dataList, ViewMode, selectedProject }) => {
   const [expandedTasks, setExpandedTasks] = useState({});
 
   useEffect(() => {
+    if (Array.isArray(dataList)) {
+      setTasks(dataList);
+    }
+  }, [dataList]);
+
+  useEffect(() => {
     if (!editingTask) return;
     const fetchProjectMembers = async () => {
       try {

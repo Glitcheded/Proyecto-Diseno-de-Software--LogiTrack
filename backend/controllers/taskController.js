@@ -15,6 +15,25 @@ export const getMisTareas = async (req, res) => {
     }
 };
 
+export const getTareasPorProyecto = async (req, res) => {
+  try {
+
+    const { idProyecto } = req.params;
+
+    if (!idProyecto) {
+      return res.status(400).json({ error: "Falta el parámetro idProyecto" });
+    }
+
+    const tareas = await taskModel.getTareasPorProyecto(idProyecto);
+
+    res.status(200).json(tareas);
+  } catch (error) {
+    console.error("Error fetching tareas por proyecto:", error.message);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+
 //Crea una nueva tarea POST /api/tasks
 export const crearTarea = async (req, res) => {
     try {

@@ -56,7 +56,7 @@ const HomeContent = () => {
           const { data, error } = await supabase.auth.refreshSession();
           if (!error && data?.session?.access_token) {
             localStorage.setItem("supabaseToken", data.session.access_token);
-            console.log("Token refreshed");
+            ("Token refreshed");
             return;
           } else {
             console.error("Refresh failed, logging out...");
@@ -96,7 +96,6 @@ const HomeContent = () => {
         }
 
         const proyectos = await res.json();
-        console.log("All proyectos data:", proyectos);
 
         // Split into active (idEstadoProyecto === 1) and others
         const misProyectosList = proyectos.filter(
@@ -105,9 +104,6 @@ const HomeContent = () => {
         const proyectosAnterioresList = proyectos.filter(
           (p) => p.idEstadoProyecto !== 1
         );
-
-        console.log("Mis proyectos:", misProyectosList);
-        console.log("Proyectos anteriores:", proyectosAnterioresList);
 
         setMisProyectos(misProyectosList);
         setProyectosAnteriores(proyectosAnterioresList);
@@ -121,17 +117,16 @@ const HomeContent = () => {
   }, []);
 
   useEffect(() => {
-    if (userName) console.log("Username updated:", userName);
+    if (userName) "Username updated:", userName;
   }, [userName]);
 
   useEffect(() => {
-    if (misProyectos.length > 0)
-      console.log("Mis Proyectos updated:", misProyectos);
+    if (misProyectos.length > 0) "Mis Proyectos updated:", misProyectos;
   }, [misProyectos]);
 
   useEffect(() => {
     if (proyectosAnteriores.length > 0)
-      console.log("Proyectos Anteriores updated:", proyectosAnteriores);
+      "Proyectos Anteriores updated:", proyectosAnteriores;
   }, [proyectosAnteriores]);
 
   const renderView = () => {

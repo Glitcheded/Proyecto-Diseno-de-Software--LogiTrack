@@ -1,59 +1,91 @@
 import { supabase } from '../supabaseClient.js';
 
 export const formatTaskData = (data) => {
-    return data
-        .filter(item => item.Tarea) // Filtra tareas nulas
-        .map(item => {
-            const tarea = item.Tarea;
-            return {
-                id: tarea.idTarea,
-                name: tarea.nombre,
-                project: tarea.Proyecto?.nombre || 'Sin Proyecto',
-                state: tarea.EstadoTarea?.nombre || 'Sin Estado',
-                prioridad: tarea.idPrioridad,
-                dueDate: tarea.fechaEntrega,
-                members: tarea.UsuarioPorTarea.map(upt =>
-                    `${upt.Usuario.nombre} ${upt.Usuario.apellido}`.trim()
-                ),
-                comments: tarea.Comentario.map(c => ({
-                    author: `${c.Usuario.nombre} ${c.Usuario.apellido}`.trim(),
-                    text: c.comentario
-                })),
-                subtaskOf: tarea.idTareaMadre
-            };
-        });
+  return data
+    .filter(item => item.Tarea) // Filtra tareas nulas
+    .map(item => {
+      const tarea = item.Tarea;
+      return {
+        id: tarea.idTarea,
+        name: tarea.nombre,
+        project: tarea.Proyecto?.nombre || "Sin Proyecto",
+        state: tarea.EstadoTarea?.nombre || "Sin Estado",
+        prioridad: tarea.Prioridad,
+        dueDate: tarea.fechaEntrega,
+        members: tarea.UsuarioPorTarea.map(upt => ({
+          id: upt.Usuario.idUsuario,
+          name: `${upt.Usuario.nombre} ${upt.Usuario.apellido}`.trim(),
+        })),
+        comments: tarea.Comentario.map(c => ({
+          id: c.idComentario,
+          authorId: c.Usuario.idUsuario,
+          author: `${c.Usuario.nombre} ${c.Usuario.apellido}`.trim(),
+          text: c.comentario,
+        })),
+        subtaskOf: tarea.idTareaMadre,
+      };
+    });
 };
 
-// Obtiene todas las tareas asignadas a un usuario específico
+// Fetches all tasks assigned to a specific user
 export const getTareasPorUsuario = async (idUsuario) => {
-    const { data, error } = await supabase
-        .from('UsuarioPorTarea')
-        .select(`
-            Tarea (
-                idTarea,
-                nombre,
-                fechaEntrega,
-                idTareaMadre,
-                Proyecto ( nombre ),
-                EstadoTarea ( nombre ),
-                Prioridad ( nivel ),
-                Comentario ( 
-                    comentario,
-                    Usuario ( nombre, apellido )
-                ),
-                UsuarioPorTarea (
-                    Usuario ( nombre, apellido )
-                )
-            )
-        `)
-        .eq('idUsuario', idUsuario)
-        .neq('Tarea.EstadoTarea.nombre', 'Hecho'); // Solo tareas activas
+  const { data, error } = await supabase
+    .from("UsuarioPorTarea")
+    .select(`
+      Tarea (
+        idTarea,
+        nombre,
+        fechaEntrega,
+        idTareaMadre,
+        Proyecto ( nombre ),
+        EstadoTarea ( nombre ),
+        Prioridad ( nivel ),
+        Comentario (
+          idComentario,
+          comentario,
+          Usuario ( idUsuario, nombre, apellido )
+        ),
+        UsuarioPorTarea (
+          Usuario ( idUsuario, nombre, apellido )
+        )
+      )
+    `)
+    .eq("idUsuario", idUsuario)
+    .neq("Tarea.EstadoTarea.nombre", "Hecho"); // Solo tareas activas
 
-    if (error) throw error;
-    
-    // Formateamos los datos antes de devolverlos, justo como está en el frontend
-    return formatTaskData(data);
+  if (error) throw error;
+
+  return formatTaskData(data);
 };
+
+export const getTareasPorProyecto = async (idProyecto) => {
+  const { data, error } = await supabase
+    .from("Tarea")
+    .select(`
+      idTarea,
+      nombre,
+      fechaEntrega,
+      idTareaMadre,
+      Proyecto ( nombre ),
+      EstadoTarea ( nombre ),
+      Prioridad ( nivel ),
+      Comentario (
+        idComentario,
+        comentario,
+        Usuario ( idUsuario, nombre, apellido )
+      ),
+      UsuarioPorTarea (
+        Usuario ( idUsuario, nombre, apellido )
+      )
+    `)
+    .eq("idProyecto", idProyecto)
+    .neq("EstadoTarea.nombre", "Hecho"); // Excluir tareas completadas
+
+  if (error) throw error;
+
+  return formatTaskData(data.map(t => ({ Tarea: t })));
+};
+
 
 // Crea una nueva tarea
 export const crearTarea = async (taskData) => {

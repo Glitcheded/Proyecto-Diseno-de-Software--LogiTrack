@@ -42,6 +42,12 @@ export const Calendario = ({ dataList, ViewMode, selectedProject }) => {
   };
 
   useEffect(() => {
+    if (Array.isArray(dataList)) {
+      setTasks(dataList);
+    }
+  }, [dataList]);
+
+  useEffect(() => {
     if (!editingTask) return;
 
     const fetchProjectMembers = async () => {
