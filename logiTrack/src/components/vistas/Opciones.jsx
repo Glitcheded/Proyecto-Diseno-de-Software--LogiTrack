@@ -9,17 +9,21 @@ export const Opciones = ({ userData, userSettings }) => {
   const idUsuario = usuarioGuardado.idUsuario;
   const nombreUsuario = usuarioGuardado.nombre + " " + usuarioGuardado.apellido;
   const usuarioEmail = usuarioGuardado.email;
+  const usuarioLinkedIn = usuarioGuardado.enlaceLikedIn || "";
   const zonaHoraria = Intl.DateTimeFormat().resolvedOptions().timeZone;
   console.log(zonaHoraria);
   const [configuraciones, setConfiguraciones] = useState([]);
   const [loading, setLoading] = useState(true);
   const [settings, setSettings] = useState(null);
 
-  const fetchConfiguraciones = async (usuarioId = idUsuario) => {
-    console.log(`Iniciando fetch de configuraciones para ${idUsuario}`);
-    try {
-      const response = await fetch(`http://localhost:3001/api/config/getConfiguraciones?usuario=${usuarioId}`);
-      console.log("Respuesta HTTP:", response.status);
+  const fetchConfiguraciones = async () => {
+    const token = localStorage.getItem('supabaseToken');
+    try {
+      const response = await fetch(`http://localhost:3001/api/config/getConfiguraciones`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
 
       if (!response.ok) throw new Error("Error al obtener configuraciones");
 
@@ -67,7 +71,7 @@ export const Opciones = ({ userData, userSettings }) => {
   const [userInfo, setUserInfo] = useState({
     name: nombreUsuario,
     email: usuarioEmail,
-    linkedin: "",
+    linkedin: usuarioLinkedIn,
     timezone: zonaHoraria,
     password: "password123",
   });
@@ -109,8 +113,80 @@ export const Opciones = ({ userData, userSettings }) => {
     }
   }, [showPasswordPopup]);
 
-  const handleSaveChanges = () => {
-    alert("Cambios guardados exitosamente");
+  // En Opciones.jsx
+
+  const handleSaveChanges = async () => {
+    const token = localStorage.getItem('supabaseToken'); // Obtenemos el token
+    
+    // Guarda el perfil
+    try {
+      const [nombre, ...apellidoPartes] = userInfo.name.split(' ');
+      const apellido = apellidoPartes.join(' ');
+
+      const responsePerfil = await fetch('http://localhost:3001/api/config/updateUsuario', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          // El backend obtiene el ID del token
+          nombre: nombre,
+          apellido: apellido,
+          enlaceLikedIn: userInfo.linkedin 
+        })
+      });
+
+      if (!responsePerfil.ok) {
+        throw new Error(`Error al guardar el perfil: ${await responsePerfil.text()}`);
+      }
+
+      // Actualiza el localStorage con los nuevos datos del perfil
+      const usuarioActualizado = await responsePerfil.json();
+      const usuarioParaGuardar = {
+        ...JSON.parse(localStorage.getItem('usuario')),
+        nombre: usuarioActualizado[0].nombre,
+        apellido: usuarioActualizado[0].apellido,
+        enlaceLikedIn: usuarioActualizado[0].enlaceLikedIn
+      };
+      localStorage.setItem('usuario', JSON.stringify(usuarioParaGuardar));
+
+    } catch (error) {
+      console.error('Error en handleSaveChanges (Perfil):', error);
+      alert("Error al guardar los cambios del perfil.");
+      return; // Si falla el perfil, no se guardan las configuraciones
+    }
+
+    // Guarda configuraciones
+    try {
+      const configuracionesParaGuardar = {
+        notifsChat: settings.notifsChat,
+        notifsProyectos: settings.notifsProyectos,
+        notifsTareas: settings.notifsTareas,
+        tiempoAlerta: settings.tiempoAlerta,
+        conteoSemana: settings.conteoSemana
+      };
+
+      const responseConfig = await fetch('http://localhost:3001/api/config/updateConfiguraciones', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(configuracionesParaGuardar)
+      });
+
+      if (!responseConfig.ok) {
+        throw new Error(`Error al guardar las configuraciones: ${await responseConfig.text()}`);
+      }
+      
+      // Si todo salió bien
+      alert("¡Cambios guardados exitosamente!");
+
+    } catch (error) {
+      console.error('Error en handleSaveChanges (Configuraciones):', error);
+      alert("Error al guardar las configuraciones de notificación.");
+    }
   };
 
   const handlePasswordChange = () => {

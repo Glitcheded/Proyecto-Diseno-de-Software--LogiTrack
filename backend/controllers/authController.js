@@ -59,7 +59,7 @@ export const logIn = async (req, res) => {
   try {
     const { data: usuarioLocal, error: localError } = await supabase
       .from('Usuario')
-      .select('idUsuario, nombre, apellido, email') 
+      .select('idUsuario, nombre, apellido, email, enlaceLikedIn') 
       .eq('email', data.user.email)
       .single();
 
@@ -95,7 +95,7 @@ export const getUserInfo = async (req, res) => {
         
         const { data, error } = await supabase
             .from('Usuario')
-            .select('idUsuario, nombre, apellido, email, "enlaceLikedIn"')
+            .select('idUsuario, nombre, apellido, email, enlaceLikedIn')
             .eq('idUsuario', idUsuario)
             .single();
 

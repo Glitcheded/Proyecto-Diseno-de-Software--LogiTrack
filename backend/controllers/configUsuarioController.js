@@ -6,16 +6,7 @@ import { supabase } from "../supabaseClient.js";
 // Controlador para obtener las configuraciones actuales del usuario (los toggles)
 export async function obtenerConfiguracionUsuarioHandler(req, res) {
   try {
-    const { usuario } = req.query;
-
-    if (!usuario) {
-      return res.status(400).json({ error: 'Falta el parámetro usuario.' });
-    }
-
-    const idUsuario = Number(usuario);
-    if (isNaN(idUsuario)) {
-      return res.status(400).json({ error: 'El parámetro usuario debe ser un número válido.' });
-    }
+    const idUsuario = req.idUsuario; //Obtiene el ID del token
 
     const configuraciones = await obtenerConfiguracionPorUsuario(idUsuario);
 
@@ -33,11 +24,8 @@ export async function obtenerConfiguracionUsuarioHandler(req, res) {
 // Controlador para actualizar cambios a configuraciones (los toggles) 
 export async function actualizarConfiguracionHandler(req, res) {
   try {
-    const { usuario, ...camposActualizados } = req.body;
-
-    if (!usuario || typeof usuario !== 'number') {
-      return res.status(400).json({ error: 'Debes proporcionar un idUsuario válido.' });
-    }
+    const idUsuario = req.idUsuario; //Obtiene el ID del token
+    const camposActualizados = req.body;
 
     if (Object.keys(camposActualizados).length === 0) {
       return res.status(400).json({ error: 'No se proporcionaron campos para actualizar.' });
@@ -48,7 +36,7 @@ export async function actualizarConfiguracionHandler(req, res) {
         return res.status(403).json({ error: 'Los campos "idConfiguracionUsuario" y "idUsuario" no pueden ser modificados.'})
     }
 
-    const resultado = await actualizarConfiguracionUsuario(usuario, camposActualizados);
+    const resultado = await actualizarConfiguracionUsuario(idUsuario, camposActualizados);
 
     if (!resultado || resultado.length === 0) {
       return res.status(404).json({ mensaje: 'No se encontró configuración para actualizar.' });
@@ -64,11 +52,8 @@ export async function actualizarConfiguracionHandler(req, res) {
 // Controlador para actualizar cambios de usuario (nombre, correo, etc)
 export async function actualizarUsuarioHandler(req, res) {
   try {
-    const { usuario, ...camposActualizados } = req.body;
-
-    if (!usuario || typeof usuario !== 'number') {
-      return res.status(400).json({ error: 'Debes proporcionar un idUsuario válido.' });
-    }
+    const idUsuario = req.idUsuario; //Obtiene el ID del token
+    const camposActualizados = req.body;
 
     if (Object.keys(camposActualizados).length === 0) {
       return res.status(400).json({ error: 'No se proporcionaron campos para actualizar.' });
@@ -79,7 +64,7 @@ export async function actualizarUsuarioHandler(req, res) {
       return res.status(403).json({ error: 'Los campos "email", "idUsuario","contrasena" y "activado" no pueden ser modificados.' });
     }
 
-    const resultado = await actualizarUsuario(usuario, camposActualizados);
+    const resultado = await actualizarUsuario(idUsuario, camposActualizados);
 
     if (!resultado || resultado.length === 0) {
       return res.status(404).json({ mensaje: 'No se encontró información para actualizar.' });
