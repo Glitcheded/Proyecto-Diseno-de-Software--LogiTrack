@@ -43,3 +43,19 @@
   color: #555;
   margin-bottom: 0.2rem;
 }
+
+#datePicker {
+  padding: 0.4rem 0.6rem;
+  border-radius: 0.4rem;
+  border: 1px solid #ccc;
+  font-size: 0.9rem;
+  background-color: #f9f9f9;
+  transition: border 0.2s, background 0.2s;
+}
+
+#datePicker:focus {
+  outline: none;
+  border-color: #999;
+  background-color: #fff;
+  box-shadow: 0 0 0 2px rgba(0,0,0,0.1);
+}

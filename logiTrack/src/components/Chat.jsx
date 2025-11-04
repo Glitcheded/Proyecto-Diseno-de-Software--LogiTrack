@@ -23,8 +23,42 @@ export const Chat = ({}) => {
   const [chatSeleccionado, setChatSeleccionado] = useState(
     JSON.parse(localStorage.getItem("chatSeleccionado")) || null
   );
+   
+  const [chatSelected, setChatSelected] = useState("null");
+  const [mensajes, setMensajes] = useState([]);
+  
+  const seleccionarChat = (chat) => {
+    console.log("✅ Chat recibido del hijo:", chat);
+    setChatSelected(chat);
+  };
 
-  console.log(`EHHH ${chatSeleccionado?.name}`);
+  console.log(`EHHH ${chatSelected.id}`);
+
+  const fetchMensajes = async (idChat) => {
+    if (!idChat) return;
+
+    try {
+      const response = await fetch(`http://localhost:3001/api/chat/msj/${idChat}`);
+      if (!response.ok) throw new Error("Error al obtener mensajes");
+        const data = await response.json();
+
+        const mensajesTransformados = data.map(msg => ({
+        ...msg,
+        Usuario: {
+          ...msg.Usuario,
+          nombre: msg.Usuario?.nombre === usuarioGuardado.nombre ? "Yo" : msg.Usuario?.nombre || "Desconocido"
+        }
+      }));
+
+      setMensajes(mensajesTransformados);
+    } catch (error) {
+      console.error("Error cargando mensajes:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchMensajes(chatSelected.id);
+  }, [chatSelected.id]);
 
   // Get chats
   const obtenerChatsPorCorreo = async (correo, setChats) => {
@@ -52,17 +86,52 @@ export const Chat = ({}) => {
     }
   };
 
-  const handleSend = (mensaje) => {
-    console.log("Mensaje enviado:", mensaje);
-    // lógica para enviar mensaje
+  const handleSend = async (mensaje) => {
+    console.log("Mensaje recibido del hijo:", mensaje);
+
+    // 1️⃣ Actualizar estado local de forma optimista
+    setMensajes(prev => [
+      ...prev,
+      {
+        id: prev.length + 1,   // id temporal
+        Usuario: { nombre: "Yo" }, 
+        contenido: mensaje,
+        fechaHora: new Date().toISOString(),
+      }
+    ]);
+
+    try {
+      // 2️⃣ Enviar mensaje al backend
+      await fetch("http://localhost:3001/api/chat/enviarMsj", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          idUsuario: idUsuario, // variable que debes tener en tu componente padre
+          idChat: chatSelected.id,       // chat seleccionado
+          contenido: mensaje
+        })
+      });
+
+      // 3️⃣ Traer todos los mensajes actualizados del chat
+      const response = await fetch(`http://localhost:3001/api/chat/msj/${idChat}`);
+      if (!response.ok) throw new Error("Error al obtener mensajes");
+      const data = await response.json();
+
+      // 4️⃣ Actualizar el estado con los mensajes reales del backend
+      setMensajes(data);
+
+    } catch (error) {
+      console.error("Error enviando o recargando mensajes:", error);
+    }
   };
 
   const handleAttach = () => {
     console.log("Adjuntar archivo");
-    // lógica para abrir diálogo de adjuntos
   };
 
-  const chatName = chatSeleccionado?.name || "";
+  let chatName = chatSeleccionado?.name || "";
 
   useEffect(() => {
     // Intentar leer el usuario guardado del localStorage
@@ -86,12 +155,12 @@ export const Chat = ({}) => {
 
   return (
     <div>
-      <SidebarChat user={user} chats={chats} />
-      <ChatHeader chatName={chatName} />
+      <SidebarChat user={user} chats={chats} onSeleccionarChat={seleccionarChat} />
+      <ChatHeader chatName={chatSelected.name} />
       <main className="main-content">
-        <ChatMessages chatId={1} currentUser={user} />
+        <ChatMessages mensajes={mensajes} currentUser={usuarioGuardado}/>
       </main>
-      <ChatInput onSend={handleSend} onAttach={handleAttach} />
+      <ChatInput idUsuario={idUsuario} idChat={chatSelected?.id} onEnviar={handleSend} />
     </div>
   );
 };

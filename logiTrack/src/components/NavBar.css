@@ -1,94 +1,159 @@
-.icons svg {
-  display: block;
+/* RESET BUTTON AND LIST DEFAULT STYLES */
+button {
+  all: unset;
+  cursor: pointer;
 }
 
-.NV-container{
-    display: flex;
-    flex-direction: column;
-    margin-left: 0;
-    height: 100vh;
-    width: 25vw;
-    margin: 0;
-    padding: 0;
-    color: white;
+ul,
+li {
+  list-style: none;
+  margin: 0;
+  padding: 0;
 }
 
-.options-container{
-    display: flex;
-    align-items: center;
-    justify-content: space-between; 
-    height: 15%;
-    width: 100%;
-    margin: 0;
-    padding: 0;
-    border-bottom-style: solid;
-    border-right-style: solid;
-    border-radius: 1;
-    border-color: white;
-    background: blueviolet;
+/* MAIN CONTAINER */
+.NV-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 25vw;
+  color: white;
+  margin: 0;
+  padding: 0;
 }
 
-.navbar-container{
-    display: flex;
-    flex-direction: column;
-    height: 85%;
-    width: 100%;
-    margin: 0;
-    padding: 0;
-    background: blueviolet;
-    overflow-y: auto;
-    overflow-x: hidden;
+/* TOP BAR */
+.options-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 15%;
+  width: 90%;
+  border-bottom: 1px solid white;
+  border-right: 1px solid white;
+  background: #2f0459;
+  padding: 0 1rem;
 }
 
-.user-icon{
-    display: flex;
-    align-items: center;
-    font-size: 17px;
-    font-weight: 600;
-    cursor: pointer;
+/* USER ICON AND DROPDOWN */
+.user-icon-wrapper {
+  position: relative;
+  display: inline-block;
 }
 
-.options-others{
-    display: flex;
-    justify-content: flex-end;
+.user-icon {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 17px;
+  font-weight: 600;
+  color: white;
+}
+
+.user-icon:hover,
+.user-icon:focus {
+  text-decoration: underline;
+  outline: none;
+}
+
+.user-dropdown {
+  position: absolute;
+  top: 110%;
+  left: 0;
+  background-color: #ffffff;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  border-radius: 0.5rem;
+  z-index: 999;
+  min-width: 150px;
+  overflow: hidden;
+}
+
+.user-dropdown button.dropdown-item {
+  width: 100%;
+  padding: 0.6rem 1rem;
+  color: black;
+  text-align: left;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+
+.user-dropdown button.dropdown-item:hover,
+.user-dropdown button.dropdown-item:focus {
+  background-color: #f0f0f0;
+}
+
+/* OPTIONS ICON ON RIGHT */
+.options-others {
+  display: flex;
+  justify-content: flex-end;
 }
 
 .options-others .icons {
   margin: 7px;
-  padding: 0;
+  cursor: pointer;
   line-height: 1;
-  cursor: pointer;
+  color: white;
 }
 
-.navbar-element{
-    display: flex;
-    align-items: center;
-    height: 10%;
-    width: 100%;
-    font-size: 17px;
-    font-weight: 600;
-    cursor: pointer;
+.options-others .icons:hover {
+  transform: scale(1.05);
 }
 
-.navbar-element:hover{
-    background: #471575;
+/* NAVIGATION MENU */
+.navbar-container {
+  display: flex;
+  flex-direction: column;
+  height: 85%;
+  width: 100%;
+  background: #2f0459;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: #471575 #2f0459;
 }
 
-.navbar-selected{
-    background: #471575;
+.navbar-container::-webkit-scrollbar {
+  width: 6px;
+}
+.navbar-container::-webkit-scrollbar-thumb {
+  background-color: #471575;
+  border-radius: 10px;
 }
 
-.dropdown-arrow {
-  margin-left: auto;
-  padding: 4px;
-  cursor: pointer;
+/* NAV ITEMS */
+.navbar-element {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  height: 3.2rem;
+  width: 90%;
+  padding: 0.8rem 1rem;
+  font-size: 17px;
+  font-weight: 600;
+  background: transparent;
+  color: white;
+  transition: background 0.2s ease;
 }
 
+.navbar-element:hover,
+.navbar-element:focus-visible {
+  background: #471575;
+  outline: none;
+}
+
+.navbar-selected {
+  background: #471575;
+}
+
+/* ICONS INSIDE BUTTONS */
+.icons svg {
+  display: block;
+}
+
+/* ARROW ICON */
 .arrow-icon {
   margin-left: auto;
-  padding: 10px;
   transition: transform 0.2s ease;
-  cursor: pointer;
 }
 
 .arrow-icon.open {
@@ -96,24 +161,27 @@
 }
 
 .dropdown {
-  background: blueviolet;
+  background: #2f0459;
   padding-left: 1.5rem;
   display: flex;
   flex-direction: column;
 }
 
 .dropdown-item {
-  padding: 8px 0;
-  border-left-style: solid;
-  border-left-width: 1px;
-  border-color: white;
-  text-indent: 1rem;
-  cursor: pointer;
-  transition: background 0.2s;
+  display: block;
+  width: 100%;
+  padding: 0.6rem 1rem;
+  border-left: 1px solid white;
+  text-align: left;
+  color: white;
+  font-size: 0.95rem;
+  transition: background 0.2s ease;
 }
 
-.dropdown-item:hover {
+.dropdown-item:hover,
+.dropdown-item:focus-visible {
   text-decoration: underline;
+  outline: none;
 }
 
 .selected-project {
@@ -121,34 +189,12 @@
   font-weight: bold;
 }
 
-.user-icon-wrapper {
-  position: relative;
-  display: inline-block;
+.dropdown-item.empty {
+  font-style: italic;
+  opacity: 0.8;
 }
 
-.user-dropdown {
-  position: absolute;
-  top: 90%;
-  left: 50%;
-  background-color: #ffffff;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-  border-radius: 0.5rem;
-  overflow: hidden;
-  z-index: 999;
-  min-width: 150px;
-}
-
-.user-dropdown .dropdown-item {
-  padding: 0.5rem 1rem !important;
-  cursor: pointer;
-  white-space: nowrap;
-  color: black !important;
-  border-left: none !important;
-  text-indent: 0 !important;
-  background: none !important;
-  transition: background 0.2s;
-}
-
-.user-dropdown .dropdown-item:hover {
-  background-color: #f0f0f0 !important;
+button:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 2px;
 }

@@ -19,6 +19,12 @@ export const Tabla = ({ dataList, ViewMode, selectedProject }) => {
   };
 
   useEffect(() => {
+    if (Array.isArray(dataList)) {
+      setTasks(dataList);
+    }
+  }, [dataList]);
+
+  useEffect(() => {
     if (!editingTask) return;
 
     const fetchProjectMembers = async () => {
@@ -149,23 +155,29 @@ export const Tabla = ({ dataList, ViewMode, selectedProject }) => {
   };
 
   return (
-    <div className="tabla-container">
-      <table className="tabla-table">
+    <div
+      className="tabla-container"
+      role="region"
+      aria-label={
+        ViewMode === "Mis Tareas" ? "Tabla de mis tareas" : "Tabla de proyectos"
+      }
+    >
+      <table className="tabla-table" role="table">
         <thead>
-          <tr>
-            <th>Nombre</th>
-            {ViewMode === "Mis Tareas" && <th>Proyecto</th>}
-            <th>Prioridad</th>
-            <th>Estado</th>
-            <th>Fecha Entrega</th>
-            <th>Integrantes</th>
-            <th>Comentarios</th>
+          <tr role="row">
+            <th role="columnheader">Nombre</th>
+            {ViewMode === "Mis Tareas" && <th role="columnheader">Proyecto</th>}
+            <th role="columnheader">Prioridad</th>
+            <th role="columnheader">Estado</th>
+            <th role="columnheader">Fecha Entrega</th>
+            <th role="columnheader">Integrantes</th>
+            <th role="columnheader">Comentarios</th>
           </tr>
         </thead>
         <tbody>
           {tasks.map((task) => (
-            <tr key={task.id} className="task-row">
-              <td style={{ position: "relative" }}>
+            <tr key={task.id} role="row" className="task-row">
+              <td role="cell" style={{ position: "relative" }}>
                 {Boolean(task.subtaskOf) && (
                   <div className="subtask-label">
                     Subtarea: <b>{getParentName(task)}</b>
@@ -176,28 +188,40 @@ export const Tabla = ({ dataList, ViewMode, selectedProject }) => {
                   <button
                     className="edit-btn"
                     onClick={() => openEditor(task.id)}
-                    title="Editar tarea"
+                    title={`Editar tarea ${task.name}`}
+                    aria-label={`Editar tarea ${task.name}`}
+                    tabIndex={0}
+                    onKeyDown={(e) => e.key === "Enter" && openEditor(task.id)}
                   >
                     Editar
                   </button>
                 )}
               </td>
 
-              {ViewMode === "Mis Tareas" && <td>{task.project || "-"}</td>}
-              <td>{getPriorityEmoji(task.priority)}</td>
-              <td>{task.state}</td>
-              <td>{task.dueDate}</td>
-              <td>
+              {ViewMode === "Mis Tareas" && (
+                <td role="cell">{task.project || "-"}</td>
+              )}
+              <td role="cell" aria-label={`Prioridad ${task.priority}`}>
+                {getPriorityEmoji(task.priority)}
+              </td>
+              <td role="cell">{task.state}</td>
+              <td role="cell">{task.dueDate}</td>
+              <td role="cell">
                 {Array.isArray(task.members) ? task.members.join(", ") : ""}
               </td>
-              <td>
-                {mostRecentCommentText(task) ? (
+              <td role="cell">
+                {task.comments && task.comments.length ? (
                   <button
                     className="comment-preview"
                     onClick={() => openComments(task.id)}
-                    title="Ver todos los comentarios"
+                    title={`Ver comentarios de ${task.name}`}
+                    aria-label={`Comentarios de ${task.name}: ${task.comments[0].text}`}
+                    tabIndex={0}
+                    onKeyDown={(e) =>
+                      e.key === "Enter" && openComments(task.id)
+                    }
                   >
-                    {mostRecentCommentText(task)}
+                    {task.comments[0].text}
                   </button>
                 ) : (
                   <div className="no-comments-cell">
@@ -206,7 +230,12 @@ export const Tabla = ({ dataList, ViewMode, selectedProject }) => {
                       <button
                         className="add-comment-btn"
                         onClick={() => openComments(task.id)}
-                        title="Agregar comentario"
+                        title={`Agregar comentario a ${task.name}`}
+                        aria-label={`Agregar comentario a ${task.name}`}
+                        tabIndex={0}
+                        onKeyDown={(e) =>
+                          e.key === "Enter" && openComments(task.id)
+                        }
                       >
                         💬
                       </button>
@@ -221,16 +250,29 @@ export const Tabla = ({ dataList, ViewMode, selectedProject }) => {
 
       {ViewMode === "Mis Proyectos" && (
         <div className="add-row">
-          <button className="add-btn" onClick={handleAddTask}>
+          <button
+            className="add-btn"
+            onClick={handleAddTask}
+            aria-label="Agregar nueva tarea"
+            tabIndex={0}
+            onKeyDown={(e) => e.key === "Enter" && handleAddTask()}
+          >
             ➕ Agregar tarea
           </button>
         </div>
       )}
 
+      {/* Editor Modal */}
       {isEditorOpen && editingTask && (
-        <div className="modal-overlay" onClick={cancelEdits}>
+        <div
+          className="modal-overlay"
+          onClick={cancelEdits}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="edit-task-title"
+        >
           <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <h3>Editar tarea</h3>
+            <h3 id="edit-task-title">Editar tarea</h3>
             <label>
               Nombre
               <input
@@ -241,6 +283,7 @@ export const Tabla = ({ dataList, ViewMode, selectedProject }) => {
                 }
               />
             </label>
+
             <label>
               Prioridad
               <select
@@ -257,6 +300,7 @@ export const Tabla = ({ dataList, ViewMode, selectedProject }) => {
                 <option value={3}>🟢 3</option>
               </select>
             </label>
+
             <label>
               Estado
               <select
@@ -270,6 +314,7 @@ export const Tabla = ({ dataList, ViewMode, selectedProject }) => {
                 <option value="Sin iniciar">Sin iniciar</option>
               </select>
             </label>
+
             <label>
               Fecha de entrega
               <input
@@ -287,17 +332,25 @@ export const Tabla = ({ dataList, ViewMode, selectedProject }) => {
                 {availableMembers.map((member) => {
                   const isMember = editingTask.members?.includes(member);
                   return (
-                    <div key={member} className="member-item">
+                    <div
+                      key={member}
+                      className={`member-item ${
+                        isMember ? "member-selected" : ""
+                      }`}
+                    >
                       <span>{member}</span>
                       <button
                         className="small"
-                        onClick={() =>
+                        onClick={() => {
                           setEditingTask((prev) => ({
                             ...prev,
                             members: isMember
                               ? prev.members.filter((m) => m !== member)
                               : [...(prev.members || []), member],
-                          }))
+                          }));
+                        }}
+                        aria-label={
+                          isMember ? `Quitar ${member}` : `Agregar ${member}`
                         }
                       >
                         {isMember ? "-" : "+"}
@@ -321,15 +374,28 @@ export const Tabla = ({ dataList, ViewMode, selectedProject }) => {
               >
                 Eliminar
               </button>
+              <button
+                onClick={() => handleAddSubtask(editingTask.id)}
+                className="subtask"
+              >
+                Agregar subtarea
+              </button>
             </div>
           </div>
         </div>
       )}
 
+      {/* Comments Modal */}
       {commentsTask && (
-        <div className="modal-overlay" onClick={() => setCommentsTask(null)}>
+        <div
+          className="modal-overlay"
+          onClick={() => setCommentsTask(null)}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="comments-title"
+        >
           <div className="comments-modal" onClick={(e) => e.stopPropagation()}>
-            <h3>Comentarios</h3>
+            <h3 id="comments-title">Comentarios</h3>
             <div className="comments-list">
               {Array.isArray(commentsTask.comments) &&
               commentsTask.comments.length ? (
@@ -342,6 +408,7 @@ export const Tabla = ({ dataList, ViewMode, selectedProject }) => {
                 <div>No hay comentarios</div>
               )}
             </div>
+
             {ViewMode !== "Proyectos Anteriores" && (
               <div className="add-comment">
                 <input

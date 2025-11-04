@@ -130,33 +130,61 @@ export const Notificaciones = () => {
   };
 
   return (
-    <div className="notificaciones-wrapper">
-      <table className="notificaciones-table">
+    <div
+      className="notificaciones-wrapper"
+      role="region"
+      aria-label="Lista de notificaciones"
+    >
+      <table
+        className="notificaciones-table"
+        role="table"
+        aria-label="Tabla de notificaciones"
+      >
         <thead>
-          <tr>
-            <th className="message-col">Mensaje</th>
-            <th>Fecha</th>
-            <th>Hora</th>
-            <th></th>
+          <tr role="row">
+            <th role="columnheader" className="message-col">
+              Mensaje
+            </th>
+            <th role="columnheader">Fecha</th>
+            <th role="columnheader">Hora</th>
+            <th role="columnheader">Acción</th>
           </tr>
         </thead>
         <tbody>
-          {dataList.map((item) => (
-            <tr key={item.id}>
-              <td className="message-col">{item.message}</td>
-              <td>{item.date}</td>
-              <td>{item.time}</td>
-              <td>
-                <button
-                  className="delete-btn"
-                  onClick={() => handleDelete(item.id)}
-                  title="Eliminar notificación"
-                >
-                  ❌
-                </button>
+          {dataList.length > 0 ? (
+            dataList.map((item) => (
+              <tr key={item.id} role="row">
+                <td role="cell" className="message-col">
+                  {item.message}
+                </td>
+                <td role="cell">{item.date}</td>
+                <td role="cell">{item.time}</td>
+                <td role="cell">
+                  <button
+                    className="delete-btn"
+                    onClick={() => handleDelete(item.id)}
+                    aria-label={`Eliminar notificación: ${item.message}`}
+                    tabIndex={0}
+                    onKeyDown={(e) =>
+                      e.key === "Enter" && handleDelete(item.id)
+                    }
+                  >
+                    ❌
+                  </button>
+                </td>
+              </tr>
+            ))
+          ) : (
+            <tr role="row">
+              <td
+                colSpan="4"
+                role="cell"
+                style={{ textAlign: "center", padding: "1rem" }}
+              >
+                No hay notificaciones
               </td>
             </tr>
-          ))}
+          )}
         </tbody>
       </table>
     </div>

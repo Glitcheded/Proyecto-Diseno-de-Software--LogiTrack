@@ -42,6 +42,12 @@ export const Calendario = ({ dataList, ViewMode, selectedProject }) => {
   };
 
   useEffect(() => {
+    if (Array.isArray(dataList)) {
+      setTasks(dataList);
+    }
+  }, [dataList]);
+
+  useEffect(() => {
     if (!editingTask) return;
 
     const fetchProjectMembers = async () => {
@@ -239,9 +245,16 @@ export const Calendario = ({ dataList, ViewMode, selectedProject }) => {
 
     for (let day = 1; day <= daysInMonth; day++) {
       const tasksForDay = getTasksForDay(day);
+      const dateString = `${months[currentMonth]} ${day}, ${currentYear}`;
 
       cells.push(
-        <div key={day} className="calendar-cell">
+        <div
+          key={day}
+          className="calendar-cell"
+          role="gridcell"
+          aria-label={`${dateString}, ${tasksForDay.length} tarea(s)`}
+          tabIndex={0}
+        >
           <div className="day-header">
             <div className="day-number">{day}</div>
             {ViewMode === "Mis Proyectos" && (
@@ -252,17 +265,21 @@ export const Calendario = ({ dataList, ViewMode, selectedProject }) => {
                   handleAddTaskForDay(day);
                 }}
                 title="Agregar tarea para este día"
+                aria-label={`Agregar tarea para ${dateString}`}
               >
                 ➕
               </button>
             )}
           </div>
-
           {tasksForDay.map((task) => (
             <div
               key={task.id}
               className="task-card"
+              role="button"
+              tabIndex={0}
               onClick={() => handleTaskClick(task)}
+              onKeyDown={(e) => e.key === "Enter" && handleTaskClick(task)}
+              aria-label={`Tarea: ${task.name}, Proyecto: ${task.project}, Prioridad: ${task.priority}`}
             >
               <div className="task-preview">
                 {ViewMode !== "Proyectos Anteriores" && (
@@ -273,11 +290,11 @@ export const Calendario = ({ dataList, ViewMode, selectedProject }) => {
                       openEditor(task.id);
                     }}
                     title="Editar tarea"
+                    aria-label={`Editar tarea ${task.name}`}
                   >
                     Editar
                   </button>
                 )}
-
                 {Boolean(task.subtaskOf) && (
                   <div className="subtask-label">
                     Subtarea: <b>{getParentName(task)}</b>
@@ -293,19 +310,29 @@ export const Calendario = ({ dataList, ViewMode, selectedProject }) => {
         </div>
       );
     }
+
     return cells;
   };
 
   return (
-    <div className="calendar-container">
+    <div
+      className="calendar-container"
+      role="region"
+      aria-label={`Calendario del mes de ${months[currentMonth]} ${currentYear}`}
+    >
       <div className="calendar-header">
         <FontAwesomeIcon
           icon={faChevronLeft}
           className="arrow-btn"
           onClick={prevMonth}
+          role="button"
+          tabIndex={0}
+          aria-label="Mes anterior"
+          onKeyDown={(e) => e.key === "Enter" && prevMonth()}
         />
         <div className="month-selector">
           <select
+            id="month-select"
             value={currentMonth}
             onChange={(e) => setCurrentMonth(Number(e.target.value))}
           >
@@ -316,6 +343,7 @@ export const Calendario = ({ dataList, ViewMode, selectedProject }) => {
             ))}
           </select>
           <select
+            id="year-select"
             value={currentYear}
             onChange={(e) => setCurrentYear(Number(e.target.value))}
           >
@@ -332,12 +360,25 @@ export const Calendario = ({ dataList, ViewMode, selectedProject }) => {
           icon={faChevronRight}
           className="arrow-btn"
           onClick={nextMonth}
+          role="button"
+          tabIndex={0}
+          aria-label="Mes siguiente"
+          onKeyDown={(e) => e.key === "Enter" && nextMonth()}
         />
       </div>
 
-      <div className="calendar-grid">
+      <div
+        className="calendar-grid"
+        role="grid"
+        aria-label="Días de la semana y tareas"
+      >
         {daysOfWeek.map((d) => (
-          <div key={d} className="calendar-day-header">
+          <div
+            key={d}
+            className="calendar-day-header"
+            role="columnheader"
+            aria-label={d}
+          >
             {d}
           </div>
         ))}
@@ -419,11 +460,17 @@ export const Calendario = ({ dataList, ViewMode, selectedProject }) => {
         </div>
       )}
 
+      {/* Editor Modal */}
       {isEditorOpen && editingTask && (
-        <div className="modal-overlay" onClick={cancelEdits}>
+        <div
+          className="modal-overlay"
+          onClick={cancelEdits}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="edit-task-title"
+        >
           <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <h3>Editar tarea</h3>
-
+            <h3 id="edit-task-title">Editar tarea</h3>
             <label>
               Nombre
               <input
@@ -483,7 +530,12 @@ export const Calendario = ({ dataList, ViewMode, selectedProject }) => {
                 {availableMembers.map((member) => {
                   const isMember = editingTask.members?.includes(member);
                   return (
-                    <div key={member} className="member-item">
+                    <div
+                      key={member}
+                      className={`member-item ${
+                        isMember ? "member-selected" : ""
+                      }`}
+                    >
                       <span>{member}</span>
                       <button
                         className="small"
@@ -495,6 +547,9 @@ export const Calendario = ({ dataList, ViewMode, selectedProject }) => {
                               : [...(prev.members || []), member],
                           }));
                         }}
+                        aria-label={
+                          isMember ? `Quitar ${member}` : `Agregar ${member}`
+                        }
                       >
                         {isMember ? "-" : "+"}
                       </button>
@@ -528,11 +583,17 @@ export const Calendario = ({ dataList, ViewMode, selectedProject }) => {
         </div>
       )}
 
+      {/* Comments Modal */}
       {commentsTask && (
-        <div className="modal-overlay" onClick={() => setCommentsTask(null)}>
+        <div
+          className="modal-overlay"
+          onClick={() => setCommentsTask(null)}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="comments-title"
+        >
           <div className="comments-modal" onClick={(e) => e.stopPropagation()}>
-            <h3>Comentarios</h3>
-
+            <h3 id="comments-title">Comentarios</h3>
             <div className="comments-list">
               {Array.isArray(commentsTask.comments) &&
               commentsTask.comments.length ? (

@@ -1,4 +1,4 @@
-import { crearChatPrivado, getChatsByCorreo } from '../models/chatModel.js';
+import { crearChatPrivado, getChatsByCorreo, insertarMensaje, obtenerMensajesPorChat  } from '../models/chatModel.js';
 
 // Controlador para obtener todos los chats
 export async function obtenerChats(req, res) {
@@ -27,6 +27,38 @@ export async function crearChatPrivadoHandler(req, res) {
     res.status(200).json(resultado);
   } catch (error) {
     console.error('❌ Error al crear chat privado:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+}
+
+export async function crearMensaje(req, res) {
+  try {
+    const { idUsuario, idChat, contenido } = req.body;
+
+    if (!idUsuario || !idChat || !contenido) {
+      return res.status(400).json({ error: 'Faltan datos obligatorios' });
+    }
+
+    const data = await insertarMensaje(idUsuario, idChat, contenido);
+    return res.status(201).json(data);
+  } catch (error) {
+    console.error('Error en crearMensaje:', error);
+    return res.status(500).json({ error: error.message }); // ✅ JSON correcto
+  }
+}
+
+export async function listarMensajesPorChat(req, res) {
+  try {
+    const { idChat } = req.params;
+
+    if (!idChat) {
+      return res.status(400).json({ error: "Falta el parámetro idChat" });
+    }
+
+    const mensajes = await obtenerMensajesPorChat(idChat);
+    res.status(200).json(mensajes);
+  } catch (error) {
+    console.error("Error en listarMensajesPorChat:", error);
     res.status(500).json({ error: error.message });
   }
 }

@@ -4,7 +4,7 @@ import {
     getTareaPorId, actualizarTarea,
     eliminarTarea, asignarUsuarioATarea,
     agregarComentario, getMiembrosTarea,
-    removerMiembroTarea
+    removerMiembroTarea, getTareasPorProyecto
 } from '../controllers/taskController.js';
 import { checkAuth } from '../middleware/authMiddleware.js';
 
@@ -41,5 +41,8 @@ router.get('/:id/members', getMiembrosTarea);
 
 // DELETE /api/tasks/:idTarea/members/:idUsuario
 router.delete('/:idTarea/members/:idUsuario', removerMiembroTarea);
+
+// GET /api/tasks/proyecto/:idProyecto
+router.get("/proyecto/:idProyecto", getTareasPorProyecto);
 
 export default router;

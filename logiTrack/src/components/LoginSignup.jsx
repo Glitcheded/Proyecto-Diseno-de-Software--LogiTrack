@@ -1,39 +1,32 @@
 import React, { useState } from "react";
 import "./LoginSignup.css";
-
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faUser } from "@fortawesome/free-solid-svg-icons";
-import { faEnvelope } from "@fortawesome/free-solid-svg-icons";
-import { faLock } from "@fortawesome/free-solid-svg-icons";
+import { faUser, faEnvelope, faLock } from "@fortawesome/free-solid-svg-icons";
+import { useNavigate } from "react-router-dom";
 
 const userIco = <FontAwesomeIcon icon={faUser} size="1x" />;
 const mailIco = <FontAwesomeIcon icon={faEnvelope} size="1.5x" />;
 const lockIco = <FontAwesomeIcon icon={faLock} size="1.5x" />;
-import { useNavigate } from "react-router-dom"; // for navigation (React Router)
 
-//********************************************************************* */
-// Ejemplo de cómo leer el ID en cualquier componente:
-const usuarioGuardado = JSON.parse(localStorage.getItem("usuario"));
-
+// Safe localStorage access
+const usuarioGuardado = JSON.parse(localStorage.getItem("usuario") || "null");
 if (usuarioGuardado) {
-  const idUsuario = usuarioGuardado.idUsuario;
-  const nombreUsuario = usuarioGuardado.nombre;
-
-  console.log("ID:", idUsuario);
-  console.log("Nombre:", nombreUsuario);
+  console.log("ID:", usuarioGuardado.idUsuario);
+  console.log("Nombre:", usuarioGuardado.nombre);
 }
-//********************************************************************** */
+
 export const LoginSignup = () => {
   const [action, setAction] = useState("Inciar Sesión");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [errorMsg, setErrorMsg] = useState("");
 
   const navigate = useNavigate();
 
-  const handleSubmit = async () => {
-    // Se cambió, falta probar***
-    const baseURL = "http://localhost:3001/api"; // URL del backend
+  const handleSubmit = async (e) => {
+    e.preventDefault(); // prevent reload
+    const baseURL = "http://localhost:3001/api";
     let endpoint = "";
     let payload = {};
 
@@ -43,7 +36,7 @@ export const LoginSignup = () => {
         payload = { email, password };
       } else if (action === "Crear Cuenta") {
         endpoint = "/auth/signup";
-        payload = { name, email, password }; // 'name' es el estado que él ya tiene
+        payload = { name, email, password };
       }
 
       const response = await fetch(baseURL + endpoint, {
@@ -56,114 +49,167 @@ export const LoginSignup = () => {
 
       if (response.ok) {
         if (action === "Inciar Sesión") {
-          // Guarda el token
-          if (data.session.access_token) {
+          if (data.session?.access_token) {
             localStorage.setItem("supabaseToken", data.session.access_token);
-            // Guarda la info del usuario
             localStorage.setItem("usuario", JSON.stringify(data.usuario));
           }
         }
 
         if (action === "Crear Cuenta") {
-          alert("Cuenta creada. Por favor, inicia sesión.");
-          setAction("Inciar Sesión"); // Lo regresa al login
+          setErrorMsg("Cuenta creada. Por favor, inicia sesión.");
+          setAction("Inciar Sesión");
           return;
         }
 
-        navigate("/home"); // Navegación exitosa
+        navigate("/home");
       } else {
-        alert("Error: " + data.error);
+        setErrorMsg(data.error || "Error al procesar la solicitud.");
       }
     } catch (error) {
       console.error("Error en el envío:", error);
-      alert("Error de conexión con el servidor backend");
+      setErrorMsg("Error de conexión con el servidor backend");
     }
   };
 
   return (
-    <div className="container">
-      <header>
-        <div className="login-header">
-          <h1>LOGITRACK</h1>
-        </div>
+    <div className="container" role="main">
+      <header className="login-header">
+        <h1>LOGITRACK</h1>
       </header>
+
       <div className="horizontal-container">
         <div className="login-container">
-          <h2>Bienvenido de vuelta</h2>
-          <div className="login-menu-container">
-            <div className="submit-container">
-              <div
+          <h2 id="auth-heading">
+            {action === "Inciar Sesión"
+              ? "Bienvenido de vuelta"
+              : "Crea tu cuenta"}
+          </h2>
+
+          <div className="login-menu-container" aria-labelledby="auth-heading">
+            <div
+              className="submit-container"
+              role="tablist"
+              aria-label="Tipo de autenticación"
+            >
+              <button
+                type="button"
+                role="tab"
+                aria-selected={action === "Inciar Sesión"}
                 className={
                   action === "Crear Cuenta" ? "submit-left gray" : "submit-left"
                 }
-                onClick={() => {
-                  setAction("Inciar Sesión");
-                }}
+                onClick={() => setAction("Inciar Sesión")}
               >
                 Inciar Sesión
-              </div>
-              <div
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={action === "Crear Cuenta"}
                 className={
                   action === "Inciar Sesión"
                     ? "submit-right gray"
                     : "submit-right"
                 }
-                onClick={() => {
-                  setAction("Crear Cuenta");
-                }}
+                onClick={() => setAction("Crear Cuenta")}
               >
                 Crear Cuenta
-              </div>
+              </button>
             </div>
+
             <p>Ingresa tus datos</p>
-            <div className="inputs">
-              {action === "Inciar Sesión" ? null : (
+
+            <form
+              onSubmit={handleSubmit}
+              aria-describedby="form-status"
+              noValidate
+            >
+              <div className="inputs">
+                {action === "Crear Cuenta" && (
+                  <div className="input">
+                    <div className="icons" aria-hidden="true">
+                      {userIco}
+                    </div>
+                    <input
+                      id="name"
+                      type="text"
+                      placeholder="Nombre"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      required
+                      autoComplete="name"
+                    />
+                  </div>
+                )}
+
                 <div className="input">
-                  <div className="icons">{userIco}</div>
+                  <div className="icons" aria-hidden="true">
+                    {mailIco}
+                  </div>
                   <input
-                    type="text"
-                    placeholder="Nombre"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    id="email"
+                    type="email"
+                    placeholder="ejemplo@gmail.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    autoComplete="email"
                   />
                 </div>
+
+                <div className="input">
+                  <div className="icons" aria-hidden="true">
+                    {lockIco}
+                  </div>
+                  <input
+                    id="password"
+                    type="password"
+                    placeholder="Contraseña"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    autoComplete={
+                      action === "Inciar Sesión"
+                        ? "current-password"
+                        : "new-password"
+                    }
+                  />
+                </div>
+              </div>
+
+              {errorMsg && (
+                <div
+                  id="form-status"
+                  role="alert"
+                  aria-live="assertive"
+                  className="forgot-password"
+                  style={{ color: "red" }}
+                >
+                  {errorMsg}
+                </div>
               )}
-              <div className="input">
-                <div className="icons">{mailIco}</div>
-                <input
-                  type="email"
-                  placeholder="ejemplo@gmail.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </div>
-              <div className="input">
-                <div className="icons">{lockIco}</div>
-                <input
-                  type="password"
-                  placeholder="Contraseña"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-              </div>
-            </div>
-            {action === "Crear Cuenta" ? (
-              <div></div>
-            ) : (
-              <div className="forgot-password">
-                Olvidaste tu contraseña? <span>Click aquí!</span>
-              </div>
-            )}
-            <div className="submit-button" onClick={handleSubmit}>
-              <div className="text">{action}</div>
-            </div>
-          </div>
-          {/* Quitar este después */}
-          <div className="tempLogin" onClick={() => navigate("/home")}>
-            Temp Login
+
+              {action === "Inciar Sesión" && (
+                <div className="forgot-password">
+                  ¿Olvidaste tu contraseña?{" "}
+                  <button type="button" className="link-like">
+                    Haz clic aquí!
+                  </button>
+                </div>
+              )}
+
+              <button type="submit" className="submit-button">
+                <span className="text">{action}</span>
+              </button>
+            </form>
           </div>
         </div>
-        <div className="background-image"></div>
+
+        <div
+          className="background-image"
+          role="presentation"
+          aria-hidden="true"
+        ></div>
       </div>
     </div>
   );

@@ -19,8 +19,10 @@ export const ChatHeader = ({ chatName }) => {
   }, []);
 
   return (
-    <div className="chat-header">
-      <h2 className="chat-title">{chatName}</h2>
+    <div className="chat-header" role="banner" aria-label="Encabezado del chat">
+      <h2 className="chat-title" aria-live="polite">
+        {chatName}
+      </h2>
     </div>
   );
 };

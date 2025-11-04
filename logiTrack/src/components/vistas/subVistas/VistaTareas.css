@@ -1,28 +1,39 @@
-.vista-container{
-    height: 100%;
-    width: 75vw;
+.vista-container {
+  height: 100%;
+  width: 75vw;
 }
 
-.vista-selector{
-    display: flex;
-    height: 15%;
-    width: 100%;
-    border-bottom-style: solid;
-    border-radius: 1;
-    border-color: black;
+.vista-selector {
+  display: flex;
+  align-items: center;
+  height: 15%;
+  width: 100%;
+  border-bottom: 2px solid black;
+  gap: 10px;
 }
 
-.vista-options{
-    margin: 10px;
-    font-size: 17px;
-    font-weight: 600;
-    cursor: pointer;
+.vista-options {
+  background: none;
+  border: none;
+  margin: 10px;
+  font-size: 17px;
+  font-weight: 600;
+  cursor: pointer;
+  color: #222;
 }
 
-.vista-options-selected{
-    text-decoration: underline;
+.vista-options:hover,
+.vista-options:focus {
+  text-decoration: underline;
+  outline: none;
 }
 
-.vista-display{
-    height: 15%;
+.vista-options-selected {
+  text-decoration: underline;
+  font-weight: 700;
+}
+
+.vista-display {
+  height: 85%;
+  width: 100%;
 }
