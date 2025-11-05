@@ -413,7 +413,6 @@ export const Calendario = ({
     for (let day = 1; day <= daysInMonth; day++) {
       const tasksForDay = getTasksForDay(day);
 
-      // Build proper YYYY-MM-DD string for the day
       const dateStringForTask = `${currentYear}-${String(
         currentMonth + 1
       ).padStart(2, "0")}-${String(day).padStart(2, "0")}`;

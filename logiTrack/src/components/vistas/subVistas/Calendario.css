@@ -145,6 +145,10 @@
   float: right;
 }
 
+.close-btn:hover, .close-btn:focus{
+  transform: scale(1.1);
+}
+
 .calendar-cell {
   position: relative;
   border: 1px solid #ddd;
