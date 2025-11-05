@@ -3,7 +3,7 @@ import {
     getMisTareas, crearTarea,
     getTareaPorId, actualizarTarea,
     eliminarTarea, asignarUsuarioATarea,
-    agregarComentario, getMiembrosTarea,
+    agregarComentario, getMiembrosProyecto,
     removerMiembroTarea, getTareasPorProyecto
 } from '../controllers/taskController.js';
 import { checkAuth } from '../middleware/authMiddleware.js';
@@ -37,7 +37,7 @@ router.post('/:id/assign', asignarUsuarioATarea);
 router.post('/:id/comment', agregarComentario);
 
 // GET /api/tasks/:id/members
-router.get('/:id/members', getMiembrosTarea);
+router.get('/:id/members', getMiembrosProyecto);
 
 // DELETE /api/tasks/:idTarea/members/:idUsuario
 router.delete('/:idTarea/members/:idUsuario', removerMiembroTarea);

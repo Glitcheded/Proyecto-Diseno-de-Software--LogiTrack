@@ -129,10 +129,16 @@ export const agregarComentario = async (req, res) => {
 };
 
 //Obtiene los miembros de una tarea GET /api/tasks/:id/members
-export const getMiembrosTarea = async (req, res) => {
+export const getMiembrosProyecto = async (req, res) => {
     try {
         const { id } = req.params;
-        const miembros = await taskModel.getMiembrosTarea(id);
+
+        console.log("Here is the id: ", id)
+
+        const miembros = await taskModel.getMiembrosProyecto(id);
+
+        console.log("And here's what I got from that: ", miembros)
+
         res.status(200).json(miembros);
     } catch (error) {
         res.status(500).json({ error: error.message });

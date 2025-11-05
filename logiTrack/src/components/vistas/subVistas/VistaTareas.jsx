@@ -14,49 +14,47 @@ export const VistaTareas = ({ ViewMode, selectedProject = null }) => {
 
   const [dataList, setDataList] = useState([]);
 
-  useEffect(() => {
-    const fetchTareas = async () => {
-      try {
-        const accessToken = localStorage.getItem("supabaseToken");
-        if (!accessToken) {
-          console.warn("No access token found.");
-          setDataList([]);
-          return;
-        }
-
-        let url = "";
-
-        if (ViewMode === "Mis Tareas") {
-          url = `${baseURL}/tasks/mis-tareas`;
-        } else if (selectedProject) {
-          url = `${baseURL}/tasks/proyecto/${selectedProject}`;
-        } else {
-          setDataList([]);
-          return;
-        }
-
-        const response = await fetch(url, {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`,
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error(`Error al obtener tareas: ${response.statusText}`);
-        }
-
-        const result = await response.json();
-
-        console.log("Return data tasks:", { result });
-
-        setDataList(result);
-      } catch (error) {
-        console.error("Error fetching tareas:", error);
+  const fetchTareas = async () => {
+    try {
+      const accessToken = localStorage.getItem("supabaseToken");
+      if (!accessToken) {
+        console.warn("No access token found.");
         setDataList([]);
+        return;
       }
-    };
 
+      let url = "";
+
+      if (ViewMode === "Mis Tareas") {
+        url = `${baseURL}/tasks/mis-tareas`;
+      } else if (selectedProject) {
+        url = `${baseURL}/tasks/proyecto/${selectedProject}`;
+      } else {
+        setDataList([]);
+        return;
+      }
+
+      const response = await fetch(url, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error al obtener tareas: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      console.log("Return data tasks:", { result });
+      setDataList(result);
+    } catch (error) {
+      console.error("Error fetching tareas:", error);
+      setDataList([]);
+    }
+  };
+
+  useEffect(() => {
     fetchTareas();
   }, [ViewMode, selectedProject]);
 
@@ -64,7 +62,7 @@ export const VistaTareas = ({ ViewMode, selectedProject = null }) => {
     console.log("dataList updated:", dataList);
   }, [dataList]);
 
-  const commonProps = { dataList, ViewMode, selectedProject };
+  const commonProps = { dataList, ViewMode, selectedProject, fetchTareas };
 
   const renderSubView = () => {
     switch (activeViewMode) {

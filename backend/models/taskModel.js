@@ -8,7 +8,10 @@ export const formatTaskData = (data) => {
       return {
         id: tarea.idTarea,
         name: tarea.nombre,
-        project: tarea.Proyecto?.nombre || "Sin Proyecto",
+        project: {
+          id: tarea.Proyecto?.idProyecto || null,
+          name: tarea.Proyecto?.nombre || "Sin Proyecto",
+        },
         state: tarea.EstadoTarea?.nombre || "Sin Estado",
         prioridad: tarea.Prioridad,
         dueDate: tarea.fechaEntrega,
@@ -37,7 +40,10 @@ export const getTareasPorUsuario = async (idUsuario) => {
         nombre,
         fechaEntrega,
         idTareaMadre,
-        Proyecto ( nombre ),
+        Proyecto (
+          idProyecto,
+          nombre
+        ),
         EstadoTarea ( nombre ),
         Prioridad ( nivel ),
         Comentario (
@@ -51,12 +57,13 @@ export const getTareasPorUsuario = async (idUsuario) => {
       )
     `)
     .eq("idUsuario", idUsuario)
-    .neq("Tarea.EstadoTarea.nombre", "Hecho"); // Solo tareas activas
+    .eq("Tarea.activado", true);
 
   if (error) throw error;
 
   return formatTaskData(data);
 };
+
 
 export const getTareasPorProyecto = async (idProyecto) => {
   const { data, error } = await supabase
@@ -66,7 +73,10 @@ export const getTareasPorProyecto = async (idProyecto) => {
       nombre,
       fechaEntrega,
       idTareaMadre,
-      Proyecto ( nombre ),
+      Proyecto (
+          idProyecto,
+          nombre
+        ),
       EstadoTarea ( nombre ),
       Prioridad ( nivel ),
       Comentario (
@@ -79,7 +89,8 @@ export const getTareasPorProyecto = async (idProyecto) => {
       )
     `)
     .eq("idProyecto", idProyecto)
-    .neq("EstadoTarea.nombre", "Hecho"); // Excluir tareas completadas
+    .eq("activado", true)
+    
 
   if (error) throw error;
 
@@ -163,17 +174,23 @@ export const crearComentario = async (idTarea, idUsuario, comentario) => {
     return data;
 };
 
-//Obtiene los miembros de una tarea
-export const getMiembrosTarea = async (idTarea) => {
-    const { data, error } = await supabase
-        .from('UsuarioPorTarea')
-        .select(`
-            Usuario ( idUsuario, nombre, apellido, email ) 
-        `)
-        .eq('idTarea', idTarea);
-        
-    if (error) throw error;
-    return data;
+//Obtiene los miembros de un proyecto
+export const getMiembrosProyecto = async (idProyecto) => {
+  const { data, error } = await supabase
+    .from("UsuarioPorProyecto")
+    .select(`
+      Usuario (
+        idUsuario,
+        nombre,
+        apellido,
+        email
+      )
+    `)
+    .eq("idProyecto", idProyecto);
+
+  if (error) throw error;
+
+  return data;
 };
 
 //Quita un usuario de una tarea

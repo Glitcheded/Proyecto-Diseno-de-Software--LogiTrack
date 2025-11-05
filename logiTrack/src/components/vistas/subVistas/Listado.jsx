@@ -2,8 +2,14 @@ import React, { useState, useEffect } from "react";
 import "./Listado.css";
 
 const currentUser = "Giovanni";
+const baseURL = "http://localhost:3001/api";
 
-export const Listado = ({ dataList, ViewMode, selectedProject }) => {
+export const Listado = ({
+  dataList,
+  ViewMode,
+  selectedProject,
+  fetchTareas,
+}) => {
   const [tasks, setTasks] = useState(() =>
     Array.isArray(dataList) ? dataList.slice() : []
   );
@@ -20,83 +26,99 @@ export const Listado = ({ dataList, ViewMode, selectedProject }) => {
     }
   }, [dataList]);
 
-  useEffect(() => {
-    if (!editingTask) return;
-    const fetchProjectMembers = async () => {
-      try {
-        const response = await new Promise((resolve) =>
-          setTimeout(
-            () =>
-              resolve([
-                "Giovanni",
-                "Laura",
-                "Carlos",
-                "Ana",
-                "María",
-                "José",
-                "David",
-                "Sofía",
-                "Pablo",
-                "Andrea",
-              ]),
-            200
-          )
-        );
-        const sorted = response.sort((a, b) => {
-          const aIsMember = editingTask?.members?.includes(a);
-          const bIsMember = editingTask?.members?.includes(b);
-          return aIsMember === bIsMember ? 0 : aIsMember ? -1 : 1;
-        });
-        setAvailableMembers(sorted);
-      } catch (err) {
-        console.error("Error fetching members:", err);
+  const fetchProjectMembers = async (idProyecto) => {
+    try {
+      const accessToken = localStorage.getItem("supabaseToken");
+      if (!accessToken) {
+        console.warn("No access token found.");
+        return;
       }
-    };
-    fetchProjectMembers();
-  }, [editingTask]);
 
-  const makeId = () =>
-    Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+      const response = await fetch(`${baseURL}/tasks/${idProyecto}/members`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
 
-  const handleAddTask = () => {
-    const newTask = {
-      id: makeId(),
-      name: "Nueva tarea",
-      project: "-",
-      priority: 2,
-      state: "Sin iniciar",
-      dueDate: new Date().toISOString().slice(0, 10),
-      members: [],
-      comments: [],
-      subtaskOf: null,
-    };
-    setTasks((t) => [...t, newTask]);
-    setEditingTask({ ...newTask });
-    setIsEditorOpen(true);
+      if (!response.ok) {
+        throw new Error(`Error al obtener miembros: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+
+      console.log("Mi data:", data);
+
+      const formattedMembers = data.map((m) => ({
+        id: m.Usuario.idUsuario,
+        name: `${m.Usuario.nombre} ${m.Usuario.apellido}`,
+      }));
+
+      // Sort with current task members first
+      const sorted = formattedMembers.sort((a, b) => {
+        const aIsMember = editingTask?.members?.some((m) => m.id === a.id);
+        const bIsMember = editingTask?.members?.some((m) => m.id === b.id);
+        return aIsMember === bIsMember ? 0 : aIsMember ? -1 : 1;
+      });
+
+      setAvailableMembers(sorted);
+    } catch (err) {
+      console.error("Error fetching members:", err);
+    }
   };
 
-  const handleAddSubtask = (parentId) => {
-    const parent = tasks.find((x) => x.id === parentId);
-    const newTask = {
-      id: makeId(),
-      name: "Nueva subtarea",
-      project: parent ? parent.project : "-",
-      priority: 2,
-      state: "Sin iniciar",
-      dueDate: new Date().toISOString().slice(0, 10),
-      members: parent ? [...parent.members] : [],
-      comments: [],
-      subtaskOf: parentId,
-    };
-    setTasks((t) => [...t, newTask]);
-    setEditingTask({ ...newTask });
-    setIsEditorOpen(true);
+  useEffect(() => {
+    console.log("Miembors de la tarea: ", availableMembers);
+  }, [availableMembers]);
+
+  const handleAddTask = async (idNuevaTareaMadre = null) => {
+    try {
+      const accessToken = localStorage.getItem("supabaseToken");
+      if (!accessToken) {
+        console.warn("No access token found");
+        return;
+      }
+
+      const nuevaTarea = {
+        idProyecto: selectedProject,
+        idEstadoTarea: 1,
+        idPrioridad: 2,
+        idTareaMadre: idNuevaTareaMadre,
+        nombre: "Nueva tarea",
+        fechaEntrega: new Date().toISOString().slice(0, 10),
+        activado: true,
+      };
+
+      const response = await fetch(`${baseURL}/tasks`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify(nuevaTarea),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error al crear tarea: ${response.statusText}`);
+      }
+
+      await response.json();
+
+      if (fetchTareas) {
+        await fetchTareas();
+      }
+    } catch (error) {
+      console.error("Error adding new task:", error);
+      alert("No se pudo crear la tarea. Intenta nuevamente.");
+    }
   };
 
-  const openEditor = (taskId) => {
+  const openEditor = async (taskId) => {
     const t = tasks.find((x) => x.id === taskId);
     if (!t) return;
+
     setEditingTask({ ...t });
+    await fetchProjectMembers(t.project.id);
     setIsEditorOpen(true);
   };
 
@@ -114,22 +136,43 @@ export const Listado = ({ dataList, ViewMode, selectedProject }) => {
     setEditingTask(null);
   };
 
-  const deleteTask = (taskId) => {
-    if (!confirm("¿Eliminar tarea? Esta acción no se puede deshacer.")) return;
-    const toRemove = new Set([taskId]);
-    let foundMore = true;
-    while (foundMore) {
-      foundMore = false;
-      tasks.forEach((t) => {
-        if (t.subtaskOf && toRemove.has(t.subtaskOf) && !toRemove.has(t.id)) {
-          toRemove.add(t.id);
-          foundMore = true;
-        }
+  const deleteTask = async (taskId) => {
+    const confirmDelete = confirm(
+      "¿Eliminar tarea? Esta acción no se puede deshacer."
+    );
+    if (!confirmDelete) return;
+
+    try {
+      const accessToken = localStorage.getItem("supabaseToken");
+      if (!accessToken) {
+        console.warn("No access token found");
+        return;
+      }
+
+      const response = await fetch(`${baseURL}/tasks/${taskId}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
       });
+
+      if (!response.ok) {
+        throw new Error(`Error al eliminar tarea: ${response.statusText}`);
+      }
+
+      console.log(`Tarea ${taskId} eliminada (marcada como inactiva)`);
+
+      if (fetchTareas) {
+        await fetchTareas();
+      }
+
+      setIsEditorOpen(false);
+      setEditingTask(null);
+    } catch (error) {
+      console.error("Error al eliminar tarea:", error);
+      alert("No se pudo eliminar la tarea. Intenta nuevamente.");
     }
-    setTasks((prev) => prev.filter((t) => !toRemove.has(t.id)));
-    setIsEditorOpen(false);
-    setEditingTask(null);
   };
 
   const openComments = (taskId) => {
@@ -175,13 +218,15 @@ export const Listado = ({ dataList, ViewMode, selectedProject }) => {
   const mostRecentCommentText = (task) =>
     task.comments && task.comments.length ? task.comments[0].text : null;
 
-  const getPriorityEmoji = (priority) => {
-    switch (priority) {
-      case 1:
+  const getPriorityEmoji = (prioridad) => {
+    if (!prioridad || !prioridad.nivel) return "⚪";
+
+    switch (prioridad.nivel.toLowerCase()) {
+      case "alta":
         return "🔴";
-      case 2:
+      case "media":
         return "🟡";
-      case 3:
+      case "baja":
         return "🟢";
       default:
         return "⚪";
@@ -226,12 +271,16 @@ export const Listado = ({ dataList, ViewMode, selectedProject }) => {
               </button>
             )}
           </td>
-          {ViewMode === "Mis Tareas" && <td role="cell">{t.project || "-"}</td>}
-          <td role="cell">{getPriorityEmoji(t.priority)}</td>
+          {ViewMode === "Mis Tareas" && (
+            <td role="cell">{t.project?.name || "-"}</td>
+          )}
+          <td role="cell">{getPriorityEmoji(t.prioridad)}</td>
           <td role="cell">{t.state}</td>
           <td role="cell">{t.dueDate}</td>
           <td role="cell">
-            {Array.isArray(t.members) ? t.members.join(", ") : ""}
+            {Array.isArray(t.members)
+              ? t.members.map((m) => m.name).join(", ")
+              : ""}
           </td>
           <td role="cell">
             {mostRecentCommentText(t) ? (
@@ -291,7 +340,7 @@ export const Listado = ({ dataList, ViewMode, selectedProject }) => {
         <div className="add-row">
           <button
             className="add-btn"
-            onClick={handleAddTask}
+            onClick={() => handleAddTask()}
             title="Agregar tarea"
           >
             ➕ Agregar tarea
@@ -324,17 +373,17 @@ export const Listado = ({ dataList, ViewMode, selectedProject }) => {
             <label>
               Prioridad
               <select
-                value={editingTask.priority}
+                value={editingTask?.prioridad?.nivel || ""}
                 onChange={(e) =>
-                  setEditingTask((p) => ({
-                    ...p,
-                    priority: Number(e.target.value),
+                  setEditingTask((prev) => ({
+                    ...prev,
+                    prioridad: { ...prev.Prioridad, nivel: e.target.value },
                   }))
                 }
               >
-                <option value={1}>🔴 1</option>
-                <option value={2}>🟡 2</option>
-                <option value={3}>🟢 3</option>
+                <option value="Alta">🔴 Alta</option>
+                <option value="Media">🟡 Media</option>
+                <option value="Baja">🟢 Baja</option>
               </select>
             </label>
 
@@ -347,7 +396,7 @@ export const Listado = ({ dataList, ViewMode, selectedProject }) => {
                 }
               >
                 <option value="Hecho">Hecho</option>
-                <option value="En proceso">En proceso</option>
+                <option value="En progreso">En proceso</option>
                 <option value="Sin iniciar">Sin iniciar</option>
               </select>
             </label>
@@ -367,27 +416,32 @@ export const Listado = ({ dataList, ViewMode, selectedProject }) => {
               Integrantes
               <div className="members-list">
                 {availableMembers.map((member) => {
-                  const isMember = editingTask.members?.includes(member);
+                  const isMember = editingTask.members?.some(
+                    (m) => m.id === member.id
+                  );
+
                   return (
                     <div
-                      key={member}
+                      key={member.id}
                       className={`member-item ${
                         isMember ? "member-selected" : ""
                       }`}
                     >
-                      <span>{member}</span>
+                      <span>{member.name}</span>
                       <button
                         className="small"
                         onClick={() => {
                           setEditingTask((prev) => ({
                             ...prev,
                             members: isMember
-                              ? prev.members.filter((m) => m !== member)
+                              ? prev.members.filter((m) => m.id !== member.id)
                               : [...(prev.members || []), member],
                           }));
                         }}
                         aria-label={
-                          isMember ? `Quitar ${member}` : `Agregar ${member}`
+                          isMember
+                            ? `Quitar ${member.name}`
+                            : `Agregar ${member.name}`
                         }
                       >
                         {isMember ? "-" : "+"}
@@ -412,7 +466,7 @@ export const Listado = ({ dataList, ViewMode, selectedProject }) => {
                 Eliminar
               </button>
               <button
-                onClick={() => handleAddSubtask(editingTask.id)}
+                onClick={() => handleAddTask(editingTask.id)}
                 className="subtask"
               >
                 Agregar subtarea

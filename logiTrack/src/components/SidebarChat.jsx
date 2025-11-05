@@ -4,7 +4,14 @@ import { useNavigate } from "react-router-dom"; // for navigation (React Router)
 import { toast } from "react-toastify";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft, faGear, faPenToSquare, faMagnifyingGlass, faPaperclip, faPaperPlane } from "@fortawesome/free-solid-svg-icons";
+import {
+  faArrowLeft,
+  faGear,
+  faPenToSquare,
+  faMagnifyingGlass,
+  faPaperclip,
+  faPaperPlane,
+} from "@fortawesome/free-solid-svg-icons";
 
 const getBack = <FontAwesomeIcon icon={faArrowLeft} size="1pt" />;
 const gear = <FontAwesomeIcon icon={faGear} style={{ fontSize: "1.5rem" }} />;
@@ -12,16 +19,16 @@ const newChat = <FontAwesomeIcon icon={faPenToSquare} size="1pt" />;
 const search = <FontAwesomeIcon icon={faMagnifyingGlass} size="1pt" />;
 
 const baseURL = "http://localhost:3001/api";
-const usuarioGuardado = JSON.parse(localStorage.getItem('usuario'));
+const usuarioGuardado = JSON.parse(localStorage.getItem("usuario"));
 const idUsuario = usuarioGuardado.idUsuario;
-const nombreUsuario = usuarioGuardado.nombre  + " " + usuarioGuardado.apellido;
+const nombreUsuario = usuarioGuardado.nombre + " " + usuarioGuardado.apellido;
 const usuarioEmail = usuarioGuardado.email;
 const chatSeleccionado = JSON.parse(localStorage.getItem("chatSeleccionado"));
 
 export const SidebarChat = ({
   user = { name: "Usuario" },
   chats = initialChats,
-  onSeleccionarChat
+  onSeleccionarChat,
 }) => {
   const [query, setQuery] = useState("");
   const [list, setList] = useState(chats);
@@ -43,12 +50,12 @@ export const SidebarChat = ({
   };
 
   const getIniciales = (texto) =>
-  texto
-    .trim()
-    .split(/\s+/)           // divide por espacios múltiples
-    .slice(0, 2)            // toma solo las dos primeras palabras
-    .map(p => p[0]?.toUpperCase() || "") // saca la inicial en mayúscula
-    .join("");
+    texto
+      .trim()
+      .split(/\s+/) // divide por espacios múltiples
+      .slice(0, 2) // toma solo las dos primeras palabras
+      .map((p) => p[0]?.toUpperCase() || "") // saca la inicial en mayúscula
+      .join("");
 
   const handleChatSelect = (chat) => {
     localStorage.setItem("chatSeleccionado", JSON.stringify(chat));
@@ -59,24 +66,28 @@ export const SidebarChat = ({
     const q = query.trim().toLowerCase();
     if (!q) return list;
     return list.filter(
-      c => c.name.toLowerCase().includes(q) || c.snippet.toLowerCase().includes(q)
+      (c) =>
+        c.name.toLowerCase().includes(q) || c.snippet.toLowerCase().includes(q)
     );
   }, [query, list]);
 
   // Enviar notificacion
   const enviarNotificacionChat = async (correo, idChat, descripcion) => {
     try {
-      const response = await fetch(`${baseURL}/notificacion/notificaciones/chat`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          correo,
-          idChat,
-          descripcion,
-        }),
-      });
+      const response = await fetch(
+        `${baseURL}/notificacion/notificaciones/chat`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            correo,
+            idChat,
+            descripcion,
+          }),
+        }
+      );
 
       if (!response.ok) {
         throw new Error(`Error HTTP ${response.status}`);
@@ -155,7 +166,7 @@ export const SidebarChat = ({
     setShowDropdown(false);
     if (option === "privado") {
       console.log("Seleccionaste: Chat privado");
-        setShowModal(true);
+      setShowModal(true);
     } else {
       console.log("Seleccionaste: Chat grupal");
     }
@@ -167,11 +178,9 @@ export const SidebarChat = ({
       crearChatPrivado(usuarioEmail, email);
       setShowModal(false);
       setEmail("");
-    }
-    else {
+    } else {
       toast.error("❌ Ingrese un correo válido");
     }
-    
   };
 
   const handleCancel = () => {
@@ -211,13 +220,19 @@ export const SidebarChat = ({
   }, [showModal]);
 
   return (
-    <aside className="app-sidebar" aria-label="Barra lateral de conversaciones" role="complementary">
+    <aside
+      className="app-sidebar"
+      aria-label="Barra lateral de conversaciones"
+      role="complementary"
+    >
       <header className="sidebar-top" role="region" aria-label="Usuario">
         <div className="user-row">
           <div className="user-avatar" aria-hidden="true">
             {getIniciales(user.name)}
           </div>
-          <div className="user-name" tabIndex="0">{user.name}</div>
+          <div className="user-name" tabIndex="0">
+            {user.name}
+          </div>
           <button
             className="btn-icon"
             aria-label="Abrir configuracion de usuario"
@@ -229,11 +244,16 @@ export const SidebarChat = ({
         </div>
       </header>
 
-      <nav className="sidebar-middle" role="navigation" aria-label="Acciones de chat">
+      <nav
+        className="sidebar-middle"
+        role="navigation"
+        aria-label="Acciones de chat"
+      >
         <div className="actions">
           <button
             className="btn-back-arrow"
-            onClick={() => {navigate("/home");
+            onClick={() => {
+              navigate("/home");
               localStorage.removeItem("chatSeleccionado");
             }}
             aria-label="Regresar a la página principal"
@@ -284,23 +304,24 @@ export const SidebarChat = ({
               </div>
             </div>
           )}
-
         </div>
 
         <form
           className="search-form"
           role="search"
           aria-label="Buscar chats"
-          onSubmit={e => e.preventDefault()}
+          onSubmit={(e) => e.preventDefault()}
         >
-          <label htmlFor="chat-search" className="sr-only">{search}</label>
+          <label htmlFor="chat-search" className="sr-only">
+            {search}
+          </label>
           <input
             id="chat-search"
             className="search-input"
             type="search"
             placeholder="Buscar chat"
             value={query}
-            onChange={e => setQuery(e.target.value)}
+            onChange={(e) => setQuery(e.target.value)}
             aria-label="Campo de búsqueda de chat"
             aria-describedby="search-help"
           />
@@ -310,7 +331,12 @@ export const SidebarChat = ({
         </div>
       </nav>
 
-      <hr style={{ border: "none", borderTop: "1px solid rgba(255,255,255,0.06)" }} />
+      <hr
+        style={{
+          border: "none",
+          borderTop: "1px solid rgba(255,255,255,0.06)",
+        }}
+      />
 
       <section
         className="sidebar-bottom"
@@ -328,21 +354,26 @@ export const SidebarChat = ({
               No hay conversaciones que coincidan
             </div>
           ) : (
-            chats.map(chat => (
+            chats.map((chat) => (
               <div
                 key={chat.id}
                 role="listitem"
                 tabIndex="0"
                 className="chat-item"
                 aria-label={`Chat con ${chat.name}. ${chat.snippet}`}
-                onClick={() => {setActiveId(chat.id);
+                onClick={() => {
+                  setActiveId(chat.id);
                   handleChatSelect(chat);
-                  onSeleccionarChat(chat);}
-                }
-                onKeyDown={(e) => { if (e.key === "Enter") setActiveId(chat.id); }}
+                  onSeleccionarChat(chat);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") setActiveId(chat.id);
+                }}
                 data-active={chat.id === activeId}
               >
-                <div className="chat-thumb" aria-hidden="true">{getIniciales(chat.name)}</div>
+                <div className="chat-thumb" aria-hidden="true">
+                  {getIniciales(chat.name)}
+                </div>
                 <div className="chat-meta">
                   <div className="chat-title">{chat.name}</div>
                   <div className="chat-snippet">{chat.snippet}</div>
@@ -353,6 +384,5 @@ export const SidebarChat = ({
         </div>
       </section>
     </aside>
-    
   );
 };

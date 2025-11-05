@@ -71,7 +71,7 @@ export const Tabla = ({ dataList, ViewMode, selectedProject }) => {
       id: makeId(),
       name: "Nueva tarea",
       project: "-",
-      priority: 2,
+      prioridad: 2,
       state: "Sin iniciar",
       dueDate: new Date().toISOString().slice(0, 10),
       members: [],
@@ -141,13 +141,15 @@ export const Tabla = ({ dataList, ViewMode, selectedProject }) => {
   const mostRecentCommentText = (task) =>
     task.comments && task.comments.length ? task.comments[0].text : null;
 
-  const getPriorityEmoji = (priority) => {
-    switch (priority) {
-      case 1:
+  const getPriorityEmoji = (prioridad) => {
+    if (!prioridad || !prioridad.nivel) return "⚪";
+
+    switch (prioridad.nivel.toLowerCase()) {
+      case "alta":
         return "🔴";
-      case 2:
+      case "media":
         return "🟡";
-      case 3:
+      case "baja":
         return "🟢";
       default:
         return "⚪";
@@ -201,13 +203,18 @@ export const Tabla = ({ dataList, ViewMode, selectedProject }) => {
               {ViewMode === "Mis Tareas" && (
                 <td role="cell">{task.project || "-"}</td>
               )}
-              <td role="cell" aria-label={`Prioridad ${task.priority}`}>
-                {getPriorityEmoji(task.priority)}
+              <td
+                role="cell"
+                aria-label={`Prioridad ${getPriorityEmoji(task.prioridad)}`}
+              >
+                {getPriorityEmoji(task.prioridad)}
               </td>
               <td role="cell">{task.state}</td>
               <td role="cell">{task.dueDate}</td>
               <td role="cell">
-                {Array.isArray(task.members) ? task.members.join(", ") : ""}
+                {Array.isArray(task.members)
+                  ? task.members.map((m) => m.name).join(", ")
+                  : ""}
               </td>
               <td role="cell">
                 {task.comments && task.comments.length ? (

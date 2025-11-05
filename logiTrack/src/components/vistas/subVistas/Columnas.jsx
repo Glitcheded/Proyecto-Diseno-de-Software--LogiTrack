@@ -179,13 +179,15 @@ export const Columnas = ({ dataList, ViewMode, selectedProject }) => {
     return parent ? parent.name : null;
   };
 
-  const getPriorityEmoji = (priority) => {
-    switch (priority) {
-      case 1:
+  const getPriorityEmoji = (prioridad) => {
+    if (!prioridad || !prioridad.nivel) return "⚪";
+
+    switch (prioridad.nivel.toLowerCase()) {
+      case "alta":
         return "🔴";
-      case 2:
+      case "media":
         return "🟡";
-      case 3:
+      case "baja":
         return "🟢";
       default:
         return "⚪";
@@ -222,7 +224,7 @@ export const Columnas = ({ dataList, ViewMode, selectedProject }) => {
               Subtarea: <b>{parentName}</b>
             </div>
           )}
-          <span className="priority">{getPriorityEmoji(task.priority)}</span>
+          <span className="priority">{getPriorityEmoji(task.prioridad)}</span>
           <span className="task-name">{task.name}</span>
           <span className="task-project">{task.project}</span>
           <span className="task-date">{task.dueDate}</span>
@@ -234,13 +236,17 @@ export const Columnas = ({ dataList, ViewMode, selectedProject }) => {
               <b>Estado:</b> {task.state}
             </div>
             <div>
-              <b>Prioridad:</b> {task.priority}
+              <b>Prioridad:</b> {getPriorityEmoji(task.prioridad)}
             </div>
             <div>
-              <b>Integrantes:</b> {task.members.join(", ")}
+              <b>Integrantes:</b>{" "}
+              {Array.isArray(task.members)
+                ? task.members.map((m) => m.name).join(", ")
+                : ""}
             </div>
             <div>
               <b>Comentarios:</b>
+              <br /> <br />
               {Array.isArray(task.comments) && task.comments.length > 0 ? (
                 <>
                   <ul>

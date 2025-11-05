@@ -28,13 +28,15 @@ export const Calendario = ({ dataList, ViewMode, selectedProject }) => {
     return parent ? parent.name : null;
   };
 
-  const getPriorityEmoji = (priority) => {
-    switch (priority) {
-      case 1:
+  const getPriorityEmoji = (prioridad) => {
+    if (!prioridad || !prioridad.nivel) return "⚪";
+
+    switch (prioridad.nivel.toLowerCase()) {
+      case "alta":
         return "🔴";
-      case 2:
+      case "media":
         return "🟡";
-      case 3:
+      case "baja":
         return "🟢";
       default:
         return "⚪";
@@ -130,7 +132,7 @@ export const Calendario = ({ dataList, ViewMode, selectedProject }) => {
       id: makeId(),
       name: "Nueva subtarea",
       project: parent?.project || "-",
-      priority: 2,
+      prioridad: 2,
       state: "Sin iniciar",
       dueDate: new Date().toISOString().slice(0, 10),
       members: parent ? [...parent.members] : [],
@@ -221,7 +223,7 @@ export const Calendario = ({ dataList, ViewMode, selectedProject }) => {
       id: makeId(),
       name: "Nueva tarea",
       project: "-",
-      priority: 2,
+      prioridad: 2,
       state: "Sin iniciar",
       dueDate,
       members: [],
@@ -279,7 +281,7 @@ export const Calendario = ({ dataList, ViewMode, selectedProject }) => {
               tabIndex={0}
               onClick={() => handleTaskClick(task)}
               onKeyDown={(e) => e.key === "Enter" && handleTaskClick(task)}
-              aria-label={`Tarea: ${task.name}, Proyecto: ${task.project}, Prioridad: ${task.priority}`}
+              aria-label={`Tarea: ${task.name}, Proyecto: ${task.project}, Prioridad: ${task.prioridad}`}
             >
               <div className="task-preview">
                 {ViewMode !== "Proyectos Anteriores" && (
@@ -301,7 +303,7 @@ export const Calendario = ({ dataList, ViewMode, selectedProject }) => {
                   </div>
                 )}
                 <div className="task-name">
-                  {task.name} {getPriorityEmoji(task.priority)}
+                  {task.name} {getPriorityEmoji(task.prioridad)}
                 </div>
                 <div className="task-project">{task.project}</div>
               </div>
@@ -404,7 +406,8 @@ export const Calendario = ({ dataList, ViewMode, selectedProject }) => {
           )}
 
           <p>
-            <strong>Prioridad:</strong> {selectedTask.priority}
+            <strong>Prioridad:</strong>{" "}
+            {getPriorityEmoji(selectedTask.prioridad)}
           </p>
           <p>
             <strong>Estado:</strong> {selectedTask.state}
@@ -413,11 +416,13 @@ export const Calendario = ({ dataList, ViewMode, selectedProject }) => {
             <strong>Fecha de entrega:</strong> {selectedTask.dueDate}
           </p>
           <p>
-            <strong>Integrantes:</strong> {selectedTask.members.join(", ")}
+            <strong>Integrantes:</strong>{" "}
+            {selectedTask.members.map((m) => m.name).join(", ")}
           </p>
 
           <div className="comments-section">
             <b>Comentarios:</b>
+            <br /> <br />
             {Array.isArray(selectedTask.comments) &&
             selectedTask.comments.length > 0 ? (
               <>
