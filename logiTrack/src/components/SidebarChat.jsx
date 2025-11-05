@@ -19,11 +19,17 @@ const newChat = <FontAwesomeIcon icon={faPenToSquare} size="1pt" />;
 const search = <FontAwesomeIcon icon={faMagnifyingGlass} size="1pt" />;
 
 const baseURL = "http://localhost:3001/api";
-const usuarioGuardado = JSON.parse(localStorage.getItem("usuario"));
-const idUsuario = usuarioGuardado.idUsuario;
-const nombreUsuario = usuarioGuardado.nombre + " " + usuarioGuardado.apellido;
-const usuarioEmail = usuarioGuardado.email;
-const chatSeleccionado = JSON.parse(localStorage.getItem("chatSeleccionado"));
+let idUsuario = null;
+let nombreUsuario = '';
+let usuarioEmail = '';
+
+const usuarioGuardadoRaw = localStorage.getItem('usuario');
+if (usuarioGuardadoRaw) {
+  const usuarioGuardado = JSON.parse(usuarioGuardadoRaw);
+  idUsuario = usuarioGuardado.idUsuario;
+  nombreUsuario = `${usuarioGuardado.nombre} ${usuarioGuardado.apellido}`;
+  usuarioEmail = usuarioGuardado.email;
+}
 
 export const SidebarChat = ({
   user = { name: "Usuario" },
@@ -37,11 +43,6 @@ export const SidebarChat = ({
   const [showModal, setShowModal] = useState(false);
   const [email, setEmail] = useState("");
   const dropdownRef = useRef(null);
-  const [chatSeleccionado, setChatSeleccionado] = useState(
-    JSON.parse(localStorage.getItem("chatSeleccionado"))
-  );
-
-  console.log(`AHHH ${chatSeleccionado?.name}`);
 
   const navigate = useNavigate();
 
@@ -56,11 +57,6 @@ export const SidebarChat = ({
       .slice(0, 2) // toma solo las dos primeras palabras
       .map((p) => p[0]?.toUpperCase() || "") // saca la inicial en mayúscula
       .join("");
-
-  const handleChatSelect = (chat) => {
-    localStorage.setItem("chatSeleccionado", JSON.stringify(chat));
-    setChatSeleccionado(chat); // <-- esto forza el re-render inmediato
-  };
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -252,9 +248,7 @@ export const SidebarChat = ({
         <div className="actions">
           <button
             className="btn-back-arrow"
-            onClick={() => {
-              navigate("/home");
-              localStorage.removeItem("chatSeleccionado");
+            onClick={() => {navigate("/home");
             }}
             aria-label="Regresar a la página principal"
           >
@@ -361,14 +355,10 @@ export const SidebarChat = ({
                 tabIndex="0"
                 className="chat-item"
                 aria-label={`Chat con ${chat.name}. ${chat.snippet}`}
-                onClick={() => {
-                  setActiveId(chat.id);
-                  handleChatSelect(chat);
-                  onSeleccionarChat(chat);
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") setActiveId(chat.id);
-                }}
+                onClick={() => {setActiveId(chat.id);
+                  onSeleccionarChat(chat);}
+                }
+                onKeyDown={(e) => { if (e.key === "Enter") setActiveId(chat.id); }}
                 data-active={chat.id === activeId}
               >
                 <div className="chat-thumb" aria-hidden="true">
