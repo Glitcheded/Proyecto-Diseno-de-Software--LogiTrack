@@ -5,7 +5,8 @@ import {
     actualizarProyecto, eliminarProyecto, 
     asignarUsuarioAProyecto, getMisProyectosDatos, 
     getTareasPorNombre, getMiembrosProyecto, 
-    removerMiembroProyecto
+    removerMiembroProyecto, entradasBitacoraPorProyectoYFecha, 
+    actualizarEntradaBitacora, addEntradaBitacora
 } from '../controllers/projectController.js';
 import { checkAuth } from '../middleware/authMiddleware.js';
 
@@ -47,5 +48,14 @@ router.get('/:id/members', getMiembrosProyecto);
 
 // DELETE /api/projects/:idProyecto/members/:idUsuario
 router.delete('/:idProyecto/members/:idUsuario', removerMiembroProyecto);
+
+// GET /api/projects/:id/:date/entries
+router.get('/:id/:date/entries', entradasBitacoraPorProyectoYFecha)
+
+// GET /api/projects/entrada/:id
+router.put('/entrada/:id', actualizarEntradaBitacora);
+
+// POST /api/projects/:idProyecto/:fecha
+router.post("/:idProyecto/:fecha", addEntradaBitacora);
 
 export default router;

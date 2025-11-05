@@ -359,10 +359,6 @@ export const VistaProyectos = ({ ViewMode, dataList, setDataList }) => {
           <tr role="row">
             <th role="columnheader">Nombre del proyecto</th>
             <th role="columnheader">Descripción</th>
-            <th role="columnheader">Última modificación</th>
-            <th role="columnheader">
-              {isPrevious ? "Fecha de finalización" : "Próxima entrega"}
-            </th>
             <th role="columnheader"># de miembros</th>
             {isPrevious && <th role="columnheader">Estado</th>}
           </tr>
@@ -373,7 +369,7 @@ export const VistaProyectos = ({ ViewMode, dataList, setDataList }) => {
             dataList.map((project) => (
               <tr key={project.idProyecto} className="proyecto-row" role="row">
                 <td role="cell" className="proyecto-name-cell">
-                  {project.nombre}
+                  <strong>{project.nombre}</strong>
                   <button
                     className="proyecto-edit-btn"
                     onClick={() => openEditor(project)}
@@ -396,12 +392,6 @@ export const VistaProyectos = ({ ViewMode, dataList, setDataList }) => {
                   >
                     Ver descripción
                   </button>
-                </td>
-                <td role="cell">{formatDate(project.ultimaModificacion)}</td>
-                <td role="cell">
-                  {isPrevious
-                    ? formatDate(project.fechaFinalizacion)
-                    : formatDate(project.fechaEntregaProxima)}
                 </td>
                 <td role="cell">
                   {projectMembers[project.idProyecto]?.length || 0}

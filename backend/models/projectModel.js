@@ -159,7 +159,6 @@ export const eliminarProyecto = async (idProyecto) => {
     return data;
 };
 
-
 //Obtiene los proyectos de un usuariovcon la fecha de entrega más próxima de tareas.
 //Llama a una función RPC de Supabase.
 export const getProyectosPorUsuario = async (idUsuario) => {
@@ -194,4 +193,119 @@ export const removerUsuarioDeProyecto = async (idProyecto, idUsuario) => {
         .match({ idProyecto: idProyecto, idUsuario: idUsuario });
     
     if (error) throw error;
+};
+
+// 1. Formatter function
+const formatEntradaBitacora = (entrada) => ({
+    id: entrada.idEntradaBitacora,
+    startTime: entrada.horaInicio || null,
+    finishTime: entrada.horaFinalizacion || null,
+    tasks: entrada.tareas || '',
+    notes: entrada.notas || '',
+});
+
+// 2. Main function to get entradas
+export const getEntradasBitacoraPorProyectoYFecha = async (idProyecto, fecha) => {
+    // Find the Bitacora(s) for that project and date
+    const { data: bitacoras, error: bitacoraError } = await supabase
+        .from('Bitacora')
+        .select('idBitacora')
+        .eq('idProyecto', idProyecto)
+        .eq('fecha', fecha);
+
+    if (bitacoraError) throw bitacoraError;
+    if (!bitacoras || bitacoras.length === 0) return [];
+
+    const bitacoraIds = bitacoras.map(b => b.idBitacora);
+
+    // Get all EntradaBitacora for those Bitacora IDs
+    const { data: entradas, error: entradasError } = await supabase
+        .from('EntradaBitacora')
+        .select('*')
+        .in('idBitacora', bitacoraIds)
+        .order('horaInicio', { ascending: true });
+
+    if (entradasError) throw entradasError;
+
+    // Map each entry to the desired format
+    return entradas.map(formatEntradaBitacora);
+};
+
+export const updateEntradaBitacora = async (idEntradaBitacora, camposActualizados) => {
+  const { data, error } = await supabase
+    .from('EntradaBitacora')
+    .update({
+      horaInicio: camposActualizados.horaInicio,
+      horaFinalizacion: camposActualizados.horaFinalizacion,
+      tareas: camposActualizados.tareas,
+      notas: camposActualizados.notas,
+    })
+    .eq('idEntradaBitacora', idEntradaBitacora)
+    .select('*') // Return the updated row
+    .single();
+
+  if (error) throw error;
+  return data;
+};
+
+// Helper function to format local time as "HH:mm:00"
+const getCurrentLocalTime = () => {
+  const now = new Date();
+  const hours = String(now.getHours()).padStart(2, "0");
+  const minutes = String(now.getMinutes()).padStart(2, "0");
+  return `${hours}:${minutes}:00`;
+};
+
+export const createEntradaBitacora = async (idProyecto, fecha) => {
+  // Step 1: Check if there is an existing Bitacora for the project and date
+  let { data: bitacoras, error: bitacoraError } = await supabase
+    .from("Bitacora")
+    .select("idBitacora")
+    .eq("idProyecto", idProyecto)
+    .eq("fecha", fecha);
+
+  if (bitacoraError) throw bitacoraError;
+
+  let idBitacora;
+
+  // Step 2: If none found, create a new Bitacora row
+  if (!bitacoras || bitacoras.length === 0) {
+    const { data: newBitacora, error: createBitacoraError } = await supabase
+      .from("Bitacora")
+      .insert([{ idProyecto, fecha }])
+      .select("idBitacora")
+      .single();
+
+    if (createBitacoraError) throw createBitacoraError;
+    idBitacora = newBitacora.idBitacora;
+  } else {
+    idBitacora = bitacoras[0].idBitacora;
+  }
+
+  // Step 3: Create the new EntradaBitacora
+  const horaInicio = getCurrentLocalTime();
+
+  const { data: nuevaEntrada, error: entradaError } = await supabase
+    .from("EntradaBitacora")
+    .insert([
+      {
+        idBitacora,
+        horaInicio,
+        horaFinalizacion: null,
+        tareas: "",
+        notas: "",
+      },
+    ])
+    .select("*")
+    .single();
+
+  if (entradaError) throw entradaError;
+
+  return {
+    id: nuevaEntrada.idEntradaBitacora,
+    startTime: nuevaEntrada.horaInicio,
+    finishTime: nuevaEntrada.horaFinalizacion,
+    tasks: nuevaEntrada.tareas,
+    notes: nuevaEntrada.notas,
+  };
 };
