@@ -1,7 +1,7 @@
 import { getTodasLasCategorias, getNotificacionesPorUsuario, insertarNotificacionChat, 
     insertarNotificacionProyecto, insertarNotificacionTarea,
     insertarNotificacionSistema, getNotificacionesRecientesPorCategoria,
-    borrarNotificacionesPorId } from '../models/notificacionModel.js';
+    borrarNotificacionesPorId, desactivarNotificacionPorId } from '../models/notificacionModel.js';
 
 // Controlador para obtener las categorias
 export async function obtenerCategoriasHandler(req, res) {
@@ -33,8 +33,6 @@ export async function getNotificacionesPorCategoria(req, res) {
     const idUsuario = Number(usuario);
     const idCategoria = Number(categoria);
 
-    //console.log('🔍 Parámetros recibidos:', idUsuario, idCategoria);
-
     const notificaciones = await getNotificacionesRecientesPorCategoria(idUsuario, idCategoria);
     
     if (!notificaciones || notificaciones.length === 0) {
@@ -43,6 +41,7 @@ export async function getNotificacionesPorCategoria(req, res) {
 
     res.status(200).json(notificaciones);
   } catch (error) {
+    console.error("Error al obtener notificaciones:", error);
     res.status(500).json({ error: error.message });
   }
 }
@@ -57,10 +56,39 @@ export async function getNotificaciones(req, res) {
       return res.status(404).json({ mensaje: 'No se encontraron notificaciones.' });
     }
 
-    res.status(200).json(notificaciones);
+    const formatted = formatNotificaciones(notificaciones);
+
+    res.status(200).json(formatted);
   } catch (error) {
+    console.error("Error al obtener notificaciones:", error);
     res.status(500).json({ error: error.message });
   }
+}
+
+function formatNotificaciones(notificaciones) {
+  return notificaciones.map((n) => {
+    let date = "Sin fecha";
+    let time = "Sin hora";
+
+    if (n.fechahora) {
+      const fechaStr = n.fechahora.replace(" ", "T");
+      const fecha = new Date(fechaStr);
+
+      if (!isNaN(fecha)) {
+        date = fecha.toISOString().split("T")[0];
+        time = fecha.toTimeString().slice(0, 5);
+      } else {
+        console.warn("Fecha inválida:", n.fechahora);
+      }
+    }
+
+    return {
+      id: n.idnotificacion,
+      message: n.descripcion,
+      date,
+      time,
+    };
+  });
 }
 
 // Controlador para crear notificaciones de chat
@@ -146,6 +174,23 @@ export async function borrarNotificacionesHandler(req, res) {
     res.status(200).json(resultado);
   } catch (error) {
     console.error('❌ Error al borrar notificaciones:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+}
+
+export async function desactivarNotificacion(req, res) {
+  try {
+    const idNotificacion = req.params.id;
+
+    const data = await desactivarNotificacionPorId(idNotificacion);
+
+    if (!data || data.length === 0) {
+      return res.status(404).json({ mensaje: 'Notificación no encontrada.' });
+    }
+
+    res.status(200).json({ mensaje: 'Notificación desactivada correctamente.' });
+  } catch (error) {
+    console.error('Error al desactivar notificación:', error.message);
     res.status(500).json({ error: error.message });
   }
 }

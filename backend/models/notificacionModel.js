@@ -86,3 +86,14 @@ export async function borrarNotificacionesPorId(ids) {
   if (error) throw error;
   return { mensaje: `Se eliminaron ${ids.length} notificaciones.` };
 }
+
+export async function desactivarNotificacionPorId(idNotificacion) {
+  const { data, error } = await supabase
+    .from('Notificacion')
+    .update({ activado: false })
+    .eq('idNotificacion', idNotificacion)
+    .select(); // optional, returns updated row
+
+  if (error) throw error;
+  return data;
+}
