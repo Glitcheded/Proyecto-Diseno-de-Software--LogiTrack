@@ -67,6 +67,11 @@
   cursor: pointer;
   transition: all 0.2s ease-in-out;
   position: relative;
+  pointer-events: auto;
+}
+
+.task-card * {
+  pointer-events: auto;
 }
 
 .task-card:hover {
@@ -126,17 +131,17 @@
   top: 8px;
   right: 8px;
   opacity: 0;
-  pointer-events: none;
   font-size: 0.8rem;
   padding: 4px 8px;
   border-radius: 6px;
   border: 1px solid #888;
   background: white;
   cursor: pointer;
+  z-index: 100;
   
 }
 
-.task-card:hover .edit-btn-col {
+.task-card:hover .edit-btn-col, .edit-btn-col:focus {
   opacity: 1;
   pointer-events: auto;
   transform: translateY(0);

@@ -35,8 +35,44 @@ const HomeContent = () => {
 
   const [selectedView, setSelectedView] = useState(initialView);
   const [selectedProject, setSelectedProject] = useState(null);
+  const [selectedProjectName, setSelectedProjectName] = useState(null);
   const [misProyectos, setMisProyectos] = useState([]); // Activas
   const [proyectosAnteriores, setProyectosAnteriores] = useState([]); // Terminadas
+
+  const fetchProjects = async () => {
+    try {
+      const token = localStorage.getItem("supabaseToken");
+      if (!token) {
+        console.warn("No token found in localStorage");
+        return;
+      }
+
+      const res = await fetch(`${baseURL}/projects/datos-proyectos`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.warn("Failed to fetch datos-proyectos:", errorText);
+        return;
+      }
+
+      const proyectos = await res.json();
+
+      // Split into active (idEstadoProyecto === 1) and others
+      const misProyectosList = proyectos.filter(
+        (p) => p.idEstadoProyecto === 1
+      );
+      const proyectosAnterioresList = proyectos.filter(
+        (p) => p.idEstadoProyecto !== 1
+      );
+
+      setMisProyectos(misProyectosList);
+      setProyectosAnteriores(proyectosAnterioresList);
+    } catch (err) {
+      console.error("Failed to fetch projects:", err);
+    }
+  };
 
   useEffect(() => {
     const token = localStorage.getItem("supabaseToken");
@@ -77,41 +113,6 @@ const HomeContent = () => {
       }
     };
 
-    const fetchProjects = async () => {
-      try {
-        const token = localStorage.getItem("supabaseToken");
-        if (!token) {
-          console.warn("No token found in localStorage");
-          return;
-        }
-
-        const res = await fetch(`${baseURL}/projects/datos-proyectos`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        if (!res.ok) {
-          const errorText = await res.text();
-          console.warn("Failed to fetch datos-proyectos:", errorText);
-          return;
-        }
-
-        const proyectos = await res.json();
-
-        // Split into active (idEstadoProyecto === 1) and others
-        const misProyectosList = proyectos.filter(
-          (p) => p.idEstadoProyecto === 1
-        );
-        const proyectosAnterioresList = proyectos.filter(
-          (p) => p.idEstadoProyecto !== 1
-        );
-
-        setMisProyectos(misProyectosList);
-        setProyectosAnteriores(proyectosAnterioresList);
-      } catch (err) {
-        console.error("Failed to fetch projects:", err);
-      }
-    };
-
     fetchUser();
     fetchProjects();
   }, []);
@@ -142,6 +143,7 @@ const HomeContent = () => {
           <MisProyectos
             projectList={misProyectos}
             setProjectList={setMisProyectos}
+            fetchProjects={fetchProjects}
           />
         );
       case "Proyectos Anteriores":
@@ -149,14 +151,25 @@ const HomeContent = () => {
           <ProyectosAnteriores
             projectList={proyectosAnteriores}
             setProjectList={setProyectosAnteriores}
+            fetchProjects={fetchProjects}
           />
         );
       case "Opciones":
         return <Opciones />;
       case "Mis Proyectos / Proyecto":
-        return <MisProyectosSub selectedProject={selectedProject} />;
+        return (
+          <MisProyectosSub
+            selectedProject={selectedProject}
+            selectedProjectName={selectedProjectName}
+          />
+        );
       case "Proyectos Anteriores / Proyecto":
-        return <ProyectosAnterioresSub selectedProject={selectedProject} />;
+        return (
+          <ProyectosAnterioresSub
+            selectedProject={selectedProject}
+            selectedProjectName={selectedProjectName}
+          />
+        );
       default:
         return <div>Seleccione una vista</div>;
     }
@@ -172,6 +185,7 @@ const HomeContent = () => {
         selectedProject={selectedProject}
         setSelectedProject={setSelectedProject}
         userName={userName}
+        setSelectedProjectName={setSelectedProjectName}
       />
 
       {/* Main content region */}
@@ -182,7 +196,10 @@ const HomeContent = () => {
       >
         <header className="menu-header">
           <h1 id="main-heading" tabIndex="0">
-            {selectedView}
+            {selectedView === "Mis Proyectos / Proyecto" ||
+            selectedView === "Proyectos Anteriores / Proyecto"
+              ? selectedProjectName
+              : selectedView}
           </h1>
         </header>
 

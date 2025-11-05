@@ -9,7 +9,11 @@ import { Bitacora } from "./Bitacora";
 
 const baseURL = "http://localhost:3001/api";
 
-export const VistaTareas = ({ ViewMode, selectedProject = null }) => {
+export const VistaTareas = ({
+  ViewMode,
+  selectedProject = null,
+  selectedProjectName,
+}) => {
   const [activeViewMode, setActiveViewMode] = useState("Listado");
 
   const [dataList, setDataList] = useState([]);
@@ -62,7 +66,13 @@ export const VistaTareas = ({ ViewMode, selectedProject = null }) => {
     console.log("dataList updated:", dataList);
   }, [dataList]);
 
-  const commonProps = { dataList, ViewMode, selectedProject, fetchTareas };
+  const commonProps = {
+    dataList,
+    ViewMode,
+    selectedProject,
+    fetchTareas,
+    selectedProjectName,
+  };
 
   const renderSubView = () => {
     switch (activeViewMode) {
@@ -93,7 +103,7 @@ export const VistaTareas = ({ ViewMode, selectedProject = null }) => {
             key={view}
             role="tab"
             aria-selected={activeViewMode === view}
-            tabIndex={activeViewMode === view ? 0 : -1}
+            tabIndex={0}
             className={
               activeViewMode === view
                 ? "vista-options vista-options-selected"
@@ -110,7 +120,7 @@ export const VistaTareas = ({ ViewMode, selectedProject = null }) => {
             key="Bitacora"
             role="tab"
             aria-selected={activeViewMode === "Bitacora"}
-            tabIndex={activeViewMode === "Bitacora" ? 0 : -1}
+            tabIndex={0}
             className={
               activeViewMode === "Bitacora"
                 ? "vista-options vista-options-selected"

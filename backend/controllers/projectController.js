@@ -182,3 +182,56 @@ export const removerMiembroProyecto = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+// Controller: entradasBitacoraPorProyectoYFecha
+export const entradasBitacoraPorProyectoYFecha = async (req, res) => {
+    try {
+        const { id, date } = req.params; // id = project ID, date = YYYY-MM-DD
+        const entradas = await projectModel.getEntradasBitacoraPorProyectoYFecha(id, date);
+
+        if (!entradas || entradas.length === 0) {
+            return res.status(404).json({ error: 'No se encontraron entradas para este proyecto y fecha' });
+        }
+
+        res.status(200).json(entradas);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+// Actualiza una entrada de bitácora existente
+export const actualizarEntradaBitacora = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { horaInicio, horaFinalizacion, tareas, notas } = req.body;
+
+    const updatedEntry = await projectModel.updateEntradaBitacora(id, {
+      horaInicio,
+      horaFinalizacion,
+      tareas,
+      notas,
+    });
+
+    if (!updatedEntry) {
+      return res.status(404).json({ error: 'Entrada de bitácora no encontrada' });
+    }
+
+    res.status(200).json(updatedEntry);
+  } catch (error) {
+    console.error('Error al actualizar la entrada de bitácora:', error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const addEntradaBitacora = async (req, res) => {
+  try {
+    const { idProyecto, fecha } = req.params;
+
+    const nuevaEntrada = await projectModel.createEntradaBitacora(idProyecto, fecha);
+
+    res.status(201).json(nuevaEntrada);
+  } catch (error) {
+    console.error("Error al crear entrada de bitácora:", error);
+    res.status(500).json({ error: error.message });
+  }
+};

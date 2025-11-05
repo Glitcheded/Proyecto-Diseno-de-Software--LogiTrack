@@ -35,6 +35,28 @@
   font-size: 1.1rem;
 }
 
-.delete-btn:hover {
+.delete-btn:hover, .delete-btn:focus {
   color: red;
+  transform: scale(1.1);
+}
+
+.navbar-group {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.arrow-toggle-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  margin-left: 4px;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.arrow-toggle-btn:hover{
+  background-color: rgba(0, 0, 0, 0.1);
+  outline: none;
 }

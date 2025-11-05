@@ -34,7 +34,7 @@
   color: #333;
   transition: transform 0.2s ease;
 }
-.arrow-btn:hover {
+.arrow-btn:hover, .arrow-btn:focus {
   transform: scale(1.2);
 }
 
@@ -89,7 +89,7 @@
 }
 
 
-.task-card:hover {
+.task-card:hover, .task-card:focus {
   background-color: #eeeeee;
 }
 
@@ -145,6 +145,10 @@
   float: right;
 }
 
+.close-btn:hover, .close-btn:focus{
+  transform: scale(1.1);
+}
+
 .calendar-cell {
   position: relative;
   border: 1px solid #ddd;
@@ -170,11 +174,11 @@
   margin-bottom: 6px;
 }
 
-.calendar-cell:hover .add-task-day-btn {
+.calendar-cell:hover .add-task-day-btn, .add-task-day-btn:focus {
   opacity: 1;
 }
 
-.add-task-day-btn:hover {
+.add-task-day-btn:hover, .add-task-day-btn:focus {
   background: #e0e0e0;
 }
 

@@ -3,171 +3,109 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import "./Bitacora.css";
 
-export const Bitacora = ({ ViewMode, selectedProject }) => {
+const baseURL = "http://localhost:3001/api/projects";
+
+export const Bitacora = ({
+  ViewMode,
+  selectedProject,
+  selectedProjectName,
+  fetchProjects,
+}) => {
   const today = new Date();
   const formatDate = (date) => date.toISOString().split("T")[0];
   const [viewDate, setViewDate] = useState(formatDate(today));
   const [dataList, setDataList] = useState([]);
 
-  useEffect(() => {
-    let tempList = [];
+  const fetchBitacoraEntries = async (projectId, date) => {
+    try {
+      const accessToken = localStorage.getItem("supabaseToken");
+      if (!accessToken) {
+        console.warn("No access token found");
+        setDataList([]);
+        return;
+      }
 
-    if (ViewMode === "Mis Proyectos" && viewDate === "2025-11-01") {
-      tempList = [
-        {
-          id: 1,
-          startTime: "08:00",
-          finishTime: "10:00",
-          tasks: "Revisión de requerimientos del cliente.",
-          notes: "Cliente pidió incluir un nuevo módulo de reportes.",
+      const response = await fetch(`${baseURL}/${projectId}/${date}/entries`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
         },
-        {
-          id: 2,
-          startTime: "10:30",
-          finishTime: "12:00",
-          tasks: "Diseño del esquema de base de datos.",
-          notes: "Estructura inicial creada en PostgreSQL.",
-        },
-        {
-          id: 3,
-          startTime: "14:00",
-          tasks: "Revisión de wireframes.",
-          notes: "Pendiente revisión con equipo de UI/UX.",
-        },
-      ];
-    } else if (ViewMode === "Mis Proyectos" && viewDate === "2025-11-02") {
-      tempList = [
-        {
-          id: 4,
-          startTime: "09:00",
-          finishTime: "10:45",
-          tasks: "Implementación del módulo de autenticación.",
-          notes: "Inicio de sesión funcional con tokens JWT.",
-        },
-        {
-          id: 5,
-          startTime: "11:15",
-          finishTime: "12:45",
-          tasks: "Conexión al servidor de pruebas.",
-          notes: "Servidor responde correctamente a peticiones POST.",
-        },
-        {
-          id: 6,
-          startTime: "15:00",
-          tasks: "Revisión de endpoints REST.",
-          notes: "Pendiente optimización de consultas.",
-        },
-      ];
-    } else if (ViewMode === "Mis Proyectos" && viewDate === "2025-11-03") {
-      tempList = [
-        {
-          id: 7,
-          startTime: "08:30",
-          finishTime: "09:45",
-          tasks: "Pruebas unitarias del backend.",
-          notes: "Cubrimiento del 65% de código.",
-        },
-        {
-          id: 8,
-          startTime: "10:00",
-          finishTime: "12:00",
-          tasks: "Optimización de consultas SQL.",
-          notes: "Mejorado el rendimiento en un 30%.",
-        },
-        {
-          id: 9,
-          startTime: "13:30",
-          tasks: "Revisión con QA.",
-          notes: "Identificados tres errores menores en validaciones.",
-        },
-      ];
-    } else if (
-      ViewMode === "Proyectos Anteriores" &&
-      viewDate === "2025-11-01"
-    ) {
-      tempList = [
-        {
-          id: 10,
-          startTime: "09:00",
-          finishTime: "10:30",
-          tasks: "Evaluación postmortem del proyecto CRM.",
-          notes: "Proyecto finalizado exitosamente.",
-        },
-        {
-          id: 11,
-          startTime: "11:00",
-          tasks: "Actualización del changelog final.",
-          notes: "Incluye mejoras aplicadas en última iteración.",
-        },
-        {
-          id: 12,
-          startTime: "15:00",
-          finishTime: "16:45",
-          tasks: "Limpieza del repositorio.",
-          notes: "Archivos antiguos eliminados correctamente.",
-        },
-      ];
-    } else if (
-      ViewMode === "Proyectos Anteriores" &&
-      viewDate === "2025-11-02"
-    ) {
-      tempList = [
-        {
-          id: 13,
-          startTime: "08:15",
-          finishTime: "09:45",
-          tasks: "Revisión de documentación de despliegue.",
-          notes: "Procedimientos actualizados para versión 2.0.",
-        },
-        {
-          id: 14,
-          startTime: "10:30",
-          finishTime: "12:15",
-          tasks: "Validación de respaldos.",
-          notes: "Backups confirmados en S3.",
-        },
-        {
-          id: 15,
-          startTime: "14:00",
-          tasks: "Archivo de logs antiguos.",
-          notes: "Almacenados en archivo comprimido ZIP.",
-        },
-      ];
-    } else if (
-      ViewMode === "Proyectos Anteriores" &&
-      viewDate === "2025-11-03"
-    ) {
-      tempList = [
-        {
-          id: 16,
-          startTime: "09:00",
-          finishTime: "10:00",
-          tasks: "Revisión de métricas finales del sistema.",
-          notes: "CPU usage reducido un 15% tras refactorización.",
-        },
-        {
-          id: 17,
-          startTime: "10:30",
-          finishTime: "12:00",
-          tasks: "Análisis del feedback del cliente.",
-          notes: "Comentarios positivos sobre la interfaz.",
-        },
-        {
-          id: 18,
-          startTime: "13:45",
-          tasks: "Cierre del ticket de soporte.",
-          notes: "Último error de sesión corregido.",
-        },
-      ];
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error fetching entries: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      setDataList(data);
+    } catch (error) {
+      console.error("Failed to fetch bitacora entries:", error);
+      setDataList([]);
     }
+  };
 
-    setDataList(tempList);
-  }, [ViewMode, viewDate]);
+  // Fetch entries whenever selectedProject or viewDate changes
+  useEffect(() => {
+    if (selectedProject) {
+      fetchBitacoraEntries(selectedProject, viewDate);
+    }
+  }, [selectedProject, viewDate]);
 
-  const handleChange = (id, field, value) => {
+  const handleChange = async (id, field, value) => {
+    // 1️⃣ Update UI immediately for responsiveness
     setDataList((prev) =>
       prev.map((item) => (item.id === id ? { ...item, [field]: value } : item))
     );
+
+    // 2️⃣ Send update to backend
+    try {
+      const accessToken = localStorage.getItem("supabaseToken");
+      if (!accessToken) {
+        console.warn("No access token found");
+        return;
+      }
+
+      // Map frontend field names to database columns
+      const fieldMap = {
+        startTime: "horaInicio",
+        finishTime: "horaFinalizacion",
+        tasks: "tareas",
+        notes: "notas",
+      };
+
+      // If the field doesn’t match one of these, ignore
+      if (!fieldMap[field]) {
+        console.warn(`Unknown field: ${field}`);
+        return;
+      }
+
+      const payload = {
+        [fieldMap[field]]: value,
+      };
+
+      const response = await fetch(`${baseURL}/entrada/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error updating entry: ${response.statusText}`);
+      }
+
+      const updated = await response.json();
+
+      // Optional: re-sync local state with the updated server data
+      setDataList((prev) =>
+        prev.map((item) => (item.id === id ? { ...item, ...updated } : item))
+      );
+    } catch (error) {
+      console.error("Failed to update bitacora entry:", error);
+      alert("No se pudo actualizar la entrada. Intenta nuevamente.");
+    }
   };
 
   const toggleFinishTime = (id) => {
@@ -180,14 +118,38 @@ export const Bitacora = ({ ViewMode, selectedProject }) => {
     );
   };
 
-  const handleAddEntry = () => {
-    const newEntry = {
-      id: Date.now(),
-      startTime: "00:00",
-      tasks: "",
-      notes: "",
-    };
-    setDataList((prev) => [...prev, newEntry]);
+  const handleAddEntry = async () => {
+    try {
+      const accessToken = localStorage.getItem("supabaseToken");
+      if (!accessToken) {
+        console.warn("No access token found");
+        return;
+      }
+
+      // Make the POST request to your new route
+      const response = await fetch(
+        `${baseURL}/${selectedProject}/${viewDate}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Error al crear la entrada: ${response.statusText}`);
+      }
+
+      const newEntry = await response.json();
+
+      // Add the new entry to the state list
+      setDataList((prev) => [...prev, newEntry]);
+    } catch (error) {
+      console.error("Error al agregar nueva entrada:", error);
+      alert("No se pudo crear la entrada. Intenta nuevamente.");
+    }
   };
 
   const editable = ViewMode === "Mis Proyectos";
@@ -202,14 +164,14 @@ export const Bitacora = ({ ViewMode, selectedProject }) => {
       item.notes,
     ]);
 
-    doc.text(`Bitácora - ${ViewMode} - ${viewDate}`, 14, 15);
+    doc.text(`Bitácora - ${selectedProjectName} - ${viewDate}`, 14, 15);
     autoTable(doc, {
       head: [["Hora", "Tareas", "Notas"]],
       body: tableData,
       startY: 20,
     });
 
-    doc.save(`bitacora-${ViewMode}-${viewDate}.pdf`);
+    doc.save(`bitacora-${selectedProjectName}-${viewDate}.pdf`);
   };
 
   return (
@@ -291,16 +253,49 @@ export const Bitacora = ({ ViewMode, selectedProject }) => {
                     )}
                     <button
                       className="bitacora-finish-btn"
-                      onClick={() => toggleFinishTime(item.id)}
+                      onClick={() => {
+                        if (item.finishTime) {
+                          // If there's already a finish time → remove it
+                          handleChange(item.id, "finishTime", null);
+                        } else {
+                          // Otherwise, set it to the *local* current time (HH:mm:00)
+                          const now = new Date();
+                          const hours = String(now.getHours()).padStart(2, "0");
+                          const minutes = String(now.getMinutes()).padStart(
+                            2,
+                            "0"
+                          );
+                          const localTime = `${hours}:${minutes}:00`;
+
+                          handleChange(item.id, "finishTime", localTime);
+                        }
+                      }}
                       aria-label={
                         item.finishTime
                           ? "Eliminar hora de fin"
                           : "Agregar hora de fin"
                       }
                       tabIndex={0}
-                      onKeyDown={(e) =>
-                        e.key === "Enter" && toggleFinishTime(item.id)
-                      }
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          if (item.finishTime) {
+                            handleChange(item.id, "finishTime", null);
+                          } else {
+                            const now = new Date();
+                            const hours = String(now.getHours()).padStart(
+                              2,
+                              "0"
+                            );
+                            const minutes = String(now.getMinutes()).padStart(
+                              2,
+                              "0"
+                            );
+                            const localTime = `${hours}:${minutes}:00`;
+
+                            handleChange(item.id, "finishTime", localTime);
+                          }
+                        }
+                      }}
                     >
                       {item.finishTime ? "Eliminar fin" : "Agregar fin"}
                     </button>

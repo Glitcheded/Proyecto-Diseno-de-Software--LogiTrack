@@ -24,6 +24,7 @@ export const NavBar = ({
   selectedProject,
   setSelectedProject,
   userName,
+  setSelectedProjectName,
 }) => {
   const navigate = useNavigate();
   const [showUserDropdown, setShowUserDropdown] = useState(false);
@@ -164,32 +165,46 @@ export const NavBar = ({
 
         {/* --- ACTIVE PROJECTS --- */}
         <li>
-          <button
-            className={`navbar-element ${
-              currentView === "Mis Proyectos" ? "navbar-selected" : ""
-            }`}
-            onClick={() => changeView("Mis Proyectos")}
-            aria-haspopup="true"
-            aria-expanded={showActiveProjects}
-            role="menuitem"
-          >
-            <FontAwesomeIcon
-              icon={faFile}
-              style={iconStyles}
-              aria-hidden="true"
-            />
-            <span>Mis Proyectos</span>
-            <FontAwesomeIcon
-              icon={faChevronUp}
-              className={`arrow-icon ${showActiveProjects ? "open" : ""}`}
-              aria-hidden="true"
+          <div className="navbar-group">
+            <button
+              className={`navbar-element ${
+                currentView === "Mis Proyectos" ? "navbar-selected" : ""
+              }`}
+              onClick={() => changeView("Mis Proyectos")}
+              aria-haspopup="true"
+              aria-expanded={showActiveProjects}
+              role="menuitem"
+            >
+              <FontAwesomeIcon
+                icon={faFile}
+                style={iconStyles}
+                aria-hidden="true"
+              />
+              <span>Mis Proyectos</span>
+            </button>
+
+            {/* Separate button for dropdown toggle */}
+            <button
+              className="arrow-toggle-btn"
+              aria-label={
+                showActiveProjects
+                  ? "Contraer lista de proyectos activos"
+                  : "Expandir lista de proyectos activos"
+              }
+              aria-expanded={showActiveProjects}
               onClick={(e) => {
                 e.stopPropagation();
                 setShowActiveProjects(!showActiveProjects);
                 setShowFinishedProjects(false);
               }}
-            />
-          </button>
+            >
+              <FontAwesomeIcon
+                icon={faChevronUp}
+                className={`arrow-icon ${showActiveProjects ? "open" : ""}`}
+                aria-hidden="true"
+              />
+            </button>
+          </div>
 
           {showActiveProjects && (
             <ul className="dropdown" role="menu">
@@ -206,6 +221,7 @@ export const NavBar = ({
                       onClick={() => {
                         changeView("Mis Proyectos / Proyecto");
                         setSelectedProject(proj.idProyecto);
+                        setSelectedProjectName(proj.nombre);
                       }}
                       role="menuitem"
                     >
@@ -224,32 +240,45 @@ export const NavBar = ({
 
         {/* --- FINISHED PROJECTS --- */}
         <li>
-          <button
-            className={`navbar-element ${
-              currentView === "Proyectos Anteriores" ? "navbar-selected" : ""
-            }`}
-            onClick={() => changeView("Proyectos Anteriores")}
-            aria-haspopup="true"
-            aria-expanded={showFinishedProjects}
-            role="menuitem"
-          >
-            <FontAwesomeIcon
-              icon={faClockRotateLeft}
-              style={iconStyles}
-              aria-hidden="true"
-            />
-            <span>Proyectos Anteriores</span>
-            <FontAwesomeIcon
-              icon={faChevronUp}
-              className={`arrow-icon ${showFinishedProjects ? "open" : ""}`}
-              aria-hidden="true"
+          <div className="navbar-group">
+            <button
+              className={`navbar-element ${
+                currentView === "Proyectos Anteriores" ? "navbar-selected" : ""
+              }`}
+              onClick={() => changeView("Proyectos Anteriores")}
+              aria-haspopup="true"
+              aria-expanded={showFinishedProjects}
+              role="menuitem"
+            >
+              <FontAwesomeIcon
+                icon={faClockRotateLeft}
+                style={iconStyles}
+                aria-hidden="true"
+              />
+              <span>Proyectos Anteriores</span>
+            </button>
+
+            <button
+              className="arrow-toggle-btn"
+              aria-label={
+                showFinishedProjects
+                  ? "Contraer lista de proyectos anteriores"
+                  : "Expandir lista de proyectos anteriores"
+              }
+              aria-expanded={showFinishedProjects}
               onClick={(e) => {
                 e.stopPropagation();
                 setShowFinishedProjects(!showFinishedProjects);
                 setShowActiveProjects(false);
               }}
-            />
-          </button>
+            >
+              <FontAwesomeIcon
+                icon={faChevronUp}
+                className={`arrow-icon ${showFinishedProjects ? "open" : ""}`}
+                aria-hidden="true"
+              />
+            </button>
+          </div>
 
           {showFinishedProjects && (
             <ul className="dropdown" role="menu">
@@ -266,6 +295,7 @@ export const NavBar = ({
                       onClick={() => {
                         changeView("Proyectos Anteriores / Proyecto");
                         setSelectedProject(proj.idProyecto);
+                        setSelectedProjectName(proj.nombre);
                       }}
                       role="menuitem"
                     >

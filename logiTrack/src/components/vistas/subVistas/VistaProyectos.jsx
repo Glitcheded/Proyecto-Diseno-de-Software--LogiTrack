@@ -5,7 +5,12 @@ import { supabase } from "../../../../supabaseClient";
 
 const baseURL = "http://localhost:3001/api/projects"; // ensure correct endpoint
 
-export const VistaProyectos = ({ ViewMode, dataList, setDataList }) => {
+export const VistaProyectos = ({
+  ViewMode,
+  dataList,
+  setDataList,
+  fetchProjects,
+}) => {
   const { userName, userEmail, userLastName, userId } = useUser();
 
   const [selectedDescription, setSelectedDescription] = useState(null);
@@ -17,7 +22,6 @@ export const VistaProyectos = ({ ViewMode, dataList, setDataList }) => {
 
   const [addMemberError, setAddMemberError] = useState("");
 
-  // Map to hold project members: { [idProyecto]: [members...] }
   const [projectMembers, setProjectMembers] = useState({});
 
   const isPrevious = ViewMode === "Proyectos Anteriores";
@@ -40,7 +44,6 @@ export const VistaProyectos = ({ ViewMode, dataList, setDataList }) => {
     }
   };
 
-  // Fetch members for a project
   const fetchMembers = async (idProyecto) => {
     try {
       const { data, error } = await supabase
@@ -69,7 +72,6 @@ export const VistaProyectos = ({ ViewMode, dataList, setDataList }) => {
     }
   };
 
-  // Fetch members for all projects on mount
   useEffect(() => {
     dataList.forEach((project) => fetchMembers(project.idProyecto));
   }, [dataList]);
@@ -112,7 +114,6 @@ export const VistaProyectos = ({ ViewMode, dataList, setDataList }) => {
     if (!email) return;
 
     try {
-      // Call your new API route to get user info by email
       const res = await fetch(
         `http://localhost:3001/api/config/email/${email}`
       );
@@ -145,7 +146,7 @@ export const VistaProyectos = ({ ViewMode, dataList, setDataList }) => {
       });
 
       setNewMemberEmail("");
-      setAddMemberError(""); // clear error if successful
+      setAddMemberError("");
     } catch (err) {
       console.error("Error al agregar miembro:", err);
       setAddMemberError("Error al agregar miembro");
@@ -162,7 +163,6 @@ export const VistaProyectos = ({ ViewMode, dataList, setDataList }) => {
 
       const projectId = editedProject.idProyecto;
 
-      // 1️⃣ Update project info (name & description)
       await fetch(`${baseURL}/${projectId}`, {
         method: "PUT",
         headers: {
@@ -172,11 +172,10 @@ export const VistaProyectos = ({ ViewMode, dataList, setDataList }) => {
         body: JSON.stringify({
           nombre: editedProject.nombre,
           descripcion: editedProject.descripcion,
-          idEstadoProyecto: editedProject.idEstadoProyecto, // ✅ include state
+          idEstadoProyecto: editedProject.idEstadoProyecto,
         }),
       });
 
-      // 2️⃣ Handle member removals
       const originalMembers = projectMembers[projectId] || [];
       const removedMembers = originalMembers.filter(
         (m) => !editedProject.memberList.some((em) => em.id === m.id)
@@ -192,13 +191,11 @@ export const VistaProyectos = ({ ViewMode, dataList, setDataList }) => {
         });
       }
 
-      // 3️⃣ Handle newly added members
       const addedMembers = editedProject.memberList.filter(
         (m) => !originalMembers.some((om) => om.id === m.id)
       );
 
       for (const member of addedMembers) {
-        // Here we now send idUsuario + idRol (instead of just email)
         await fetch(`${baseURL}/${projectId}/assign`, {
           method: "POST",
           headers: {
@@ -207,12 +204,11 @@ export const VistaProyectos = ({ ViewMode, dataList, setDataList }) => {
           },
           body: JSON.stringify({
             idUsuario: member.id,
-            idRol: member.role, // ⚠️ make sure this is the role ID, not the name
+            idRol: member.role,
           }),
         });
       }
 
-      // 4️⃣ Update local state
       setDataList((prev) =>
         prev.map((proj) =>
           proj.idProyecto === projectId ? editedProject : proj
@@ -222,6 +218,10 @@ export const VistaProyectos = ({ ViewMode, dataList, setDataList }) => {
         ...prev,
         [projectId]: editedProject.memberList,
       }));
+
+      if (fetchProjects) {
+        await fetchProjects();
+      }
 
       closeEditor();
       console.log("Proyecto y miembros actualizados correctamente");
@@ -359,10 +359,6 @@ export const VistaProyectos = ({ ViewMode, dataList, setDataList }) => {
           <tr role="row">
             <th role="columnheader">Nombre del proyecto</th>
             <th role="columnheader">Descripción</th>
-            <th role="columnheader">Última modificación</th>
-            <th role="columnheader">
-              {isPrevious ? "Fecha de finalización" : "Próxima entrega"}
-            </th>
             <th role="columnheader"># de miembros</th>
             {isPrevious && <th role="columnheader">Estado</th>}
           </tr>
@@ -373,7 +369,7 @@ export const VistaProyectos = ({ ViewMode, dataList, setDataList }) => {
             dataList.map((project) => (
               <tr key={project.idProyecto} className="proyecto-row" role="row">
                 <td role="cell" className="proyecto-name-cell">
-                  {project.nombre}
+                  <strong>{project.nombre}</strong>
                   <button
                     className="proyecto-edit-btn"
                     onClick={() => openEditor(project)}
@@ -396,12 +392,6 @@ export const VistaProyectos = ({ ViewMode, dataList, setDataList }) => {
                   >
                     Ver descripción
                   </button>
-                </td>
-                <td role="cell">{formatDate(project.ultimaModificacion)}</td>
-                <td role="cell">
-                  {isPrevious
-                    ? formatDate(project.fechaFinalizacion)
-                    : formatDate(project.fechaEntregaProxima)}
                 </td>
                 <td role="cell">
                   {projectMembers[project.idProyecto]?.length || 0}
@@ -534,7 +524,7 @@ export const VistaProyectos = ({ ViewMode, dataList, setDataList }) => {
                     <td role="cell">{member.role}</td>
                     <td role="cell">
                       <button
-                        className="small danger"
+                        className="small-danger"
                         onClick={() => handleRemoveMember(member.id)}
                         aria-label={`Eliminar miembro ${member.name}`}
                         tabIndex={0}
