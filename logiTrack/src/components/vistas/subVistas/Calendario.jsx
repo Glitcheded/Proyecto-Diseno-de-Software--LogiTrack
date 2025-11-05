@@ -6,7 +6,14 @@ import {
   faChevronRight,
 } from "@fortawesome/free-solid-svg-icons";
 
-export const Calendario = ({ dataList, ViewMode, selectedProject }) => {
+const baseURL = "http://localhost:3001/api";
+
+export const Calendario = ({
+  dataList,
+  ViewMode,
+  selectedProject,
+  fetchTareas,
+}) => {
   const [tasks, setTasks] = useState(() =>
     Array.isArray(dataList) ? dataList.slice() : []
   );
@@ -49,44 +56,46 @@ export const Calendario = ({ dataList, ViewMode, selectedProject }) => {
     }
   }, [dataList]);
 
-  useEffect(() => {
-    if (!editingTask) return;
-
-    const fetchProjectMembers = async () => {
-      try {
-        const response = await new Promise((resolve) =>
-          setTimeout(
-            () =>
-              resolve([
-                "Giovanni",
-                "Laura",
-                "Carlos",
-                "Ana",
-                "María",
-                "José",
-                "David",
-                "Sofía",
-                "Pablo",
-                "Andrea",
-              ]),
-            200
-          )
-        );
-
-        const sorted = response.sort((a, b) => {
-          const aIsMember = editingTask?.members?.includes(a);
-          const bIsMember = editingTask?.members?.includes(b);
-          return aIsMember === bIsMember ? 0 : aIsMember ? -1 : 1;
-        });
-
-        setAvailableMembers(sorted);
-      } catch (err) {
-        console.error("Error fetching members:", err);
+  const fetchProjectMembers = async (idProyecto) => {
+    try {
+      const accessToken = localStorage.getItem("supabaseToken");
+      if (!accessToken) {
+        console.warn("No access token found.");
+        return;
       }
-    };
 
-    fetchProjectMembers();
-  }, [editingTask]);
+      const response = await fetch(`${baseURL}/tasks/${idProyecto}/members`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error al obtener miembros: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+
+      console.log("Mi data:", data);
+
+      const formattedMembers = data.map((m) => ({
+        id: m.Usuario.idUsuario,
+        name: `${m.Usuario.nombre} ${m.Usuario.apellido}`,
+      }));
+
+      // Sort with current task members first
+      const sorted = formattedMembers.sort((a, b) => {
+        const aIsMember = editingTask?.members?.some((m) => m.id === a.id);
+        const bIsMember = editingTask?.members?.some((m) => m.id === b.id);
+        return aIsMember === bIsMember ? 0 : aIsMember ? -1 : 1;
+      });
+
+      setAvailableMembers(sorted);
+    } catch (err) {
+      console.error("Error fetching members:", err);
+    }
+  };
 
   const today = new Date();
   const daysOfWeek = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
@@ -126,38 +135,107 @@ export const Calendario = ({ dataList, ViewMode, selectedProject }) => {
     return tasks.filter((task) => task.dueDate.startsWith(dateString));
   };
 
-  const handleAddSubtask = (parentId) => {
-    const parent = tasks.find((t) => t.id === parentId);
-    const newTask = {
-      id: makeId(),
-      name: "Nueva subtarea",
-      project: parent?.project || "-",
-      prioridad: 2,
-      state: "Sin iniciar",
-      dueDate: new Date().toISOString().slice(0, 10),
-      members: parent ? [...parent.members] : [],
-      comments: [],
-      subtaskOf: parentId,
-    };
-    setTasks((prev) => [...prev, newTask]);
-    setEditingTask({ ...newTask });
-    setIsEditorOpen(true);
-  };
-
-  const openEditor = (taskId) => {
+  const openEditor = async (taskId) => {
     const t = tasks.find((x) => x.id === taskId);
     if (!t) return;
+
     setEditingTask({ ...t });
+    await fetchProjectMembers(t.project.id);
     setIsEditorOpen(true);
   };
 
-  const saveEdits = () => {
+  const saveEdits = async () => {
     if (!editingTask) return;
-    setTasks((prev) =>
-      prev.map((t) => (t.id === editingTask.id ? { ...t, ...editingTask } : t))
-    );
-    setIsEditorOpen(false);
-    setEditingTask(null);
+
+    try {
+      const accessToken = localStorage.getItem("supabaseToken");
+      if (!accessToken) {
+        alert("No se encontró el token de autenticación.");
+        return;
+      }
+
+      const taskUpdates = {
+        nombre: editingTask.name,
+        fechaEntrega: editingTask.dueDate,
+        idPrioridad:
+          editingTask.prioridad?.nivel === "Alta"
+            ? 3
+            : editingTask.prioridad?.nivel === "Media"
+            ? 2
+            : 1,
+        idEstadoTarea:
+          editingTask.state === "Hecho"
+            ? 3
+            : editingTask.state === "En progreso"
+            ? 2
+            : 1,
+      };
+
+      const updateRes = await fetch(`${baseURL}/tasks/${editingTask.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify(taskUpdates),
+      });
+
+      if (!updateRes.ok) {
+        throw new Error(
+          `Error al actualizar la tarea: ${updateRes.statusText}`
+        );
+      }
+
+      const currentMemberIds = editingTask.members.map((m) => m.id);
+
+      const originalTask = tasks.find((t) => t.id === editingTask.id);
+      const originalMemberIds = originalTask?.members.map((m) => m.id) || [];
+
+      const addedMembers = currentMemberIds.filter(
+        (id) => !originalMemberIds.includes(id)
+      );
+      const removedMembers = originalMemberIds.filter(
+        (id) => !currentMemberIds.includes(id)
+      );
+
+      for (const idUsuario of addedMembers) {
+        await fetch(`${baseURL}/tasks/${editingTask.id}/assign`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify({ idUsuario }),
+        });
+      }
+
+      for (const idUsuario of removedMembers) {
+        await fetch(`${baseURL}/tasks/${editingTask.id}/members/${idUsuario}`, {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
+      }
+
+      setTasks((prev) =>
+        prev.map((t) =>
+          t.id === editingTask.id ? { ...t, ...editingTask } : t
+        )
+      );
+
+      if (fetchTareas) {
+        await fetchTareas();
+      }
+
+      setIsEditorOpen(false);
+      setEditingTask(null);
+
+      alert("Tarea actualizada correctamente");
+    } catch (error) {
+      console.error("Error updating task:", error);
+      alert("Hubo un problema al guardar los cambios.");
+    }
   };
 
   const cancelEdits = () => {
@@ -165,24 +243,43 @@ export const Calendario = ({ dataList, ViewMode, selectedProject }) => {
     setEditingTask(null);
   };
 
-  const deleteTask = (taskId) => {
-    if (!confirm("¿Eliminar tarea? Esta acción no se puede deshacer.")) return;
+  const deleteTask = async (taskId) => {
+    const confirmDelete = confirm(
+      "¿Eliminar tarea? Esta acción no se puede deshacer."
+    );
+    if (!confirmDelete) return;
 
-    const toRemove = new Set([taskId]);
-    let foundMore = true;
-    while (foundMore) {
-      foundMore = false;
-      tasks.forEach((t) => {
-        if (t.subtaskOf && toRemove.has(t.subtaskOf) && !toRemove.has(t.id)) {
-          toRemove.add(t.id);
-          foundMore = true;
-        }
+    try {
+      const accessToken = localStorage.getItem("supabaseToken");
+      if (!accessToken) {
+        console.warn("No access token found");
+        return;
+      }
+
+      const response = await fetch(`${baseURL}/tasks/${taskId}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
       });
-    }
 
-    setTasks((prev) => prev.filter((t) => !toRemove.has(t.id)));
-    setIsEditorOpen(false);
-    setEditingTask(null);
+      if (!response.ok) {
+        throw new Error(`Error al eliminar tarea: ${response.statusText}`);
+      }
+
+      console.log(`Tarea ${taskId} eliminada (marcada como inactiva)`);
+
+      if (fetchTareas) {
+        await fetchTareas();
+      }
+
+      setIsEditorOpen(false);
+      setEditingTask(null);
+    } catch (error) {
+      console.error("Error al eliminar tarea:", error);
+      alert("No se pudo eliminar la tarea. Intenta nuevamente.");
+    }
   };
 
   const handleTaskClick = (task) => setSelectedTask(task);
@@ -194,46 +291,114 @@ export const Calendario = ({ dataList, ViewMode, selectedProject }) => {
     setNewCommentText("");
   };
 
-  const sendComment = () => {
+  const sendComment = async () => {
     if (!commentsTask || !newCommentText.trim()) return;
-    const comment = { author: "Giovanni", text: newCommentText.trim() };
 
-    setTasks((prev) =>
-      prev.map((t) =>
-        t.id === commentsTask.id
-          ? { ...t, comments: [comment, ...(t.comments || [])] }
-          : t
-      )
-    );
+    try {
+      const accessToken = localStorage.getItem("supabaseToken");
+      if (!accessToken) {
+        alert("No se encontró el token de autenticación.");
+        return;
+      }
 
-    setCommentsTask((prev) => ({
-      ...prev,
-      comments: [comment, ...(prev.comments || [])],
-    }));
+      const body = { comentario: newCommentText.trim() };
 
-    setNewCommentText("");
+      const response = await fetch(
+        `${baseURL}/tasks/${commentsTask.id}/comment`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify(body),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Error al enviar comentario: ${response.statusText}`);
+      }
+
+      const newComment = await response.json();
+
+      if (fetchTareas) {
+        await fetchTareas();
+      }
+
+      // Update local tasks state
+      setTasks((prev) =>
+        prev.map((t) =>
+          t.id === commentsTask.id
+            ? { ...t, comments: [newComment, ...(t.comments || [])] }
+            : t
+        )
+      );
+
+      // Close comments modal after publishing
+      setCommentsTask(null);
+      setNewCommentText("");
+    } catch (error) {
+      console.error("Error sending comment:", error);
+      alert("No se pudo enviar el comentario. Intenta nuevamente.");
+    }
   };
 
-  const handleAddTaskForDay = (day) => {
-    const year = currentYear;
-    const month = currentMonth;
-    const dueDate = new Date(year, month, day).toISOString().slice(0, 10);
+  const mostRecentCommentText = (task) => {
+    if (!task.comments || task.comments.length === 0) return null;
 
-    const newTask = {
-      id: makeId(),
-      name: "Nueva tarea",
-      project: "-",
-      prioridad: 2,
-      state: "Sin iniciar",
-      dueDate,
-      members: [],
-      comments: [],
-      subtaskOf: null,
-    };
+    // Find the comment with the highest id
+    const latestComment = task.comments.reduce((latest, current) =>
+      current.id > latest.id ? current : latest
+    );
 
-    setTasks((prev) => [...prev, newTask]);
-    setEditingTask({ ...newTask });
-    setIsEditorOpen(true);
+    return latestComment.text;
+  };
+
+  const handleAddTaskForDay = async (
+    fechaEntrega,
+    idNuevaTareaMadre = null
+  ) => {
+    try {
+      const accessToken = localStorage.getItem("supabaseToken");
+      if (!accessToken) {
+        console.warn("No access token found");
+        return;
+      }
+
+      const nuevaTarea = {
+        idProyecto: selectedProject,
+        idEstadoTarea: 1,
+        idPrioridad: 2,
+        idTareaMadre: idNuevaTareaMadre,
+        nombre: "Nueva tarea",
+        fechaEntrega: fechaEntrega || new Date().toISOString().slice(0, 10),
+        activado: true,
+      };
+
+      const response = await fetch(`${baseURL}/tasks`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify(nuevaTarea),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error al crear tarea: ${response.statusText}`);
+      }
+
+      await response.json();
+
+      if (fetchTareas) {
+        await fetchTareas();
+      }
+
+      setIsEditorOpen(false);
+    } catch (error) {
+      console.error("Error adding new task:", error);
+      alert("No se pudo crear la tarea. Intenta nuevamente.");
+    }
   };
 
   const renderDayCells = () => {
@@ -247,14 +412,19 @@ export const Calendario = ({ dataList, ViewMode, selectedProject }) => {
 
     for (let day = 1; day <= daysInMonth; day++) {
       const tasksForDay = getTasksForDay(day);
-      const dateString = `${months[currentMonth]} ${day}, ${currentYear}`;
+
+      // Build proper YYYY-MM-DD string for the day
+      const dateStringForTask = `${currentYear}-${String(
+        currentMonth + 1
+      ).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+      const displayDateString = `${months[currentMonth]} ${day}, ${currentYear}`;
 
       cells.push(
         <div
           key={day}
           className="calendar-cell"
           role="gridcell"
-          aria-label={`${dateString}, ${tasksForDay.length} tarea(s)`}
+          aria-label={`${displayDateString}, ${tasksForDay.length} tarea(s)`}
           tabIndex={0}
         >
           <div className="day-header">
@@ -264,15 +434,22 @@ export const Calendario = ({ dataList, ViewMode, selectedProject }) => {
                 className="add-task-day-btn"
                 onClick={(e) => {
                   e.stopPropagation();
-                  handleAddTaskForDay(day);
+
+                  const dateStringForTask = `${currentYear}-${String(
+                    currentMonth + 1
+                  ).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+
+                  console.log("Adding task for date: ", dateStringForTask);
+                  handleAddTaskForDay(dateStringForTask);
                 }}
                 title="Agregar tarea para este día"
-                aria-label={`Agregar tarea para ${dateString}`}
+                aria-label={`Agregar tarea para ${months[currentMonth]} ${day}, ${currentYear}`}
               >
                 ➕
               </button>
             )}
           </div>
+
           {tasksForDay.map((task) => (
             <div
               key={task.id}
@@ -281,7 +458,7 @@ export const Calendario = ({ dataList, ViewMode, selectedProject }) => {
               tabIndex={0}
               onClick={() => handleTaskClick(task)}
               onKeyDown={(e) => e.key === "Enter" && handleTaskClick(task)}
-              aria-label={`Tarea: ${task.name}, Proyecto: ${task.project}, Prioridad: ${task.prioridad}`}
+              aria-label={`Tarea: ${task.name}, Proyecto: ${task.project.name}, Prioridad: ${task.prioridad}`}
             >
               <div className="task-preview">
                 {ViewMode !== "Proyectos Anteriores" && (
@@ -305,7 +482,7 @@ export const Calendario = ({ dataList, ViewMode, selectedProject }) => {
                 <div className="task-name">
                   {task.name} {getPriorityEmoji(task.prioridad)}
                 </div>
-                <div className="task-project">{task.project}</div>
+                <div className="task-project">{task.project.name}</div>
               </div>
             </div>
           ))}
@@ -401,7 +578,7 @@ export const Calendario = ({ dataList, ViewMode, selectedProject }) => {
           )}
           {ViewMode === "Mis Tareas" && (
             <p>
-              <strong>Proyecto:</strong> {selectedTask.project}
+              <strong>Proyecto:</strong> {selectedTask.project.name}
             </p>
           )}
 
@@ -427,11 +604,17 @@ export const Calendario = ({ dataList, ViewMode, selectedProject }) => {
             selectedTask.comments.length > 0 ? (
               <>
                 <ul>
-                  {selectedTask.comments.slice(0, 1).map((c, i) => (
-                    <li key={i}>
-                      <b>{c.author}:</b> {c.text}
-                    </li>
-                  ))}
+                  <li>
+                    <b>
+                      {
+                        selectedTask.comments.find(
+                          (c) => c.text === mostRecentCommentText(selectedTask)
+                        )?.author
+                      }
+                      :
+                    </b>{" "}
+                    {mostRecentCommentText(selectedTask)}
+                  </li>
                 </ul>
                 <button
                   className="comment-preview"
@@ -490,17 +673,17 @@ export const Calendario = ({ dataList, ViewMode, selectedProject }) => {
             <label>
               Prioridad
               <select
-                value={editingTask.priority}
+                value={editingTask?.prioridad?.nivel || ""}
                 onChange={(e) =>
-                  setEditingTask((p) => ({
-                    ...p,
-                    priority: Number(e.target.value),
+                  setEditingTask((prev) => ({
+                    ...prev,
+                    prioridad: { ...prev.Prioridad, nivel: e.target.value },
                   }))
                 }
               >
-                <option value={1}>🔴 1</option>
-                <option value={2}>🟡 2</option>
-                <option value={3}>🟢 3</option>
+                <option value="Alta">🔴 Alta</option>
+                <option value="Media">🟡 Media</option>
+                <option value="Baja">🟢 Baja</option>
               </select>
             </label>
 
@@ -513,7 +696,7 @@ export const Calendario = ({ dataList, ViewMode, selectedProject }) => {
                 }
               >
                 <option value="Hecho">Hecho</option>
-                <option value="En proceso">En proceso</option>
+                <option value="En progreso">En proceso</option>
                 <option value="Sin iniciar">Sin iniciar</option>
               </select>
             </label>
@@ -533,27 +716,32 @@ export const Calendario = ({ dataList, ViewMode, selectedProject }) => {
               Integrantes
               <div className="members-list">
                 {availableMembers.map((member) => {
-                  const isMember = editingTask.members?.includes(member);
+                  const isMember = editingTask.members?.some(
+                    (m) => m.id === member.id
+                  );
+
                   return (
                     <div
-                      key={member}
+                      key={member.id}
                       className={`member-item ${
                         isMember ? "member-selected" : ""
                       }`}
                     >
-                      <span>{member}</span>
+                      <span>{member.name}</span>
                       <button
                         className="small"
                         onClick={() => {
                           setEditingTask((prev) => ({
                             ...prev,
                             members: isMember
-                              ? prev.members.filter((m) => m !== member)
+                              ? prev.members.filter((m) => m.id !== member.id)
                               : [...(prev.members || []), member],
                           }));
                         }}
                         aria-label={
-                          isMember ? `Quitar ${member}` : `Agregar ${member}`
+                          isMember
+                            ? `Quitar ${member.name}`
+                            : `Agregar ${member.name}`
                         }
                       >
                         {isMember ? "-" : "+"}
@@ -578,7 +766,9 @@ export const Calendario = ({ dataList, ViewMode, selectedProject }) => {
                 Eliminar
               </button>
               <button
-                onClick={() => handleAddSubtask(editingTask.id)}
+                onClick={() =>
+                  handleAddTaskForDay(editingTask.dueDate, editingTask.id)
+                }
                 className="subtask"
               >
                 Agregar subtarea

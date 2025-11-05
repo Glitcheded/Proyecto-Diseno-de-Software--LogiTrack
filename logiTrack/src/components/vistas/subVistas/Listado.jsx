@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "./Listado.css";
 
-const currentUser = "Giovanni";
 const baseURL = "http://localhost:3001/api";
 
 export const Listado = ({
@@ -107,6 +106,8 @@ export const Listado = ({
       if (fetchTareas) {
         await fetchTareas();
       }
+
+      setIsEditorOpen(false);
     } catch (error) {
       console.error("Error adding new task:", error);
       alert("No se pudo crear la tarea. Intenta nuevamente.");
@@ -137,10 +138,10 @@ export const Listado = ({
         fechaEntrega: editingTask.dueDate,
         idPrioridad:
           editingTask.prioridad?.nivel === "Alta"
-            ? 1
+            ? 3
             : editingTask.prioridad?.nivel === "Media"
             ? 2
-            : 3,
+            : 1,
         idEstadoTarea:
           editingTask.state === "Hecho"
             ? 3
@@ -201,6 +202,10 @@ export const Listado = ({
           t.id === editingTask.id ? { ...t, ...editingTask } : t
         )
       );
+
+      if (fetchTareas) {
+        await fetchTareas();
+      }
 
       setIsEditorOpen(false);
       setEditingTask(null);
@@ -263,21 +268,56 @@ export const Listado = ({
     setNewCommentText("");
   };
 
-  const sendComment = () => {
+  const sendComment = async () => {
     if (!commentsTask || !newCommentText.trim()) return;
-    const comment = { author: currentUser, text: newCommentText.trim() };
-    setTasks((prev) =>
-      prev.map((t) =>
-        t.id === commentsTask.id
-          ? { ...t, comments: [comment, ...(t.comments || [])] }
-          : t
-      )
-    );
-    setCommentsTask((c) => ({
-      ...c,
-      comments: [comment, ...(c.comments || [])],
-    }));
-    setNewCommentText("");
+
+    try {
+      const accessToken = localStorage.getItem("supabaseToken");
+      if (!accessToken) {
+        alert("No se encontró el token de autenticación.");
+        return;
+      }
+
+      const body = { comentario: newCommentText.trim() };
+
+      const response = await fetch(
+        `${baseURL}/tasks/${commentsTask.id}/comment`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify(body),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Error al enviar comentario: ${response.statusText}`);
+      }
+
+      const newComment = await response.json();
+
+      if (fetchTareas) {
+        await fetchTareas();
+      }
+
+      // Update local tasks state
+      setTasks((prev) =>
+        prev.map((t) =>
+          t.id === commentsTask.id
+            ? { ...t, comments: [newComment, ...(t.comments || [])] }
+            : t
+        )
+      );
+
+      // Close comments modal after publishing
+      setCommentsTask(null);
+      setNewCommentText("");
+    } catch (error) {
+      console.error("Error sending comment:", error);
+      alert("No se pudo enviar el comentario. Intenta nuevamente.");
+    }
   };
 
   const buildHierarchy = (list) => {
@@ -296,8 +336,16 @@ export const Listado = ({
     return roots;
   };
 
-  const mostRecentCommentText = (task) =>
-    task.comments && task.comments.length ? task.comments[0].text : null;
+  const mostRecentCommentText = (task) => {
+    if (!task.comments || task.comments.length === 0) return null;
+
+    // Find the comment with the highest id
+    const latestComment = task.comments.reduce((latest, current) =>
+      current.id > latest.id ? current : latest
+    );
+
+    return latestComment.text;
+  };
 
   const getPriorityEmoji = (prioridad) => {
     if (!prioridad || !prioridad.nivel) return "⚪";

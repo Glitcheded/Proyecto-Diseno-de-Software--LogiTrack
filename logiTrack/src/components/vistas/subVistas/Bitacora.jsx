@@ -3,6 +3,8 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import "./Bitacora.css";
 
+const baseURL = "http://localhost:3001/api";
+
 export const Bitacora = ({ ViewMode, selectedProject }) => {
   const today = new Date();
   const formatDate = (date) => date.toISOString().split("T")[0];
