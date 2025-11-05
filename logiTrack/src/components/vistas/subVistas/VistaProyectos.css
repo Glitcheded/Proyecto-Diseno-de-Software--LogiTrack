@@ -29,7 +29,7 @@
   z-index: 2;
 }
 
-.proyecto-row:hover {
+.proyecto-row:hover, .proyecto-row:focus {
   background-color: #e9e9e9;
 }
 
@@ -38,7 +38,8 @@
 }
 
 .proyecto-edit-btn {
-  display: none;
+  opacity: 0;
+  pointer-events: none;
   position: absolute;
   right: 6px;
   top: 4px;
@@ -48,15 +49,17 @@
   border-radius: 6px;
   cursor: pointer;
   font-size: 0.85rem;
-  transition: background 0.2s;
+  transition: background 0.2s, opacity 0.2s;
 }
 
-.proyecto-edit-btn:hover {
+.proyecto-edit-btn:hover, .proyecto-edit-btn:focus {
   background-color: #bfbfbf;
 }
 
-.proyecto-name-cell:hover .proyecto-edit-btn {
-  display: inline-block;
+.proyecto-name-cell:hover .proyecto-edit-btn,
+.proyecto-edit-btn:focus {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .proyecto-desc-btn {
@@ -68,7 +71,7 @@
   font-size: 0.85rem;
 }
 
-.proyecto-desc-btn:hover {
+.proyecto-desc-btn:hover, .proyecto-desc-btn:focus {
   background: #e1e1e1;
 }
 
@@ -129,7 +132,7 @@
   text-align: left;
 }
 
-.member-row:hover {
+.member-row:hover, .member-row:focus {
   background-color: #f3f3f3;
 }
 
@@ -151,7 +154,7 @@
   background-color: #d3d3d3;
 }
 
-.add-member button:hover {
+.add-member button:hover, .add-member button:focus {
   background-color: #bfbfbf;
 }
 
@@ -169,6 +172,16 @@
   cursor: pointer;
 }
 
+.modal-actions button:hover,
+.modal-actions button:focus {
+  filter: brightness(1.1);
+  transform: scale(1.02);
+}
+
+.modal-actions button:focus-visible {
+  box-shadow: 0 0 0 3px rgba(30, 155, 58, 0.3);
+}
+
 .modal-actions .confirm {
   background: #1e9b3a;
   color: white;
@@ -181,4 +194,8 @@
 .modal-actions .danger {
   background: #e05050;
   color: white;
+}
+
+.small-danger:hover, .small-danger:focus{
+  color: red;
 }

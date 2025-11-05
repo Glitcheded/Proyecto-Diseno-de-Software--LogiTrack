@@ -35,14 +35,6 @@
   z-index: 2;
 }
 
-.task-row {
-  transition: background 0.2s;
-}
-
-.task-row:hover {
-  background-color: #d3d3d3;
-}
-
 .task-name {
   display: flex;
   align-items: center;
@@ -70,7 +62,7 @@
   transition: background 0.15s;
   position: relative;
 }
-.task-row:hover {
+.task-row:hover, .task-row:focus {
   background-color: #eef0f2;
 }
 
@@ -78,16 +70,21 @@
   position: absolute;
   right: 8px;
   top: 6px;
-  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
   font-size: 0.8rem;
   padding: 4px 8px;
   border-radius: 6px;
   border: 1px solid #888;
   background: white;
   cursor: pointer;
+  transition: opacity 0.2s ease;
 }
-.task-row:hover .edit-btn {
-  visibility: visible;
+
+.task-row:hover .edit-btn,
+.edit-btn:focus {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .add-row {
@@ -105,6 +102,11 @@
   border: none;
   cursor: pointer;
   font-weight: 600;
+  transition: transform 0.3s ease-in-out;
+}
+
+.add-btn:hover, .add-btn:focus{
+  transform: scale(1.1);
 }
 
 .modal-overlay {
@@ -170,7 +172,7 @@
   transition: background-color 0.2s ease;
 }
 
-.member-item:hover {
+.member-item:hover, .member-item:focus {
   background-color: #e1e1e1;
 }
 
@@ -202,7 +204,7 @@
   transition: background-color 0.2s;
 }
 
-.member-item button.small:hover {
+.member-item button.small:hover, .member-item button.small:focus {
   background-color: #bfbfbf;
 }
 
@@ -356,7 +358,7 @@
   border-radius: 4px;
 }
 
-.edit-task-modal::-webkit-scrollbar-thumb:hover {
+.edit-task-modal::-webkit-scrollbar-thumb:hover, .edit-task-modal::-webkit-scrollbar-thumb:focus {
   background: #555;
 }
 
@@ -374,7 +376,7 @@
   transition: background-color 0.2s;
 }
 
-.comment-preview:hover {
+.comment-preview:hover, .comment-preview:focus {
   background-color: #e6e6e6;
 }
 
@@ -419,7 +421,7 @@
   padding: 0;
 }
 
-.task-row:hover .add-comment-btn {
+.task-row:hover .add-comment-btn, .task-row:focus .add-comment-btn {
   opacity: 1;
   pointer-events: auto;
 }

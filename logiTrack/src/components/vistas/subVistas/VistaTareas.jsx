@@ -103,7 +103,7 @@ export const VistaTareas = ({
             key={view}
             role="tab"
             aria-selected={activeViewMode === view}
-            tabIndex={activeViewMode === view ? 0 : -1}
+            tabIndex={0}
             className={
               activeViewMode === view
                 ? "vista-options vista-options-selected"
@@ -120,7 +120,7 @@ export const VistaTareas = ({
             key="Bitacora"
             role="tab"
             aria-selected={activeViewMode === "Bitacora"}
-            tabIndex={activeViewMode === "Bitacora" ? 0 : -1}
+            tabIndex={0}
             className={
               activeViewMode === "Bitacora"
                 ? "vista-options vista-options-selected"

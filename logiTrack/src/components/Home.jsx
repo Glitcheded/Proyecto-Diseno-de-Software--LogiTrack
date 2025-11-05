@@ -143,6 +143,7 @@ const HomeContent = () => {
           <MisProyectos
             projectList={misProyectos}
             setProjectList={setMisProyectos}
+            fetchProjects={fetchProjects}
           />
         );
       case "Proyectos Anteriores":
@@ -150,6 +151,7 @@ const HomeContent = () => {
           <ProyectosAnteriores
             projectList={proyectosAnteriores}
             setProjectList={setProyectosAnteriores}
+            fetchProjects={fetchProjects}
           />
         );
       case "Opciones":

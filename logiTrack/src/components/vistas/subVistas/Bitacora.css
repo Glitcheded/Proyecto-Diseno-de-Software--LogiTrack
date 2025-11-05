@@ -78,7 +78,7 @@
   transition: background 0.2s ease;
 }
 
-.bitacora-finish-btn:hover {
+.bitacora-finish-btn:hover, .bitacora-finish-btn:focus {
   background: #d1d5db;
 }
 
@@ -99,6 +99,10 @@
   font-weight: bold;
   cursor: pointer;
   transition: background 0.2s ease;
+}
+
+.generate-btn:hover, .generate-btn:focus{
+  transform: scale(1.1);
 }
 
 .sr-only {

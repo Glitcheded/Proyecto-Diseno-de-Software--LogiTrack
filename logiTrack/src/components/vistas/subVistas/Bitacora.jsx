@@ -9,6 +9,7 @@ export const Bitacora = ({
   ViewMode,
   selectedProject,
   selectedProjectName,
+  fetchProjects,
 }) => {
   const today = new Date();
   const formatDate = (date) => date.toISOString().split("T")[0];

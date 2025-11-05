@@ -395,6 +395,7 @@ export const Listado = ({
                 className="edit-btn"
                 onClick={() => openEditor(t.id)}
                 title="Editar tarea"
+                aria-label={`Editar tarea ${t.name}`}
               >
                 Editar
               </button>
