@@ -7,32 +7,32 @@ import { ChatMessages } from "./ChatMessages";
 import { useNavigate } from "react-router-dom"; // for navigation (React Router)
 
 const baseURL = "http://localhost:3001/api";
-const usuarioGuardado = JSON.parse(localStorage.getItem("usuario"));
-const idUsuario = usuarioGuardado.idUsuario;
-const nombreUsuario = usuarioGuardado.nombre + " " + usuarioGuardado.apellido;
-const usuarioEmail = usuarioGuardado.email;
-const chatSeleccionado = JSON.parse(localStorage.getItem("chatSeleccionado"));
+let usuarioGuardado = null;
+let idUsuario = null;
+let nombreUsuario = '';
+let usuarioEmail = '';
+
+const usuarioGuardadoRaw = localStorage.getItem('usuario');
+if (usuarioGuardadoRaw) {
+  usuarioGuardado = JSON.parse(usuarioGuardadoRaw);
+  idUsuario = usuarioGuardado.idUsuario;
+  nombreUsuario = `${usuarioGuardado.nombre} ${usuarioGuardado.apellido}`;
+  usuarioEmail = usuarioGuardado.email;
+}
 
 export const Chat = ({}) => {
-  console.log("ID:", idUsuario);
-  console.log("Nombre:", nombreUsuario);
-  console.log(Object.keys(usuarioGuardado));
+  console.log('ID:', idUsuario);
+  console.log('Nombre:', nombreUsuario);
 
-  const user = { name: nombreUsuario };
-  const [chats, setChats] = useState([]);
-  const [chatSeleccionado, setChatSeleccionado] = useState(
-    JSON.parse(localStorage.getItem("chatSeleccionado")) || null
-  );
-
+  const user = { name: nombreUsuario};
+  const [chats, setChats] = useState([]); 
   const [chatSelected, setChatSelected] = useState("null");
   const [mensajes, setMensajes] = useState([]);
 
   const seleccionarChat = (chat) => {
-    console.log("✅ Chat recibido del hijo:", chat);
+    console.log("✅ Chat recibido del sidebar:", chat);
     setChatSelected(chat);
   };
-
-  console.log(`EHHH ${chatSelected.id}`);
 
   const fetchMensajes = async (idChat) => {
     if (!idChat) return;
@@ -137,8 +137,6 @@ export const Chat = ({}) => {
     console.log("Adjuntar archivo");
   };
 
-  let chatName = chatSeleccionado?.name || "";
-
   useEffect(() => {
     // Intentar leer el usuario guardado del localStorage
     const usuarioGuardado = JSON.parse(localStorage.getItem("usuario"));
@@ -148,16 +146,6 @@ export const Chat = ({}) => {
       obtenerChatsPorCorreo(correo, setChats);
     }
   }, []); // se ejecuta solo una vez al montar el componente
-
-  useEffect(() => {
-    const handleStorageChange = () => {
-      const nuevoChat = JSON.parse(localStorage.getItem("chatSeleccionado"));
-      setChatSeleccionado(nuevoChat);
-    };
-
-    window.addEventListener("storage", handleStorageChange);
-    return () => window.removeEventListener("storage", handleStorageChange);
-  }, []);
 
   return (
     <div>
