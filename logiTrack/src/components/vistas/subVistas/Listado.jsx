@@ -122,13 +122,94 @@ export const Listado = ({
     setIsEditorOpen(true);
   };
 
-  const saveEdits = () => {
+  const saveEdits = async () => {
     if (!editingTask) return;
-    setTasks((prev) =>
-      prev.map((t) => (t.id === editingTask.id ? { ...t, ...editingTask } : t))
-    );
-    setIsEditorOpen(false);
-    setEditingTask(null);
+
+    try {
+      const accessToken = localStorage.getItem("supabaseToken");
+      if (!accessToken) {
+        alert("No se encontró el token de autenticación.");
+        return;
+      }
+
+      const taskUpdates = {
+        nombre: editingTask.name,
+        fechaEntrega: editingTask.dueDate,
+        idPrioridad:
+          editingTask.prioridad?.nivel === "Alta"
+            ? 1
+            : editingTask.prioridad?.nivel === "Media"
+            ? 2
+            : 3,
+        idEstadoTarea:
+          editingTask.state === "Hecho"
+            ? 3
+            : editingTask.state === "En progreso"
+            ? 2
+            : 1,
+      };
+
+      const updateRes = await fetch(`${baseURL}/tasks/${editingTask.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify(taskUpdates),
+      });
+
+      if (!updateRes.ok) {
+        throw new Error(
+          `Error al actualizar la tarea: ${updateRes.statusText}`
+        );
+      }
+
+      const currentMemberIds = editingTask.members.map((m) => m.id);
+
+      const originalTask = tasks.find((t) => t.id === editingTask.id);
+      const originalMemberIds = originalTask?.members.map((m) => m.id) || [];
+
+      const addedMembers = currentMemberIds.filter(
+        (id) => !originalMemberIds.includes(id)
+      );
+      const removedMembers = originalMemberIds.filter(
+        (id) => !currentMemberIds.includes(id)
+      );
+
+      for (const idUsuario of addedMembers) {
+        await fetch(`${baseURL}/tasks/${editingTask.id}/assign`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify({ idUsuario }),
+        });
+      }
+
+      for (const idUsuario of removedMembers) {
+        await fetch(`${baseURL}/tasks/${editingTask.id}/members/${idUsuario}`, {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
+      }
+
+      setTasks((prev) =>
+        prev.map((t) =>
+          t.id === editingTask.id ? { ...t, ...editingTask } : t
+        )
+      );
+
+      setIsEditorOpen(false);
+      setEditingTask(null);
+
+      alert("Tarea actualizada correctamente");
+    } catch (error) {
+      console.error("Error updating task:", error);
+      alert("Hubo un problema al guardar los cambios.");
+    }
   };
 
   const cancelEdits = () => {
