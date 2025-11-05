@@ -1,5 +1,6 @@
 import React, { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom"; // for navigation (React Router)
+import { enviarNotificacionChat } from './SidebarChat';
 
 import "./ChatInput.css";
 
@@ -11,7 +12,7 @@ const send = <FontAwesomeIcon icon={faPaperPlane} style={{ fontSize: "1.5rem" }}
 
 const baseURL = "http://localhost:3001/api/chat";
 
-const enviarMensaje = async (idUsuario, idChat, contenido) => {
+export const enviarMensaje = async (idUsuario, idChat, contenido) => {
   try {
     const response = await fetch(`${baseURL}/enviarMsj`, {
       method: "POST",
@@ -33,16 +34,32 @@ const enviarMensaje = async (idUsuario, idChat, contenido) => {
 };
 
 
-export const ChatInput = ({ idUsuario, idChat, onEnviar, sidebarWidth = 320 }) => {
+export const ChatInput = ({ currentChat, onEnviar, sidebarWidth = 320 }) => {
+  let usuarioGuardado = null;
+  let idUsuario = null;
+  let nombreUsuario = '';
+  let usuarioEmail = '';
+
+  const usuarioGuardadoRaw = localStorage.getItem('usuario');
+  if (usuarioGuardadoRaw) {
+    usuarioGuardado = JSON.parse(usuarioGuardadoRaw);
+    idUsuario = usuarioGuardado.idUsuario;
+    nombreUsuario = `${usuarioGuardado.nombre} ${usuarioGuardado.apellido}`;
+    usuarioEmail = usuarioGuardado.email;
+  }
+
   const [text, setText] = useState("");
   const liveRef = useRef(null);
 
   const handleSubmit = async () => {
     const mensaje = text.trim();
     if (!mensaje) return;
-
+    console.log(mensaje);
     // Aquí podrías llamar al endpoint para enviar mensaje
-    await enviarMensaje(idUsuario, idChat, mensaje);
+    await enviarMensaje(idUsuario, currentChat.id, mensaje);
+
+    const notif = `${nombreUsuario}: ${mensaje}`;
+    await enviarNotificacionChat(usuarioEmail, currentChat.id, notif);
 
     // Avisar al padre
     if (onEnviar) {

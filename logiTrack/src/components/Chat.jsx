@@ -1,69 +1,69 @@
 import React, { useState, useEffect } from "react";
 import "./Chat.css";
-import { SidebarChat } from "./SidebarChat";
-import { ChatInput } from "./ChatInput";
+import { SidebarChat, enviarNotificacionChat } from "./SidebarChat";
+import { ChatInput, enviarMensaje } from "./ChatInput";
 import { ChatHeader } from "./ChatHeader";
 import { ChatMessages } from "./ChatMessages";
 import { useNavigate } from "react-router-dom"; // for navigation (React Router)
 
 const baseURL = "http://localhost:3001/api";
-let usuarioGuardado = null;
-let idUsuario = null;
-let nombreUsuario = '';
-let usuarioEmail = '';
-
-const usuarioGuardadoRaw = localStorage.getItem('usuario');
-if (usuarioGuardadoRaw) {
-  usuarioGuardado = JSON.parse(usuarioGuardadoRaw);
-  idUsuario = usuarioGuardado.idUsuario;
-  nombreUsuario = `${usuarioGuardado.nombre} ${usuarioGuardado.apellido}`;
-  usuarioEmail = usuarioGuardado.email;
-}
 
 export const Chat = ({}) => {
-  console.log('ID:', idUsuario);
-  console.log('Nombre:', nombreUsuario);
+  let usuarioGuardado = null;
+  let idUsuario = null;
+  let nombreUsuario = '';
+  let usuarioEmail = '';
+
+  const usuarioGuardadoRaw = localStorage.getItem('usuario');
+  if (usuarioGuardadoRaw) {
+    usuarioGuardado = JSON.parse(usuarioGuardadoRaw);
+    idUsuario = usuarioGuardado.idUsuario;
+    nombreUsuario = `${usuarioGuardado.nombre} ${usuarioGuardado.apellido}`;
+    usuarioEmail = usuarioGuardado.email;
+  }
 
   const user = { name: nombreUsuario};
   const [chats, setChats] = useState([]); 
   const [chatSelected, setChatSelected] = useState("null");
   const [mensajes, setMensajes] = useState([]);
+  const [accionSidebarChat, setAccionSidebarChat] = useState(null);
 
+  // Para obtener el chat que ha sido seleccionado del sidebar
   const seleccionarChat = (chat) => {
     console.log("✅ Chat recibido del sidebar:", chat);
     setChatSelected(chat);
   };
 
+  // Para renderizar de nuevo cuando se cree nuevo chat
+  useEffect(() => {
+    if (accionSidebarChat === "clickeado") {
+      console.log("En el sidebarchat se ha creado un nuevo chat");
+    }
+  }, [accionSidebarChat]);
+
+  // Get mensajes
   const fetchMensajes = async (idChat) => {
     if (!idChat) return;
 
     try {
       const response = await fetch(
-        `http://localhost:3001/api/chat/msj/${idChat}`
+        `${baseURL}/chat/msj/${idChat}`
       );
       if (!response.ok) throw new Error("Error al obtener mensajes");
       const data = await response.json();
 
-      const mensajesTransformados = data.map((msg) => ({
-        ...msg,
-        Usuario: {
-          ...msg.Usuario,
-          nombre:
-            msg.Usuario?.nombre === usuarioGuardado.nombre
-              ? "Yo"
-              : msg.Usuario?.nombre || "Desconocido",
-        },
-      }));
-
-      setMensajes(mensajesTransformados);
+      setMensajes(data);
     } catch (error) {
       console.error("Error cargando mensajes:", error);
     }
   };
 
+  // Vuelve a llamar la funcion cuando se selecciona otro chat
   useEffect(() => {
     fetchMensajes(chatSelected.id);
   }, [chatSelected.id]);
+
+  console.log(mensajes);
 
   // Get chats
   const obtenerChatsPorCorreo = async (correo, setChats) => {
@@ -91,6 +91,7 @@ export const Chat = ({}) => {
     }
   };
 
+  // Para enviar mensajes
   const handleSend = async (mensaje) => {
     console.log("Mensaje recibido del hijo:", mensaje);
 
@@ -106,22 +107,9 @@ export const Chat = ({}) => {
     ]);
 
     try {
-      // 2️⃣ Enviar mensaje al backend
-      await fetch("http://localhost:3001/api/chat/enviarMsj", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          idUsuario: idUsuario, // variable que debes tener en tu componente padre
-          idChat: chatSelected.id, // chat seleccionado
-          contenido: mensaje,
-        }),
-      });
-
-      // 3️⃣ Traer todos los mensajes actualizados del chat
+      // Traer todos los mensajes actualizados del chat
       const response = await fetch(
-        `http://localhost:3001/api/chat/msj/${idChat}`
+        `${baseURL}/chat/msj/${chatSelected.id}`
       );
       if (!response.ok) throw new Error("Error al obtener mensajes");
       const data = await response.json();
@@ -153,14 +141,14 @@ export const Chat = ({}) => {
         user={user}
         chats={chats}
         onSeleccionarChat={seleccionarChat}
+        onAccion={setAccionSidebarChat}
       />
       <ChatHeader chatName={chatSelected.name} />
       <main className="main-content">
-        <ChatMessages mensajes={mensajes} currentUser={usuarioGuardado} />
+        <ChatMessages mensajes={mensajes} />
       </main>
       <ChatInput
-        idUsuario={idUsuario}
-        idChat={chatSelected?.id}
+        currentChat={chatSelected}
         onEnviar={handleSend}
       />
     </div>

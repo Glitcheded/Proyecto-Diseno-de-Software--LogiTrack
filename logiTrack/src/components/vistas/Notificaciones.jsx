@@ -163,7 +163,7 @@ export const Notificaciones = () => {
                   <button
                     className="delete-btn"
                     onClick={() => handleDelete(item.id)}
-                    aria-label={`Eliminar notificación: ${item.message}`}
+                    aria-label={`Acción eliminar notificación: ${item.message}`}
                     tabIndex={0}
                     onKeyDown={(e) =>
                       e.key === "Enter" && handleDelete(item.id)

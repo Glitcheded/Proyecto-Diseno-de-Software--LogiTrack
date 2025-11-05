@@ -228,7 +228,7 @@ export const Opciones = ({ userData, userSettings }) => {
       >
         <section className="user-info" aria-labelledby="user-info-title">
           <h2 id="user-info-title">Información del usuario</h2>
-          <div>
+          <div tabIndex="0">  
             <label htmlFor="name-input">
               <strong>Nombre:</strong>
             </label>{" "}
@@ -251,13 +251,15 @@ export const Opciones = ({ userData, userSettings }) => {
             )}
           </div>
 
-          <div>
-            <strong>Email:</strong> {userInfo.email}
+          <div tabIndex="0">
+            <strong id="email-label">Email:</strong>{" "}
+            <span aria-labelledby="email-label">{userInfo.email}</span>
           </div>
 
-          <div>
+
+          <div tabIndex="0">
             <label htmlFor="linkedin-input">
-              <strong>LinkedIn:</strong>
+              <strong>LikedIn:</strong>
             </label>{" "}
             {editingField === "linkedin" ? (
               <>
@@ -278,7 +280,7 @@ export const Opciones = ({ userData, userSettings }) => {
             )}
           </div>
 
-          <div>
+          <div tabIndex="0">
             <strong>Zona Horaria:</strong> {userInfo.timezone}
           </div>
         </section>

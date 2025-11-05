@@ -31,10 +31,47 @@ if (usuarioGuardadoRaw) {
   usuarioEmail = usuarioGuardado.email;
 }
 
+// Enviar notificacion
+export const enviarNotificacionChat = async (correo, idChat, descripcion) => {
+  try {
+    const response = await fetch(
+      `${baseURL}/notificacion/notificaciones/chat`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          correo,
+          idChat,
+          descripcion,
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Error HTTP ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log("Notificación enviada:", data);
+
+    // Opcional: mostrar un toast si usas react-toastify
+    // import { toast } from "react-toastify";
+    // toast.success("✅ Notificación enviada correctamente");
+
+    return data;
+  } catch (error) {
+    console.error("Error al enviar notificación:", error);
+    // toast.error("❌ Error al enviar notificación");
+  }
+};
+
 export const SidebarChat = ({
   user = { name: "Usuario" },
   chats = initialChats,
   onSeleccionarChat,
+  onAccion,
 }) => {
   const [query, setQuery] = useState("");
   const [list, setList] = useState(chats);
@@ -50,6 +87,11 @@ export const SidebarChat = ({
     navigate("/home", { state: { view: "Opciones" } });
   };
 
+  // Para enviar senal de que se ha creado un chat
+  const handleClickNewChat = () => {
+    onAccion("clickeado");
+  }
+
   const getIniciales = (texto) =>
     texto
       .trim()
@@ -58,6 +100,7 @@ export const SidebarChat = ({
       .map((p) => p[0]?.toUpperCase() || "") // saca la inicial en mayúscula
       .join("");
 
+  // !Esto es para filtrar chats hay que ver como lo vuelvo a implementar
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return list;
@@ -66,42 +109,6 @@ export const SidebarChat = ({
         c.name.toLowerCase().includes(q) || c.snippet.toLowerCase().includes(q)
     );
   }, [query, list]);
-
-  // Enviar notificacion
-  const enviarNotificacionChat = async (correo, idChat, descripcion) => {
-    try {
-      const response = await fetch(
-        `${baseURL}/notificacion/notificaciones/chat`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            correo,
-            idChat,
-            descripcion,
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(`Error HTTP ${response.status}`);
-      }
-
-      const data = await response.json();
-      console.log("Notificación enviada:", data);
-
-      // Opcional: mostrar un toast si usas react-toastify
-      // import { toast } from "react-toastify";
-      // toast.success("✅ Notificación enviada correctamente");
-
-      return data;
-    } catch (error) {
-      console.error("Error al enviar notificación:", error);
-      // toast.error("❌ Error al enviar notificación");
-    }
-  };
 
   // Crear chat privado
   const crearChatPrivado = async (correoUsuario1, correoUsuario2) => {
@@ -265,7 +272,7 @@ export const SidebarChat = ({
             </button>
 
             {showDropdown && (
-              <div className="dropdown-menu">
+              <div className="dropdown-menu" ref={dropdownRef}>
                 <button onClick={() => handleOptionClick("privado")}>
                   💬 Chat privado
                 </button>
@@ -288,7 +295,8 @@ export const SidebarChat = ({
                   onChange={(e) => setEmail(e.target.value)}
                 />
                 <div className="modal-buttons">
-                  <button className="btn-create" onClick={handleCreate}>
+                  <button className="btn-create" onClick={() => {handleCreate(); 
+                                                                handleClickNewChat();}}>
                     Crear
                   </button>
                   <button className="btn-cancel" onClick={handleCancel}>
