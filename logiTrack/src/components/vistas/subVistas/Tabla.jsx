@@ -409,7 +409,7 @@ export const Tabla = ({ dataList, ViewMode, selectedProject, fetchTareas }) => {
                 {mostRecentCommentText(task) ? (
                   <button
                     className="comment-preview"
-                    onClick={() => openComments(t.id)}
+                    onClick={() => openComments(task.id)}
                     title="Ver todos los comentarios"
                   >
                     {mostRecentCommentText(task)}
