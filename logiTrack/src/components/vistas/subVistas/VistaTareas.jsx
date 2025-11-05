@@ -9,7 +9,11 @@ import { Bitacora } from "./Bitacora";
 
 const baseURL = "http://localhost:3001/api";
 
-export const VistaTareas = ({ ViewMode, selectedProject = null }) => {
+export const VistaTareas = ({
+  ViewMode,
+  selectedProject = null,
+  selectedProjectName,
+}) => {
   const [activeViewMode, setActiveViewMode] = useState("Listado");
 
   const [dataList, setDataList] = useState([]);
@@ -62,7 +66,13 @@ export const VistaTareas = ({ ViewMode, selectedProject = null }) => {
     console.log("dataList updated:", dataList);
   }, [dataList]);
 
-  const commonProps = { dataList, ViewMode, selectedProject, fetchTareas };
+  const commonProps = {
+    dataList,
+    ViewMode,
+    selectedProject,
+    fetchTareas,
+    selectedProjectName,
+  };
 
   const renderSubView = () => {
     switch (activeViewMode) {

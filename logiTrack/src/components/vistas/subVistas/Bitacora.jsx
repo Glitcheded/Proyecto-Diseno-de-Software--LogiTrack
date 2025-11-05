@@ -5,7 +5,11 @@ import "./Bitacora.css";
 
 const baseURL = "http://localhost:3001/api/projects";
 
-export const Bitacora = ({ ViewMode, selectedProject }) => {
+export const Bitacora = ({
+  ViewMode,
+  selectedProject,
+  selectedProjectName,
+}) => {
   const today = new Date();
   const formatDate = (date) => date.toISOString().split("T")[0];
   const [viewDate, setViewDate] = useState(formatDate(today));
@@ -159,14 +163,14 @@ export const Bitacora = ({ ViewMode, selectedProject }) => {
       item.notes,
     ]);
 
-    doc.text(`Bitácora - ${ViewMode} - ${viewDate}`, 14, 15);
+    doc.text(`Bitácora - ${selectedProjectName} - ${viewDate}`, 14, 15);
     autoTable(doc, {
       head: [["Hora", "Tareas", "Notas"]],
       body: tableData,
       startY: 20,
     });
 
-    doc.save(`bitacora-${ViewMode}-${viewDate}.pdf`);
+    doc.save(`bitacora-${selectedProjectName}-${viewDate}.pdf`);
   };
 
   return (

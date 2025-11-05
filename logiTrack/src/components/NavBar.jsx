@@ -24,6 +24,7 @@ export const NavBar = ({
   selectedProject,
   setSelectedProject,
   userName,
+  setSelectedProjectName,
 }) => {
   const navigate = useNavigate();
   const [showUserDropdown, setShowUserDropdown] = useState(false);
@@ -206,6 +207,7 @@ export const NavBar = ({
                       onClick={() => {
                         changeView("Mis Proyectos / Proyecto");
                         setSelectedProject(proj.idProyecto);
+                        setSelectedProjectName(proj.nombre);
                       }}
                       role="menuitem"
                     >
@@ -266,6 +268,7 @@ export const NavBar = ({
                       onClick={() => {
                         changeView("Proyectos Anteriores / Proyecto");
                         setSelectedProject(proj.idProyecto);
+                        setSelectedProjectName(proj.nombre);
                       }}
                       role="menuitem"
                     >
