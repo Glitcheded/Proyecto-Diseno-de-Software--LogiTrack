@@ -109,3 +109,55 @@ export const getUserInfo = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+//Solicita resetear la contraseña POST /api/auth/forgot-password
+export const requestPasswordReset = async (req, res) => {
+    const { email } = req.body;
+
+    //URL a la que el usuario será redirigido DESPUÉS de hacer clic en el enlace de su correo (hay que crear la ruta)
+    const redirectTo = 'http://localhost:5173/actualizar-contrasena';
+
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: redirectTo,
+    });
+
+    if (error) {
+        return res.status(500).json({ error: error.message });
+    }
+
+    res.status(200).json({ message: 'Correo de reseteo enviado' });
+};
+
+
+//Actualiza la contraseña POST /api/auth/update-password
+export const updatePassword = async (req, res) => {
+    const { token, newPassword } = req.body;
+
+    if (!token || !newPassword) {
+        return res.status(400).json({ error: 'Token y nueva contraseña son requeridos' });
+    }
+
+    try {
+        //Verifica el token que vino del enlace del correo (hay que extraerlo de la URL)
+        const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+        
+        if (userError) {
+            return res.status(401).json({ error: "Token inválido o expirado" });
+        }
+
+        // Si el token es válido, actualiza la contraseña para ese usuario
+        const { error: updateError } = await supabase.auth.admin.updateUserById(
+            user.id,
+            { password: newPassword }
+        );
+
+        if (updateError) {
+            return res.status(500).json({ error: updateError.message });
+        }
+
+        res.status(200).json({ message: 'Contraseña actualizada exitosamente' });
+
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
