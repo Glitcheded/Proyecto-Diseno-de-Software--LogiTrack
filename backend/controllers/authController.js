@@ -8,7 +8,7 @@ export const signUp = async (req, res) => {
   let authData = null; 
 
   try {
-    const { data, error: authError } = await supabase.auth.signUp({
+    const { data, error: authError } = await supabase.auth.signUp({  // Acepta distintos dominios
       email: email,
       password: password,
     });
