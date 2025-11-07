@@ -2,24 +2,41 @@ import React, { useState, useEffect, useRef } from "react";
 import "./Opciones.css";
 import { useNavigate } from "react-router-dom";
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const baseURL = `${API_BASE_URL}/api`;
+
 export const Opciones = ({ userData, userSettings }) => {
   const navigate = useNavigate();
 
-  const usuarioGuardado = JSON.parse(localStorage.getItem("usuario"));
-  const idUsuario = usuarioGuardado.idUsuario;
-  const nombreUsuario = usuarioGuardado.nombre + " " + usuarioGuardado.apellido;
-  const usuarioEmail = usuarioGuardado.email;
-  const usuarioLinkedIn = usuarioGuardado.enlaceLikedIn || "";
-  const zonaHoraria = Intl.DateTimeFormat().resolvedOptions().timeZone;
-  console.log(zonaHoraria);
+  let usuarioGuardado = null;
+  let idUsuario = null;
+  let nombreUsuario = '';
+  let usuarioEmail = '';
+  let usuarioLinkedIn = '';
+  let zonaHoraria = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+  const usuarioGuardadoRaw = localStorage.getItem('usuario');
+  if (usuarioGuardadoRaw) {
+    try {
+      usuarioGuardado = JSON.parse(usuarioGuardadoRaw);
+      idUsuario = usuarioGuardado.idUsuario || null;
+      nombreUsuario = `${usuarioGuardado.nombre || ''} ${usuarioGuardado.apellido || ''}`.trim();
+      usuarioEmail = usuarioGuardado.email || '';
+      usuarioLinkedIn = usuarioGuardado.enlaceLikedIn || '';
+    } catch (error) {
+      console.error('Error al parsear usuario desde localStorage:', error);
+    }
+  }
+
   const [configuraciones, setConfiguraciones] = useState([]);
   const [loading, setLoading] = useState(true);
   const [settings, setSettings] = useState(null);
+  console.log(usuarioGuardado)
 
   const fetchConfiguraciones = async () => {
     const token = localStorage.getItem('supabaseToken');
-    try {
-      const response = await fetch(`http://localhost:3001/api/config/getConfiguraciones`, {
+    try {
+      const response = await fetch(`${baseURL}/config/getConfiguraciones`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -123,7 +140,7 @@ export const Opciones = ({ userData, userSettings }) => {
       const [nombre, ...apellidoPartes] = userInfo.name.split(' ');
       const apellido = apellidoPartes.join(' ');
 
-      const responsePerfil = await fetch('http://localhost:3001/api/config/updateUsuario', {
+      const responsePerfil = await fetch(`${baseURL}/config/updateUsuario`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -167,7 +184,7 @@ export const Opciones = ({ userData, userSettings }) => {
         conteoSemana: settings.conteoSemana
       };
 
-      const responseConfig = await fetch('http://localhost:3001/api/config/updateConfiguraciones', {
+      const responseConfig = await fetch(`${baseURL}/config/updateConfiguraciones`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
