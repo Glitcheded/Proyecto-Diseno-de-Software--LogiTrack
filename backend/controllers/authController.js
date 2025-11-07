@@ -2,8 +2,7 @@ import { supabase } from '../supabaseClient.js';
 import { crearUsuarioLocal, crearConfiguracionDefault } from '../models/authModel.js';
 
 export const signUp = async (req, res) => {
-  const { name, email, password } = req.body;
-  const [nombre, apellido] = name.split(' ');
+  const { nombre, apellidos, email, password } = req.body;
 
   let authData = null; 
 
@@ -21,7 +20,7 @@ export const signUp = async (req, res) => {
 
     if (authData.user) {
       // Inserta usuario en tabla "Usuario"
-      const nuevoUsuario = await crearUsuarioLocal(nombre, apellido, email);
+      const nuevoUsuario = await crearUsuarioLocal(nombre, apellidos, email);
 
       // Inserta en tabla "ConfiguracionUsuario"
       await crearConfiguracionDefault(nuevoUsuario.idUsuario);

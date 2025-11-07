@@ -1,12 +1,12 @@
 import { supabase } from '../supabaseClient.js';
 
 // Inserta en la tabla "Usuario"
-export async function crearUsuarioLocal(nombre, apellido, email) {
-  const { data, error } = await supabase
+export async function crearUsuarioLocal(nombre, apellidos, email) { // Asumo que mantienes el dbClient de la otra vez
+    const { data, error } = await supabase
     .from('Usuario')
     .insert({
       nombre: nombre,
-      apellido: apellido || '', //
+      apellido: apellidos,
       email: email,
       contrasena: 'AuthManejado'
     })

@@ -19,15 +19,15 @@ export const LoginSignup = () => {
   const [action, setAction] = useState("Inciar Sesión");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
+  const [nombre, setNombre] = useState("");
+  const [apellidos, setApellidos] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
 
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault(); // prevent reload
-    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-    const baseURL = `${API_BASE_URL}/api`;
+    const baseURL = "http://localhost:3001/api";
     let endpoint = "";
     let payload = {};
 
@@ -37,7 +37,7 @@ export const LoginSignup = () => {
         payload = { email, password };
       } else if (action === "Crear Cuenta") {
         endpoint = "/auth/signup";
-        payload = { name, email, password };
+        payload = { nombre, apellidos, email, password };
       }
 
       const response = await fetch(baseURL + endpoint, {
@@ -127,21 +127,37 @@ export const LoginSignup = () => {
             >
               <div className="inputs">
                 {action === "Crear Cuenta" && (
-                  <div className="input">
-                    <div className="icons" aria-hidden="true">
-                      {userIco}
-                    </div>
-                    <input
-                      id="name"
-                      type="text"
-                      placeholder="Nombre"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      required
-                      autoComplete="name"
-                    />
-                  </div>
-                )}
+                  <>
+                  <div className="input">
+                    <div className="icons" aria-hidden="true">
+                      {userIco}
+                    </div>
+                    <input
+                      id="nombre"
+                      type="text"
+                      placeholder="Nombre"
+                      value={nombre}
+                      onChange={(e) => setNombre(e.target.value)}
+                      required
+                      autoComplete="given-name"
+                    />
+                  </div>
+                  <div className="input">
+                    <div className="icons" aria-hidden="true">
+                      {userIco}
+                    </div>
+                    <input
+                      id="apellidos"
+                      type="text"
+                      placeholder="Apellidos"
+                      value={apellidos}
+                      onChange={(e) => setApellidos(e.target.value)}
+                      required
+                      autoComplete="family-name"
+                    />
+                  </div>
+                  </>
+                )}
 
                 <div className="input">
                   <div className="icons" aria-hidden="true">
