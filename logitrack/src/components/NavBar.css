@@ -1,0 +1,198 @@
+/* RESET BUTTON AND LIST DEFAULT STYLES */
+button {
+  all: unset;
+  cursor: pointer;
+}
+
+ul,
+li {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* MAIN CONTAINER */
+.NV-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 25vw;
+  color: white;
+  margin: 0;
+  padding: 0;
+}
+
+/* TOP BAR */
+.options-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 15%;
+  width: 100%;
+  border-bottom: 1px solid white;
+  border-right: 1px solid white;
+  background: #2f0459;
+  padding: 0 1rem;
+}
+
+/* USER ICON AND DROPDOWN */
+.user-icon-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.user-icon {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 17px;
+  font-weight: 600;
+  color: white;
+}
+
+.user-icon:hover,
+.user-icon:focus {
+  text-decoration: underline;
+  outline: none;
+}
+
+.user-dropdown {
+  position: absolute;
+  top: 110%;
+  left: 0;
+  background-color: #ffffff;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  border-radius: 0.5rem;
+  z-index: 999;
+  min-width: 150px;
+  overflow: hidden;
+}
+
+.user-dropdown button.dropdown-item {
+  width: 100%;
+  padding: 0.6rem 1rem;
+  color: black;
+  text-align: left;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+
+.user-dropdown button.dropdown-item:hover,
+.user-dropdown button.dropdown-item:focus {
+  background-color: #f0f0f0;
+}
+
+/* OPTIONS ICON ON RIGHT */
+.options-others {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.options-others .icons {
+  cursor: pointer;
+  line-height: 1;
+  color: white;
+}
+
+.options-others .icons:hover {
+  transform: scale(1.05);
+}
+
+/* NAVIGATION MENU */
+.navbar-container {
+  display: flex;
+  flex-direction: column;
+  height: 85%;
+  width: 100%;
+  background: #2f0459;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: #471575 #2f0459;
+}
+
+.navbar-container::-webkit-scrollbar {
+  width: 6px;
+}
+.navbar-container::-webkit-scrollbar-thumb {
+  background-color: #471575;
+  border-radius: 10px;
+}
+
+.navbar-element {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  height: 3.2rem;
+  width: 90%;
+  padding: 0.8rem 1rem;
+  font-size: 17px;
+  font-weight: 600;
+  background: transparent;
+  color: white;
+  transition: background 0.2s ease;
+}
+
+.navbar-element:hover,
+.navbar-element:focus-visible {
+  background: #471575;
+  outline: none;
+}
+
+.navbar-selected {
+  background: #471575;
+}
+
+/* ICONS INSIDE BUTTONS */
+.icons svg {
+  display: block;
+}
+
+/* ARROW ICON */
+.arrow-icon {
+  margin-left: auto;
+  transition: transform 0.2s ease;
+}
+
+.arrow-icon.open {
+  transform: rotate(180deg);
+}
+
+.dropdown {
+  background: #2f0459;
+  padding-left: 1.5rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.dropdown-item {
+  display: block;
+  width: 100%;
+  padding: 0.6rem 1rem;
+  border-left: 1px solid white;
+  text-align: left;
+  color: white;
+  font-size: 0.95rem;
+  transition: background 0.2s ease;
+}
+
+.dropdown-item:hover,
+.dropdown-item:focus-visible {
+  text-decoration: underline;
+  outline: none;
+}
+
+.selected-project {
+  text-decoration: underline;
+  font-weight: bold;
+}
+
+.dropdown-item.empty {
+  font-style: italic;
+  opacity: 0.8;
+}
+
+button:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 2px;
+}

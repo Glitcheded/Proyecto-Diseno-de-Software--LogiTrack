@@ -1,0 +1,8 @@
+.home-container{
+    display: flex;
+    width: 320px;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+    background: white;
+}
