@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "./Tabla.css";
 
-const currentUser = "Giovanni";
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const baseURL = `${API_BASE_URL}/api`;
 
@@ -20,6 +19,10 @@ export const Tabla = ({
   const [availableMembers, setAvailableMembers] = useState([]);
   const [commentsTask, setCommentsTask] = useState(null);
   const [newCommentText, setNewCommentText] = useState("");
+  const [sortConfig, setSortConfig] = React.useState({
+    key: null,
+    direction: null,
+  });
 
   const getParentName = (task) => {
     const parent = tasks.find((t) => t.id === task.subtaskOf);
@@ -72,9 +75,6 @@ export const Tabla = ({
       console.error("Error fetching members:", err);
     }
   };
-
-  const makeId = () =>
-    Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 
   const handleAddTask = async (idNuevaTareaMadre = null) => {
     try {
@@ -354,6 +354,55 @@ export const Tabla = ({
     }
   };
 
+  const handleSort = (key) => {
+    setSortConfig((prev) => {
+      if (prev.key === key) {
+        if (prev.direction === "asc") return { key, direction: "desc" };
+        if (prev.direction === "desc") return { key: null, direction: null }; // reset
+      }
+      return { key, direction: "asc" };
+    });
+  };
+
+  const sortTasks = (tasks) => {
+    if (!sortConfig.key || !sortConfig.direction) return tasks;
+
+    const sorted = [...tasks].sort((a, b) => {
+      let aVal, bVal;
+
+      switch (sortConfig.key) {
+        case "nombre":
+          aVal = a.name?.toLowerCase() || "";
+          bVal = b.name?.toLowerCase() || "";
+          break;
+        case "prioridad":
+          const order = { Alta: 3, Media: 2, Baja: 1 };
+          aVal = order[a.prioridad?.nivel] || 0;
+          bVal = order[b.prioridad?.nivel] || 0;
+          break;
+        case "estado":
+          aVal = a.state?.toLowerCase() || "";
+          bVal = b.state?.toLowerCase() || "";
+          break;
+        case "fechaEntrega":
+          aVal = new Date(a.dueDate);
+          bVal = new Date(b.dueDate);
+          break;
+        default:
+          return 0;
+      }
+
+      if (aVal < bVal) return sortConfig.direction === "asc" ? -1 : 1;
+      if (aVal > bVal) return sortConfig.direction === "asc" ? 1 : -1;
+      return 0;
+    });
+
+    return sorted;
+  };
+
+  // Then, before rendering rows
+  const sortedTasks = sortTasks(tasks);
+
   return (
     <div
       className="tabla-container"
@@ -365,17 +414,67 @@ export const Tabla = ({
       <table className="tabla-table" role="table">
         <thead>
           <tr role="row">
-            <th role="columnheader">Nombre</th>
+            <th
+              role="columnheader"
+              onClick={() => handleSort("nombre")}
+              style={{ cursor: "pointer" }}
+            >
+              Nombre{" "}
+              {sortConfig.key === "nombre"
+                ? sortConfig.direction === "asc"
+                  ? "▲"
+                  : "▼"
+                : ""}
+            </th>
+
             {ViewMode === "Mis Tareas" && <th role="columnheader">Proyecto</th>}
-            <th role="columnheader">Prioridad</th>
-            <th role="columnheader">Estado</th>
-            <th role="columnheader">Fecha Entrega</th>
+
+            <th
+              role="columnheader"
+              onClick={() => handleSort("prioridad")}
+              style={{ cursor: "pointer" }}
+            >
+              Prioridad{" "}
+              {sortConfig.key === "prioridad"
+                ? sortConfig.direction === "asc"
+                  ? "▲"
+                  : "▼"
+                : ""}
+            </th>
+
+            <th
+              role="columnheader"
+              onClick={() => handleSort("estado")}
+              style={{ cursor: "pointer" }}
+            >
+              Estado{" "}
+              {sortConfig.key === "estado"
+                ? sortConfig.direction === "asc"
+                  ? "▲"
+                  : "▼"
+                : ""}
+            </th>
+
+            <th
+              role="columnheader"
+              onClick={() => handleSort("fechaEntrega")}
+              style={{ cursor: "pointer" }}
+            >
+              Fecha Entrega{" "}
+              {sortConfig.key === "fechaEntrega"
+                ? sortConfig.direction === "asc"
+                  ? "▲"
+                  : "▼"
+                : ""}
+            </th>
+
             <th role="columnheader">Integrantes</th>
             <th role="columnheader">Comentarios</th>
           </tr>
         </thead>
+
         <tbody>
-          {tasks.map((task) => (
+          {sortedTasks.map((task) => (
             <tr key={task.id} role="row" className="task-row">
               <td role="cell" style={{ position: "relative" }}>
                 {Boolean(task.subtaskOf) && (
@@ -384,6 +483,7 @@ export const Tabla = ({
                   </div>
                 )}
                 <div className="task-name">{task.name}</div>
+
                 {ViewMode !== "Proyectos Anteriores" && (
                   <button
                     className="edit-btn"
@@ -401,19 +501,32 @@ export const Tabla = ({
               {ViewMode === "Mis Tareas" && (
                 <td role="cell">{task.project.name || "-"}</td>
               )}
+
               <td
                 role="cell"
                 aria-label={`Prioridad ${getPriorityEmoji(task.prioridad)}`}
               >
                 {getPriorityEmoji(task.prioridad)}
               </td>
+
               <td role="cell">{task.state}</td>
               <td role="cell">{task.dueDate}</td>
+
               <td role="cell">
                 {Array.isArray(task.members)
-                  ? task.members.map((m) => m.name).join(", ")
+                  ? task.members.map((m, i) => {
+                      const parts = m.name.trim().split(" ");
+                      const first = parts[0];
+                      const last =
+                        parts.length > 1 ? parts[parts.length - 1] : "";
+                      const displayName = last
+                        ? `${first} ${last.charAt(0)}.`
+                        : first;
+                      return <div key={i}>{displayName}</div>;
+                    })
                   : ""}
               </td>
+
               <td role="cell">
                 {mostRecentCommentText(task) ? (
                   <button

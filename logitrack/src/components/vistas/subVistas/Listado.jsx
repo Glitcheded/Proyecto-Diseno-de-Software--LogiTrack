@@ -20,6 +20,10 @@ export const Listado = ({
   const [commentsTask, setCommentsTask] = useState(null);
   const [newCommentText, setNewCommentText] = useState("");
   const [expandedTasks, setExpandedTasks] = useState({});
+  const [sortConfig, setSortConfig] = React.useState({
+    key: null,
+    direction: null,
+  });
 
   useEffect(() => {
     if (Array.isArray(dataList)) {
@@ -423,9 +427,19 @@ export const Listado = ({
           <td role="cell">{t.dueDate}</td>
           <td role="cell">
             {Array.isArray(t.members)
-              ? t.members.map((m) => m.name).join(", ")
+              ? t.members.map((m, i) => {
+                  const parts = m.name.trim().split(" ");
+                  const first = parts[0];
+                  const last = parts.length > 1 ? parts[parts.length - 1] : "";
+                  const displayName = last
+                    ? `${first} ${last.charAt(0)}.`
+                    : first;
+
+                  return <div key={i}>{displayName}</div>;
+                })
               : ""}
           </td>
+
           <td role="cell">
             {mostRecentCommentText(t) ? (
               <button
@@ -459,6 +473,57 @@ export const Listado = ({
     );
   };
 
+  // Cycle between ascending, descending, and default
+  const handleSort = (key) => {
+    setSortConfig((prev) => {
+      if (prev.key === key) {
+        if (prev.direction === "asc") return { key, direction: "desc" };
+        if (prev.direction === "desc") return { key: null, direction: null }; // reset
+      }
+      return { key, direction: "asc" };
+    });
+  };
+
+  // Sorting function for your tasks
+  const sortTasks = (tasks) => {
+    if (!sortConfig.key || !sortConfig.direction) return tasks;
+
+    const sorted = [...tasks].sort((a, b) => {
+      let aVal, bVal;
+
+      switch (sortConfig.key) {
+        case "nombre":
+          aVal = a.name.toLowerCase();
+          bVal = b.name.toLowerCase();
+          break;
+        case "prioridad":
+          const order = { Alta: 3, Media: 2, Baja: 1 };
+          aVal = order[a.prioridad?.nivel] || 0;
+          bVal = order[b.prioridad?.nivel] || 0;
+          break;
+        case "estado":
+          aVal = a.state?.toLowerCase();
+          bVal = b.state?.toLowerCase();
+          break;
+        case "fechaEntrega":
+          aVal = new Date(a.dueDate);
+          bVal = new Date(b.dueDate);
+          break;
+        default:
+          return 0;
+      }
+
+      if (aVal < bVal) return sortConfig.direction === "asc" ? -1 : 1;
+      if (aVal > bVal) return sortConfig.direction === "asc" ? 1 : -1;
+      return 0;
+    });
+
+    return sorted;
+  };
+
+  // Apply sorting to top-level tasks before rendering
+  const sortedRoots = sortTasks(roots);
+
   return (
     <div className="listado-container">
       <table
@@ -468,16 +533,70 @@ export const Listado = ({
       >
         <thead>
           <tr role="row">
-            <th scope="col">Nombre</th>
+            <th
+              scope="col"
+              onClick={() => handleSort("nombre")}
+              style={{ cursor: "pointer" }}
+            >
+              Nombre{" "}
+              {sortConfig.key === "nombre" &&
+                (sortConfig.direction === "asc"
+                  ? "▲"
+                  : sortConfig.direction === "desc"
+                  ? "▼"
+                  : "")}
+            </th>
+
             {ViewMode === "Mis Tareas" && <th scope="col">Proyecto</th>}
-            <th scope="col">Prioridad</th>
-            <th scope="col">Estado</th>
-            <th scope="col">Fecha Entrega</th>
+
+            <th
+              scope="col"
+              onClick={() => handleSort("prioridad")}
+              style={{ cursor: "pointer" }}
+            >
+              Prioridad{" "}
+              {sortConfig.key === "prioridad" &&
+                (sortConfig.direction === "asc"
+                  ? "▲"
+                  : sortConfig.direction === "desc"
+                  ? "▼"
+                  : "")}
+            </th>
+
+            <th
+              scope="col"
+              onClick={() => handleSort("estado")}
+              style={{ cursor: "pointer" }}
+            >
+              Estado{" "}
+              {sortConfig.key === "estado" &&
+                (sortConfig.direction === "asc"
+                  ? "▲"
+                  : sortConfig.direction === "desc"
+                  ? "▼"
+                  : "")}
+            </th>
+
+            <th
+              scope="col"
+              onClick={() => handleSort("fechaEntrega")}
+              style={{ cursor: "pointer" }}
+            >
+              Fecha Entrega{" "}
+              {sortConfig.key === "fechaEntrega" &&
+                (sortConfig.direction === "asc"
+                  ? "▲"
+                  : sortConfig.direction === "desc"
+                  ? "▼"
+                  : "")}
+            </th>
+
             <th scope="col">Integrantes</th>
             <th scope="col">Comentarios</th>
           </tr>
         </thead>
-        <tbody>{roots.map((task) => renderTaskRow(task))}</tbody>
+
+        <tbody>{sortedRoots.map((task) => renderTaskRow(task))}</tbody>
       </table>
 
       {ViewMode !== "Mis Tareas" &&
