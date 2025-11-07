@@ -16,11 +16,13 @@ const app = express();
 const port = process.env.PORT || 3001; // El frontend corre en 5173, el backend en 3001
 
 const corsOptions = {
-    // Reemplaza 'http://localhost:5173' con el dominio exacto de tu frontend (Vite)
-    origin: 'http://localhost:5173', 
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    credentials: true, // Permite que se envíen cookies y headers de autorización
-    optionsSuccessStatus: 204
+  origin: [
+    'http://localhost:5173', // For local development
+    'https://logitrack-c1owyjn9h-glitchededs-projects.vercel.app', // Your deployed frontend on Vercel
+  ],
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  credentials: true,
+  optionsSuccessStatus: 204,
 };
 
 // Middlewares
