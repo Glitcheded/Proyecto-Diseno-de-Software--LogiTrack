@@ -402,10 +402,10 @@ export const SidebarChat = ({
             {showDropdown && (
               <div className="dropdown-menu" ref={dropdownRef}>
                 <button onClick={() => handleOptionClick("privado")}>
-                  💬 Chat privado
+                  Chat privado
                 </button>
                 <button onClick={() => handleOptionClick("grupal")}>
-                  👥 Chat grupal
+                  Chat grupal
                 </button>
               </div>
             )}
@@ -420,7 +420,7 @@ export const SidebarChat = ({
                   type="email"
                   placeholder="usuario@ejemplo.com"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => setEmail(e.target.value.toLocaleLowerCase())}
                 />
                 <div className="modal-buttons">
                   <button className="btn-create" onClick={() => {handleCreate(); 
@@ -492,7 +492,7 @@ export const SidebarChat = ({
                             placeholder="usuario@ejemplo.com"
                             value={newMemberEmail}
                             ref={inputAddMemberEmail}
-                            onChange={(e) => setNewMemberEmail(e.target.value)}
+                            onChange={(e) => setNewMemberEmail(e.target.value.toLowerCase())}
                           />
 
                           <button
