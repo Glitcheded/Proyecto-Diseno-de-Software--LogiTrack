@@ -15,6 +15,9 @@ if (usuarioGuardado) {
   console.log("Nombre:", usuarioGuardado.nombre);
 }
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const baseURL = `${API_BASE_URL}/api`;
+
 export const LoginSignup = () => {
   const [action, setAction] = useState("Inciar Sesión");
   const [email, setEmail] = useState("");
@@ -22,12 +25,32 @@ export const LoginSignup = () => {
   const [nombre, setNombre] = useState("");
   const [apellidos, setApellidos] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
+  const [showChgPassModal, setShowChgPassModal] = useState(false);
+  const [nuevaPass, setNuevaPass] = useState("");
+  const [verificarPass, setVerificarPass] = useState("");
 
   const navigate = useNavigate();
 
+  const handleOpenChgPassModal = () => setShowChgPassModal(true);
+  const handleCloseChgPassModal = () => setShowChgPassModal(false);
+
+  const handleCambiar = () => {
+    if (!email || !nuevaPass || !verificarPass) {
+      alert("Por favor completa todos los campos.");
+      return;
+    }
+    if (nuevaPass !== verificarPass) {
+      alert("Las contraseñas no coinciden.");
+      return;
+    }
+
+    // Aquí podrías llamar a tu backend con fetch o axios
+    console.log("Contraseña cambiada para:", email);
+    handleClose();
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault(); // prevent reload
-    const baseURL = "http://localhost:3001/api";
     let endpoint = "";
     let payload = {};
 
@@ -128,36 +151,36 @@ export const LoginSignup = () => {
               <div className="inputs">
                 {action === "Crear Cuenta" && (
                   <>
-                  <div className="input">
-                    <div className="icons" aria-hidden="true">
-                      {userIco}
-                    </div>
-                    <input
-                      id="nombre"
-                      type="text"
-                      placeholder="Nombre"
-                      value={nombre}
-                      onChange={(e) => setNombre(e.target.value)}
-                      required
-                      autoComplete="given-name"
-                    />
-                  </div>
-                  <div className="input">
-                    <div className="icons" aria-hidden="true">
-                      {userIco}
-                    </div>
-                    <input
-                      id="apellidos"
-                      type="text"
-                      placeholder="Apellidos"
-                      value={apellidos}
-                      onChange={(e) => setApellidos(e.target.value)}
-                      required
-                      autoComplete="family-name"
-                    />
-                  </div>
+                  <div className="input">
+                    <div className="icons" aria-hidden="true">
+                      {userIco}
+                    </div>
+                    <input
+                      id="nombre"
+                      type="text"
+                      placeholder="Nombre"
+                      value={nombre}
+                      onChange={(e) => setNombre(e.target.value)}
+                      required
+                      autoComplete="given-name"
+                    />
+                  </div>
+                  <div className="input">
+                    <div className="icons" aria-hidden="true">
+                      {userIco}
+                    </div>
+                    <input
+                      id="apellidos"
+                      type="text"
+                      placeholder="Apellidos"
+                      value={apellidos}
+                      onChange={(e) => setApellidos(e.target.value)}
+                      required
+                      autoComplete="family-name"
+                    />
+                  </div>
                   </>
-                )}
+                )}
 
                 <div className="input">
                   <div className="icons" aria-hidden="true">
@@ -209,9 +232,52 @@ export const LoginSignup = () => {
               {action === "Inciar Sesión" && (
                 <div className="forgot-password">
                   ¿Olvidaste tu contraseña?{" "}
-                  <button type="button" className="link-like">
+                  <button type="button" className="link-like" onClick={handleOpenChgPassModal}>
                     Haz clic aquí!
                   </button>
+
+                  {showChgPassModal && (
+                    <div className="modal-overlay" onClick={handleCloseChgPassModal}>
+                      <div className="modal" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header">
+                          <h2>Cambio de contraseña</h2>
+                        </div>
+
+                        <div className="modal-body">
+                          <label>Correo electrónico</label>
+                          <input
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value.toLowerCase())}
+                            placeholder="tu.correo@ejemplo.com"
+                          />
+
+                          <label>Nueva contraseña</label>
+                          <input
+                            type="password"
+                            value={nuevaPass}
+                            onChange={(e) => setNuevaPass(e.target.value)}
+                          />
+
+                          <label>Verificar nueva contraseña</label>
+                          <input
+                            type="password"
+                            value={verificarPass}
+                            onChange={(e) => setVerificarPass(e.target.value)}
+                          />
+                        </div>
+
+                        <div className="modal-footer">
+                          <button className="btn-cambiar" onClick={handleCambiar}>
+                            Cambiar
+                          </button>
+                          <button className="btn-cancelar" onClick={handleCloseChgPassModal}>
+                            Cancelar
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 

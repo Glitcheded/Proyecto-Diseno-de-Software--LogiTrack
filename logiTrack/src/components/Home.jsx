@@ -176,7 +176,7 @@ const HomeContent = () => {
           />
         );
       default:
-        return <div>Seleccione una vista</div>;
+        return <Opciones />;
     }
   };
 

@@ -602,6 +602,7 @@ export const SidebarChat = ({
                   onClick={(e) => {
                     e.stopPropagation(); // evita seleccionar el chat al eliminar
                     onEliminarChat(chat.id); // ⚡ función que recibirás como prop
+                    enviarNotificacionChat(usuarioEmail,chat.id,`${nombreUsuario} ha eliminado el chat ${chat.name}`)
                   }}
                   style={{
                     position: "absolute",
