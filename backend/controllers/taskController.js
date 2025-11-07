@@ -1,5 +1,6 @@
 import * as taskModel from '../models/taskModel.js';
 import { supabase } from "../supabaseClient.js";
+import * as notificacionModel from '../models/notificacionModel.js'; 
 
 //Obtiene las tareas del usuario logueado GET /api/tasks/mis-tareas
 export const getMisTareas = async (req, res) => {
@@ -43,6 +44,13 @@ export const crearTarea = async (req, res) => {
         const idUsuarioCreador = req.idUsuario;
         await taskModel.asignarTarea(idUsuarioCreador, nuevaTarea.idTarea);
         
+        try {
+          const descripcion = `Nueva tarea creada: "${nuevaTarea.nombre}"`;
+          await notificacionModel.insertarNotificacionTarea(nuevaTarea.idTarea, descripcion);
+        } catch (notifError) {
+          console.error("Error al crear notificación (no crítico):", notifError.message);
+        }
+
         res.status(201).json(nuevaTarea);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -70,6 +78,13 @@ export const actualizarTarea = async (req, res) => {
     try {
         const { id } = req.params;
         const tareaActualizada = await taskModel.actualizarTarea(id, req.body);
+        try {
+          const nombre = req.body.nombre || tareaActualizada.nombre;
+          const descripcion = `La tarea "${nombre}" ha sido actualizada.`;
+          await notificacionModel.insertarNotificacionTarea(id, descripcion);
+        } catch (notifError) {
+          console.error("Error al crear notificación (no crítico):", notifError.message);
+        }
         res.status(200).json(tareaActualizada);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -80,7 +95,15 @@ export const actualizarTarea = async (req, res) => {
 export const eliminarTarea = async (req, res) => {
     try {
         const { id } = req.params;
+        const tarea = await taskModel.getTareaPorId(id);
+        const nombreTarea = tarea ? tarea.nombre : `ID ${id}`;
         await taskModel.eliminarTarea(id);
+        try {
+          const descripcion = `La tarea "${nombreTarea}" ha sido eliminada.`;
+          await notificacionModel.insertarNotificacionTarea(id, descripcion);
+        } catch (notifError) {
+          console.error("Error al crear notificación (no crítico):", notifError.message);
+        }
         res.status(200).json({ message: 'Tarea eliminada (marcada como inactiva)' });
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -96,8 +119,17 @@ export const asignarUsuarioATarea = async (req, res) => {
         if (!idUsuario) {
             return res.status(400).json({ error: 'Se requiere idUsuario' });
         }
-
+        const tarea = await taskModel.getTareaPorId(id);
+        const nombreTarea = tarea ? tarea.nombre : `ID ${id}`;
         await taskModel.asignarTarea(idUsuario, id);
+
+        try {
+          const descripcion = `Has sido asignado a la tarea "${nombreTarea}".`;
+          await notificacionModel.insertarNotificacionTarea(id, descripcion);
+        } catch (notifError) {
+          console.error("Error al crear notificación (no crítico):", notifError.message);
+        }
+
         res.status(201).json({ message: 'Usuario asignado a la tarea' });
 
     } catch (error) {
@@ -119,8 +151,15 @@ export const agregarComentario = async (req, res) => {
         if (!comentario) {
             return res.status(400).json({ error: 'El comentario no puede estar vacío' });
         }
-
+        const tarea = await taskModel.getTareaPorId(id);
+        const nombreTarea = tarea ? tarea.nombre : `ID ${id}`;
         const nuevoComentario = await taskModel.crearComentario(id, idUsuario, comentario);
+        try {
+          const descripcion = `Nuevo comentario en "${nombreTarea}": "${comentario.substring(0, 30)}..."`;
+          await notificacionModel.insertarNotificacionTarea(id, descripcion);
+        } catch (notifError) {
+          console.error("Error al crear notificación (no crítico):", notifError.message);
+          }
         res.status(201).json(nuevoComentario);
 
     } catch (error) {
@@ -149,7 +188,15 @@ export const getMiembrosProyecto = async (req, res) => {
 export const removerMiembroTarea = async (req, res) => {
     try {
         const { idTarea, idUsuario } = req.params;
+        const tarea = await taskModel.getTareaPorId(idTarea);
+        const nombreTarea = tarea ? tarea.nombre : `ID ${idTarea}`;
         await taskModel.removerUsuarioDeTarea(idTarea, idUsuario);
+        try {
+          const descripcion = `Un miembro ha sido removido de la tarea "${nombreTarea}".`;
+          await notificacionModel.insertarNotificacionTarea(idTarea, descripcion);
+        } catch (notifError) {
+          console.error("Error al crear notificación (no crítico):", notifError.message);
+        }
         res.status(200).json({ message: 'Usuario removido de la tarea' });
     } catch (error) {
         res.status(500).json({ error: error.message });

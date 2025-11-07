@@ -43,29 +43,70 @@ export async function insertarNotificacionChat(correo, idChat, descripcion) {
   return data;
 }
 
+const ID_CATEGORIA_PROYECTO = 2;
+const ID_CATEGORIA_TAREA = 1;
+
 // Crea notificaciones de proyectos
 export async function insertarNotificacionProyecto(idProyecto, descripcion) {
-  const { data, error } = await supabase.rpc('insertnotificacionproyecto', {
-    inidproyecto: idProyecto,
-    indescripcion: descripcion
-  });
+  
+  //Encuentra a todos los miembros del proyecto
+  const { data: miembros, error: errMiembros } = await supabase
+    .from('UsuarioPorProyecto')
+    .select('idUsuario')
+    .eq('idProyecto', idProyecto);
+
+  if (errMiembros) throw errMiembros;
+  if (!miembros || miembros.length === 0) {
+    console.warn(`Intento de notificar al proyecto ${idProyecto} sin miembros.`);
+    return;
+  }
+
+  const notificacionesParaInsertar = miembros.map(miembro => ({
+    idUsuario: miembro.idUsuario,
+    idCategoriaNotificacion: ID_CATEGORIA_PROYECTO,
+    fechaHora: new Date().toISOString(),
+    descripcion: descripcion,
+    activado: true
+  }));
+
+  const { error } = await supabase
+    .from('Notificacion')
+    .insert(notificacionesParaInsertar);
 
   if (error) throw error;
-  return data;
+  return { mensaje: `Notificaciones creadas para ${miembros.length} usuarios.` };
 }
 
 // Crea notificaciones de tareas
 export async function insertarNotificacionTarea(idTarea, descripcion) {
-  const { data, error } = await supabase.rpc('insertnotificaciontarea', {
-    inidtarea: idTarea,
-    indescripcion: descripcion
-  });
+  
+  const { data: miembros, error: errMiembros } = await supabase
+    .from('UsuarioPorTarea')
+    .select('idUsuario')
+    .eq('idTarea', idTarea);
+
+  if (errMiembros) throw errMiembros;
+  if (!miembros || miembros.length === 0) {
+     console.warn(`Intento de notificar a la tarea ${idTarea} sin miembros asignados.`);
+    return; 
+  }
+
+  const notificacionesParaInsertar = miembros.map(miembro => ({
+    idUsuario: miembro.idUsuario,
+    idCategoriaNotificacion: ID_CATEGORIA_TAREA,
+    fechaHora: new Date().toISOString(),
+    descripcion: descripcion,
+    activado: true
+  }));
+
+  const { error } = await supabase
+    .from('Notificacion')
+    .insert(notificacionesParaInsertar);
 
   if (error) throw error;
-  return data;
+  return { mensaje: `Notificaciones creadas para ${miembros.length} usuarios.` };
 }
 
-// Crea notificaciones de sistema
 export async function insertarNotificacionSistema(correo, descripcion) {
   const { data, error } = await supabase.rpc('insertnotificacionsistema', {
     incorreousuario: correo,

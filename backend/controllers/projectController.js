@@ -1,4 +1,5 @@
 import * as projectModel from '../models/projectModel.js';
+import * as notificacionModel from '../models/notificacionModel.js';
 
 // Obtiene tareas de proyectos
 export const getProjectTasks = async (req, res, taskState) => {
@@ -46,7 +47,14 @@ export const crearProyecto = async (req, res) => {
         const idRolAdmin = 1;
         
         await projectModel.asignarProyecto(idUsuarioCreador, nuevoProyecto.idProyecto, idRolAdmin);
-        
+        //Notificacion
+        try {
+          const descripcion = `Se ha creado el proyecto: "${nuevoProyecto.nombre}"`;
+          await notificacionModel.insertarNotificacionProyecto(nuevoProyecto.idProyecto, descripcion);
+        } catch (notifError) {
+          console.error("Error al crear notificación (no crítico):", notifError.message);
+        }
+
         res.status(201).json(nuevoProyecto);
     } catch (error) {
         console.error(error);
@@ -89,6 +97,14 @@ export const actualizarProyecto = async (req, res) => {
     try {
         const { id } = req.params;
         const proyectoActualizado = await projectModel.actualizarProyecto(id, req.body);
+
+        try {
+          const descripcion = `El proyecto "${proyectoActualizado.nombre}" ha sido actualizado.`;
+          await notificacionModel.insertarNotificacionProyecto(id, descripcion);
+        } catch (notifError) {
+          console.error("Error al crear notificación (no crítico):", notifError.message);
+        }
+
         res.status(200).json(proyectoActualizado);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -99,7 +115,17 @@ export const actualizarProyecto = async (req, res) => {
 export const eliminarProyecto = async (req, res) => {
     try {
         const { id } = req.params;
+        const proyecto = await projectModel.getProyectoPorId(id);
+        const nombreProyecto = proyecto ? proyecto.nombre : `ID ${id}`;
         await projectModel.eliminarProyecto(id);
+
+        try {
+          const descripcion = `El proyecto "${nombreProyecto}" ha sido eliminado (desactivado).`;
+          await notificacionModel.insertarNotificacionProyecto(id, descripcion);
+        } catch (notifError) {
+          console.error("Error al crear notificación (no crítico):", notifError.message);
+        }
+
         res.status(200).json({ message: 'Proyecto eliminado (marcado como inactivo)' });
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -137,8 +163,15 @@ export const asignarUsuarioAProyecto = async (req, res) => {
     console.log("🧠 Llamando projectModel.asignarProyecto...");
 
     // Ejecuta la asignación
+    const proyecto = await projectModel.getProyectoPorId(id);
+    const nombreProyecto = proyecto ? proyecto.nombre : `ID ${id}`;
     await projectModel.asignarProyecto(idUsuario, id, numericRol);
-
+    try {
+          const descripcion = `Un nuevo miembro ha sido asignado al proyecto "${nombreProyecto}".`;
+          await notificacionModel.insertarNotificacionProyecto(id, descripcion);
+        } catch (notifError) {
+          console.error("Error al crear notificación (no crítico):", notifError.message);
+        }
     console.log("✅ Usuario asignado correctamente al proyecto");
     res.status(201).json({ message: "Usuario asignado al proyecto" });
 
@@ -176,7 +209,17 @@ export const getMiembrosProyecto = async (req, res) => {
 export const removerMiembroProyecto = async (req, res) => {
     try {
         const { idProyecto, idUsuario } = req.params;
+        const proyecto = await projectModel.getProyectoPorId(idProyecto);
+        const nombreProyecto = proyecto ? proyecto.nombre : `ID ${idProyecto}`;
         await projectModel.removerUsuarioDeProyecto(idProyecto, idUsuario);
+
+        try {
+          const descripcion = `Un miembro ha sido removido del proyecto "${nombreProyecto}".`;
+          await notificacionModel.insertarNotificacionProyecto(idProyecto, descripcion);
+        } catch (notifError) {
+          console.error("Error al crear notificación (no crítico):", notifError.message);
+        }
+
         res.status(200).json({ message: 'Usuario removido del proyecto' });
     } catch (error) {
         res.status(500).json({ error: error.message });
