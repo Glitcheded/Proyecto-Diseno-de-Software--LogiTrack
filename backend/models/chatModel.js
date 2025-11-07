@@ -52,6 +52,7 @@ export async function insertarMensaje(idUsuario, idChat, contenido) {
   return data;
 }
 
+// Obtener mensajes
 export async function obtenerMensajesPorChat(idChat) {
   const { data, error } = await supabase
     .from("Mensaje")
@@ -69,3 +70,19 @@ export async function obtenerMensajesPorChat(idChat) {
 
   return data;
 }
+
+// Borrar chats
+export const eliminarChat = async (idChat) => {
+  try {
+    const { error } = await supabase
+      .from("Chat")
+      .delete()
+      .eq("idChat", idChat);
+
+    if (error) throw error;
+    return { success: true };
+  } catch (err) {
+    console.error("Error en eliminarChat:", err.message);
+    throw new Error("No se pudo eliminar el chat");
+  }
+};

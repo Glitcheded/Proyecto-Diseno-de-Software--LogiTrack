@@ -1,5 +1,5 @@
 import { crearChatPrivado, getChatsByCorreo, insertarMensaje, obtenerMensajesPorChat,
-  crearChatGrupalModel
+  crearChatGrupalModel, eliminarChat
   } from '../models/chatModel.js';
 
 // Controlador para obtener todos los chats
@@ -101,3 +101,23 @@ export async function listarMensajesPorChat(req, res) {
     res.status(500).json({ error: error.message });
   }
 }
+
+export const eliminarChatController = async (req, res) => {
+  const { idChat } = req.params;
+
+  try {
+    // 🔹 Validación simple
+    if (!idChat) {
+      return res.status(400).json({ error: "El idChat es obligatorio" });
+    }
+
+    const result = await eliminarChat(idChat);
+    return res.status(200).json({
+      message: "Chat eliminado correctamente",
+      result,
+    });
+  } catch (error) {
+    console.error("Error en eliminarChatController:", error);
+    return res.status(500).json({ error: "Error al eliminar el chat" });
+  }
+};

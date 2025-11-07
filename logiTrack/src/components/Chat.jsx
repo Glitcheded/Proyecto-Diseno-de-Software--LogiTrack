@@ -27,20 +27,13 @@ export const Chat = ({}) => {
   const [chats, setChats] = useState([]); 
   const [chatSelected, setChatSelected] = useState("null");
   const [mensajes, setMensajes] = useState([]);
-  const [accionSidebarChat, setAccionSidebarChat] = useState(null);
+  const [accionSidebarChat, setAccionSidebarChat] = useState("");
 
   // Para obtener el chat que ha sido seleccionado del sidebar
   const seleccionarChat = (chat) => {
     console.log("✅ Chat recibido del sidebar:", chat);
     setChatSelected(chat);
   };
-
-  // Para renderizar de nuevo cuando se cree nuevo chat
-  useEffect(() => {
-    if (accionSidebarChat === "clickeado") {
-      console.log("En el sidebarchat se ha creado un nuevo chat");
-    }
-  }, [accionSidebarChat]);
 
   // Get mensajes
   const fetchMensajes = async (idChat) => {
@@ -93,6 +86,14 @@ export const Chat = ({}) => {
     }
   };
 
+    // Para renderizar de nuevo cuando se cree nuevo chat
+    useEffect(() => {
+      if (accionSidebarChat === "clickeado") {
+        console.log("En el sidebarchat se ha creado un nuevo chat");
+        obtenerChatsPorCorreo(usuarioEmail, setChats);
+      }
+    }, [accionSidebarChat]);
+
   // Para enviar mensajes
   const handleSend = async (mensaje) => {
     console.log("Mensaje recibido del hijo:", mensaje);
@@ -123,9 +124,38 @@ export const Chat = ({}) => {
     }
   };
 
-  const handleAttach = () => {
-    console.log("Adjuntar archivo");
+  //Para eliminar chats
+  const eliminarChatRequest = async (idChat) => {
+    try {
+      const response = await fetch(`${baseURL}/chat/eliminarChat/${idChat}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Error HTTP ${response.status}: ${errorText}`);
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error("Error al eliminar chat:", error);
+      throw error;
+    }
   };
+
+  const onEliminarChat = async (idChat) => {
+    const confirmar = window.confirm("¿Seguro que quieres eliminar este chat?");
+    if (!confirmar) return;
+
+    try {
+      await eliminarChatRequest(idChat); // tu función backend o supabase
+      setChats((prev) => prev.filter((c) => c.id !== idChat));
+    } catch (error) {
+      console.error("Error al eliminar chat:", error);
+    }
+  };
+
 
   useEffect(() => {
     // Intentar leer el usuario guardado del localStorage
@@ -144,6 +174,7 @@ export const Chat = ({}) => {
         chats={chats}
         onSeleccionarChat={seleccionarChat}
         onAccion={setAccionSidebarChat}
+        onEliminarChat={onEliminarChat}
       />
       <ChatHeader chatName={chatSelected.name} />
       <main className="main-content">

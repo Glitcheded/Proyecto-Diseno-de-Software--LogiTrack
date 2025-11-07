@@ -6,6 +6,7 @@ import "./ChatInput.css";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPaperPlane } from "@fortawesome/free-solid-svg-icons";
+import { toast } from "react-toastify";
 
 const send = <FontAwesomeIcon icon={faPaperPlane} style={{ fontSize: "1.5rem" }} />;
 
@@ -14,6 +15,15 @@ const baseURL = `${API_BASE_URL}/api`;
 
 export const enviarMensaje = async (idUsuario, idChat, contenido) => {
   try {
+    // 🔹 Validaciones antes de enviar
+    if (!idChat) {
+      toast.error("Debes seleccionar un chat");
+    }
+
+    if (!contenido || contenido.trim() === "") {
+      toast.error("El mensaje no puede estar vacío.");
+    }
+
     const response = await fetch(`${baseURL}/chat/enviarMsj`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -29,7 +39,7 @@ export const enviarMensaje = async (idUsuario, idChat, contenido) => {
     return data;
   } catch (error) {
     console.error("Error al enviar mensaje:", error);
-    throw error;
+    throw error; // Re-lanzamos el error para que el caller lo maneje
   }
 };
 
@@ -50,9 +60,12 @@ export const ChatInput = ({ currentChat, onEnviar, sidebarWidth = 320 }) => {
 
   const [text, setText] = useState("");
   const liveRef = useRef(null);
+  const inputMsj = useRef();
+  const buttonSend = useRef();
 
   const handleSubmit = async () => {
     const mensaje = text.trim();
+    inputMsj.current.value = "";
     if (!mensaje) return;
     console.log(mensaje);
     // Aquí podrías llamar al endpoint para enviar mensaje
@@ -82,6 +95,7 @@ export const ChatInput = ({ currentChat, onEnviar, sidebarWidth = 320 }) => {
         type="text"
         value={text}
         placeholder="Escribe un mensaje"
+        ref={inputMsj}
         onChange={(e) => setText(e.target.value)}
         className="message-input"
       />

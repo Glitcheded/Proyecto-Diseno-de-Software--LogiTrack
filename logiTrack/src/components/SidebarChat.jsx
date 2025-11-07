@@ -8,15 +8,13 @@ import {
   faArrowLeft,
   faGear,
   faPenToSquare,
-  faMagnifyingGlass,
-  faPaperclip,
-  faPaperPlane,
+  faTrashCan
 } from "@fortawesome/free-solid-svg-icons";
 
 const getBack = <FontAwesomeIcon icon={faArrowLeft} size="1pt" />;
 const gear = <FontAwesomeIcon icon={faGear} style={{ fontSize: "1.5rem" }} />;
 const newChat = <FontAwesomeIcon icon={faPenToSquare} size="1pt" />;
-const search = <FontAwesomeIcon icon={faMagnifyingGlass} size="1pt" />;
+const trashcan = <FontAwesomeIcon icon={faTrashCan} size="1pt" />;
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const baseURL = `${API_BASE_URL}/api`;
@@ -101,7 +99,7 @@ export async function crearChatGrupalRequest(correos, nombreGrupo) {
           console.log('✅ Chat grupal creado exitosamente. ID:', resultado.idnuevochat);
           toast.success(`✅ Chat creado correctamente`);
           const notif = `${nombreUsuario} te ha agregado a ${nombreGrupo}.`;
-          enviarNotificacionChat(correoUsuario1, idnuevochat, notif);
+          enviarNotificacionChat(usuarioEmail, resultado.idnuevochat, notif);
           return resultado;
         case 1:
           throw new Error('❌ Uno o más correos no existen en el sistema.');
@@ -127,15 +125,20 @@ export const SidebarChat = ({
   chats = initialChats,
   onSeleccionarChat,
   onAccion,
+  onEliminarChat,
 }) => {
   const [query, setQuery] = useState("");
   const [list, setList] = useState(chats);
   const [activeId, setActiveId] = useState(null);
   const [showDropdown, setShowDropdown] = useState(false);
   const [showModal, setShowModal] = useState(false);
-  const [showModalGroup, setShowModalGroup] = useState(false);
+  const [showGroupModal, setShowGroupModal] = useState(false);
+  const [groupName, setGroupName] = useState("");
+  const [emails, setEmails] = useState([usuarioEmail]);
+  const [newMemberEmail, setNewMemberEmail] = useState("");
   const [email, setEmail] = useState("");
   const dropdownRef = useRef(null);
+  const inputAddMemberEmail = useRef();
 
   const navigate = useNavigate();
 
@@ -145,7 +148,7 @@ export const SidebarChat = ({
 
   // Para enviar senal de que se ha creado un chat
   const handleClickNewChat = () => {
-    onAccion("clickeado");
+    onAccion(prev => prev === "clickeado" ? "" : "clickeado");
   }
 
   const getIniciales = (texto) =>
@@ -155,16 +158,6 @@ export const SidebarChat = ({
       .slice(0, 2) // toma solo las dos primeras palabras
       .map((p) => p[0]?.toUpperCase() || "") // saca la inicial en mayúscula
       .join("");
-
-  // !Esto es para filtrar chats hay que ver como lo vuelvo a implementar
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return list;
-    return list.filter(
-      (c) =>
-        c.name.toLowerCase().includes(q) || c.snippet.toLowerCase().includes(q)
-    );
-  }, [query, list]);
 
   // Crear chat privado
   const crearChatPrivado = async (correoUsuario1, correoUsuario2) => {
@@ -228,6 +221,7 @@ export const SidebarChat = ({
       setShowModal(true);
     } else {
       console.log("Seleccionaste: Chat grupal");
+      setShowGroupModal(true);
     }
   };
 
@@ -245,6 +239,64 @@ export const SidebarChat = ({
   const handleCancel = () => {
     setShowModal(false);
     setEmail("");
+  };
+
+  const handleAddEmail = () => {
+    const nuevoEmail = newMemberEmail.trim().toLowerCase();
+
+    // Validar si el campo está vacío
+    if (!nuevoEmail) {
+      toast.error("Por favor, ingresa un correo electrónico.");
+      return;
+    }
+
+    // Validar si el correo ya existe en la lista
+    if (emails.includes(nuevoEmail)) {
+      toast.error("Este correo ya está en la lista de integrantes.");
+      inputAddMemberEmail.current.value = "";
+      return;
+    }
+
+    // Agregar el nuevo correo
+    setEmails(prev => [...prev, nuevoEmail]);
+    setNewMemberEmail(""); // limpiar campo después de agregar
+    inputAddMemberEmail.current.value = "";
+
+    console.log("Integrantes actuales:", [...emails, nuevoEmail]);
+  };
+
+  const handleRemoveMember = (index) => {
+  setEmails(emails.filter((_, i) => i !== index));
+};
+
+  const handleCreateGroup = () => {
+    const nombreValido = groupName.trim();
+
+    // Validar nombre del grupo
+    if (!nombreValido) {
+      toast.error("Por favor, ingresa un nombre para el grupo.");
+      return;
+    }
+
+    // Validar cantidad mínima de integrantes
+    if (emails.length < 2) {
+      toast.error("El grupo debe tener al menos 2 integrantes (incluyéndote a ti).");
+      return;
+    }
+
+    console.log("Nuevo grupo:", { nombreGrupo: nombreValido, integrantes: emails });
+
+    // Llamar a la función de creación del grupo
+    crearChatGrupalRequest(emails, nombreValido);
+
+    setShowGroupModal(false);
+  };
+
+
+  const handleCancelGroup = () => {
+    setShowGroupModal(false);
+    setEmails([""]);
+    setNewMemberEmail("");
   };
 
   // Cierra el dropdown al hacer clic fuera
@@ -277,6 +329,26 @@ export const SidebarChat = ({
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [showModal]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      // Si el click fue en el overlay (fuera del modal)
+      if (event.target.classList.contains("modal-overlay")) {
+        setShowGroupModal(false);
+      }
+    };
+
+    if (showGroupModal) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+
+    // Limpieza
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [setShowGroupModal]);
 
   return (
     <aside
@@ -362,31 +434,101 @@ export const SidebarChat = ({
               </div>
             </div>
           )}
+
+          {showGroupModal && (
+            <div className="modal-overlay">
+              <div className="modal">
+                <h2>Nuevo chat grupal</h2>
+
+                <label>Nombre del grupo</label>
+                <input
+                  type="text"
+                  placeholder="Ej. Equipo de proyecto"
+                  value={groupName}
+                  onChange={(e) => setGroupName(e.target.value)}
+                />
+
+                <label>Integrantes</label>
+                <table
+                  className="members-table"
+                  role="table"
+                  aria-label="Miembros del nuevo chat grupal"
+                >
+                  <thead>
+                    <tr role="row">
+                      <th role="columnheader">Correo electrónico</th>
+                      <th role="columnheader">Acciones</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    {emails?.map((member, index) => (
+                      <tr key={index} role="row">
+                        <td role="cell">{member}</td>
+                        <td role="cell">
+                          <button
+                            className="small-danger"
+                            onClick={() => handleRemoveMember(index)}
+                            aria-label={`Eliminar miembro con correo ${member}`}
+                            tabIndex={0}
+                            onKeyDown={(e) => e.key === "Enter" && handleRemoveMember(index)}
+                          >
+                            ✕
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+
+                    <tr className="add-member-row">
+                      <td colSpan="2">
+                        <div className="add-member">
+                          <label className="sr-only" htmlFor="new-member-email">
+                            Correo del nuevo integrante
+                          </label>
+
+                          <input
+                            id="new-member-email"
+                            type="email"
+                            placeholder="usuario@ejemplo.com"
+                            value={newMemberEmail}
+                            ref={inputAddMemberEmail}
+                            onChange={(e) => setNewMemberEmail(e.target.value)}
+                          />
+
+                          <button
+                            onClick={handleAddEmail}
+                            aria-label="Agregar nuevo integrante"
+                          >
+                            +
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+
+
+                <div className="modal-buttons">
+                  <button
+                    className="btn-create"
+                    onClick={() => {
+                      handleCreateGroup();
+                      handleClickNewChat();
+                    }}
+                  >
+                    Crear
+                  </button>
+
+                  <button className="btn-cancel" onClick={handleCancelGroup}>
+                    Cancelar
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
-        <form
-          className="search-form"
-          role="search"
-          aria-label="Buscar chats"
-          onSubmit={(e) => e.preventDefault()}
-        >
-          <label htmlFor="chat-search" className="sr-only">
-            {search}
-          </label>
-          <input
-            id="chat-search"
-            className="search-input"
-            type="search"
-            placeholder="Buscar chat"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            aria-label="Campo de búsqueda de chat"
-            aria-describedby="search-help"
-          />
-        </form>
-        <div id="search-help" style={{ display: "none" }}>
-          Escribe el nombre o el mensaje para filtrar
-        </div>
+        
       </nav>
 
       <hr
@@ -419,24 +561,67 @@ export const SidebarChat = ({
                 tabIndex="0"
                 className="chat-item"
                 aria-label={`Chat con ${chat.name}. ${chat.snippet}`}
-                onClick={() => {setActiveId(chat.id);
-                  onSeleccionarChat(chat);}
-                }
-                onKeyDown={(e) => { if (e.key === "Enter") setActiveId(chat.id); }}
-                data-active={chat.id === activeId}
+                tableIndex={0}
+                onClick={() => {
+                  setActiveId(chat.id);
+                  onSeleccionarChat(chat);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    setActiveId(chat.id);
+                    onSeleccionarChat(chat);
+                  }
+                }}
+                //data-active={chat.id === activeId}
+                style={{
+                  position: "relative", // 🔹 necesario para posicionar el botón
+                  padding: "0.8rem 1rem",
+                  borderBottom: "1px solid #ddd",
+                  cursor: "pointer",
+                  transition: "background-color 0.2s ease",
+                }}
               >
+                {/* 🔹 Contenido del chat */}
                 <div className="chat-thumb" aria-hidden="true">
                   {getIniciales(chat.name)}
                 </div>
-                <div className="chat-meta">
-                  <div className="chat-title">{chat.name}</div>
-                  <div className="chat-snippet">{chat.snippet}</div>
+                <div className="chat-meta" style={{ marginLeft: "0.8rem" }}>
+                  <div className="chat-title" style={{ fontWeight: "bold" }}>
+                    {chat.name}
+                  </div>
+                  <div className="chat-snippet" style={{ opacity: 0.8 }}>
+                    {chat.snippet}
+                  </div>
                 </div>
+                
+                {/* 🔹 Botón eliminar en la esquina superior derecha */}
+                <button
+                  className="delete-chat-btn"
+                  aria-label={`Eliminar chat con ${chat.name}`}
+                  onClick={(e) => {
+                    e.stopPropagation(); // evita seleccionar el chat al eliminar
+                    onEliminarChat(chat.id); // ⚡ función que recibirás como prop
+                  }}
+                  style={{
+                    position: "absolute",
+                    top: "5px",
+                    right: "8px",
+                    background: "transparent",
+                    border: "none",
+                    color: "#e74c3c",
+                    fontSize: "1.2rem",
+                    cursor: "pointer",
+                  }}
+                >
+                  {trashcan}
+                </button>
               </div>
             ))
           )}
         </div>
       </section>
+
     </aside>
   );
 };
