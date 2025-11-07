@@ -17,8 +17,9 @@ logiTrack/dist-ssr/
 backend/dist/
 
 # Environment files
-#logiTrack/.env
-#backend/.env
+logiTrack/.env
+backend/.env
+.env
 
 # Local settings
 *.local
