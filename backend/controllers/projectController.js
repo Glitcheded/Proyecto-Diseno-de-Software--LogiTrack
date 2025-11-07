@@ -27,12 +27,12 @@ export const getProjectTasks = async (req, res, taskState) => {
 
 // Obtiene las tareas de proyectos activos GET /api/projects/mis-proyectos
 export const getMisProyectos = (req, res) => {
-    getProjectTasks(req, res, 'Activas');
+    getProjectTasks(req, res, 'En progreso');
 };
 
 // Obtiene las tareas de proyectos terminados GET /api/projects/anteriores
 export const getProyectosAnteriores = (req, res) => {
-    getProjectTasks(req, res, 'Terminadas');
+    getProjectTasks(req, res, 'Hecho'); 
 };
 
 // Crea un nuevo proyecto POST /api/projects
