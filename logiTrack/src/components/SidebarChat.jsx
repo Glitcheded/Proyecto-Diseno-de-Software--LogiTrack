@@ -18,7 +18,8 @@ const gear = <FontAwesomeIcon icon={faGear} style={{ fontSize: "1.5rem" }} />;
 const newChat = <FontAwesomeIcon icon={faPenToSquare} size="1pt" />;
 const search = <FontAwesomeIcon icon={faMagnifyingGlass} size="1pt" />;
 
-const baseURL = "http://localhost:3001/api";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const baseURL = `${API_BASE_URL}/api`;
 let idUsuario = null;
 let nombreUsuario = '';
 let usuarioEmail = '';
@@ -67,6 +68,60 @@ export const enviarNotificacionChat = async (correo, idChat, descripcion) => {
   }
 };
 
+// Crear chat grupal
+export async function crearChatGrupalRequest(correos, nombreGrupo) {
+  try {
+    const response = await fetch(`${baseURL}/chat/crearChatGrupal`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ correos, nombreGrupo })
+    });
+
+    const contentType = response.headers.get('content-type');
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Error ${response.status}: ${errorText}`);
+    }
+
+    if (contentType && contentType.includes('application/json')) {
+      const data = await response.json();
+      console.log('✅ Respuesta del servidor:', data);
+
+      const resultado = data?.data?.[0];
+
+      if (!resultado || typeof resultado.resultcode !== 'number') {
+        throw new Error('❌ Respuesta inválida del servidor: falta resultcode.');
+      }
+
+      switch (resultado.resultcode) {
+        case 0:
+          console.log('✅ Chat grupal creado exitosamente. ID:', resultado.idnuevochat);
+          toast.success(`✅ Chat creado correctamente`);
+          const notif = `${nombreUsuario} te ha agregado a ${nombreGrupo}.`;
+          enviarNotificacionChat(correoUsuario1, idnuevochat, notif);
+          return resultado;
+        case 1:
+          throw new Error('❌ Uno o más correos no existen en el sistema.');
+          toast.error("❌ Uno o más correos no existen en el sistema.");
+        case 3:
+          throw new Error('❌ Error inesperado al crear el chat grupal.');
+          toast.error("❌ Error inesperado al crear el chat grupal.");
+        default:
+          throw new Error(`❌ Código de resultado desconocido: ${resultado.resultcode}`);
+      }
+    } else {
+      const text = await response.text();
+      throw new Error(`Respuesta inesperada: ${text}`);
+    }
+  } catch (error) {
+    console.error('❌ Error al crear el chat grupal:', error.message);
+    throw error;
+  }
+}
+
 export const SidebarChat = ({
   user = { name: "Usuario" },
   chats = initialChats,
@@ -78,6 +133,7 @@ export const SidebarChat = ({
   const [activeId, setActiveId] = useState(null);
   const [showDropdown, setShowDropdown] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [showModalGroup, setShowModalGroup] = useState(false);
   const [email, setEmail] = useState("");
   const dropdownRef = useRef(null);
 

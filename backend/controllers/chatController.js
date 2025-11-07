@@ -1,4 +1,6 @@
-import { crearChatPrivado, getChatsByCorreo, insertarMensaje, obtenerMensajesPorChat  } from '../models/chatModel.js';
+import { crearChatPrivado, getChatsByCorreo, insertarMensaje, obtenerMensajesPorChat,
+  crearChatGrupalModel
+  } from '../models/chatModel.js';
 
 // Controlador para obtener todos los chats
 export async function obtenerChats(req, res) {
@@ -28,6 +30,43 @@ export async function crearChatPrivadoHandler(req, res) {
   } catch (error) {
     console.error('❌ Error al crear chat privado:', error.message);
     res.status(500).json({ error: error.message });
+  }
+}
+
+// Controlador para crear un nuevo registro de chat grupal
+export async function crearChatGrupal(req, res) {
+  try {
+    const { correos, nombreGrupo } = req.body
+
+    if (!nombreGrupo || typeof nombreGrupo !== 'string' || nombreGrupo.trim() === '') {
+      return res.status(400).json({
+        success: false,
+        message: 'Debe proporcionar un nombre válido para el grupo en el campo "nombreGrupo".'
+      });
+    }
+
+    // Validación básica
+    if (!correos || !Array.isArray(correos) || correos.length < 2) {
+      return res.status(400).json({
+        success: false,
+        message: 'Debe enviar al menos dos correos en el arreglo "correos".'
+      })
+    }
+
+    // Llamar al modelo
+    const data = await crearChatGrupalModel(correos, nombreGrupo || null)
+
+    res.status(200).json({
+      success: true,
+      data
+    })
+  } catch (error) {
+    console.error('Error en crearChatGrupal:', error)
+    res.status(500).json({
+      success: false,
+      message: 'Error interno al crear chat grupal.',
+      error: error.message
+    })
   }
 }
 

@@ -5,16 +5,16 @@ import { enviarNotificacionChat } from './SidebarChat';
 import "./ChatInput.css";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPaperclip, faPaperPlane } from "@fortawesome/free-solid-svg-icons";
+import { faPaperPlane } from "@fortawesome/free-solid-svg-icons";
 
-const clip = <FontAwesomeIcon icon={faPaperclip} style={{ fontSize: "1.5rem" }} />;
 const send = <FontAwesomeIcon icon={faPaperPlane} style={{ fontSize: "1.5rem" }} />;
 
-const baseURL = "http://localhost:3001/api/chat";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const baseURL = `${API_BASE_URL}/api`;
 
 export const enviarMensaje = async (idUsuario, idChat, contenido) => {
   try {
-    const response = await fetch(`${baseURL}/enviarMsj`, {
+    const response = await fetch(`${baseURL}/chat/enviarMsj`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ idUsuario, idChat, contenido }),
@@ -77,11 +77,6 @@ export const ChatInput = ({ currentChat, onEnviar, sidebarWidth = 320 }) => {
 
   return (
     <div className="message-input-container">
-      <button className="attach-button"
-        aria-label="Botón adjuntar archivo"
-        onClick={handleAttach}>
-        {clip}
-      </button>
 
       <input
         type="text"

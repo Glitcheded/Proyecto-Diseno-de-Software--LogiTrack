@@ -16,6 +16,9 @@ import {
 
 const iconStyles = { fontSize: "1.6rem" };
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const baseURL = `${API_BASE_URL}/api`;
+
 export const NavBar = ({
   currentView,
   changeView,
@@ -34,7 +37,7 @@ export const NavBar = ({
   const handleLogout = async () => {
     try {
       const token = localStorage.getItem("supabaseToken");
-      const res = await fetch("http://localhost:3001/api/auth/logout", {
+      const res = await fetch(`${baseURL}/auth/logout`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

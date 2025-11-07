@@ -14,7 +14,8 @@ import { ProyectosAnterioresSub } from "./vistas/ProyectosAnterioresSub";
 
 import { UserProvider, useUser } from "../context/UserContext";
 
-const baseURL = "http://localhost:3001/api";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const baseURL = `${API_BASE_URL}/api`;
 
 // --- Wrapped Home logic in a child component so provider sits at the top ---
 const HomeContent = () => {

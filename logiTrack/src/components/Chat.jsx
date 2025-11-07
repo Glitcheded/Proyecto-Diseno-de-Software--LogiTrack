@@ -6,7 +6,8 @@ import { ChatHeader } from "./ChatHeader";
 import { ChatMessages } from "./ChatMessages";
 import { useNavigate } from "react-router-dom"; // for navigation (React Router)
 
-const baseURL = "http://localhost:3001/api";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const baseURL = `${API_BASE_URL}/api`;
 
 export const Chat = ({}) => {
   let usuarioGuardado = null;
@@ -71,6 +72,7 @@ export const Chat = ({}) => {
       const response = await fetch(`${baseURL}/chat/${correo}`, {
         method: "GET",
         headers: {
+          "Accept": "application/json",
           "Content-Type": "application/json",
         },
       });

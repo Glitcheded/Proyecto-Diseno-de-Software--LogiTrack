@@ -21,6 +21,17 @@ export async function crearChatPrivado(correoUsuario1, correoUsuario2) {
   return data;
 }
 
+// Funcion para crear un nuevo registro de chat grupal
+export async function crearChatGrupalModel(correos, nombreGrupo) {
+  const { data, error } = await supabase.rpc('crearchatgrupal', {
+    incorreos: correos,
+    innombregrupo: nombreGrupo
+  })
+
+  if (error) throw error
+  return data
+}
+
 // Insertar mensajes
 export async function insertarMensaje(idUsuario, idChat, contenido) {
   const fechaHora = new Date().toISOString();

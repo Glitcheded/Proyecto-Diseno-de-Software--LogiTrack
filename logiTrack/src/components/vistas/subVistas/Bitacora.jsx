@@ -3,7 +3,8 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import "./Bitacora.css";
 
-const baseURL = "http://localhost:3001/api/projects";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const baseURL = `${API_BASE_URL}/api/projects`;
 
 export const Bitacora = ({
   ViewMode,

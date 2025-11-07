@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import "./Notificaciones.css";
 import { useUser } from "../../context/UserContext";
 
-const baseURL = "http://localhost:3001";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const baseURL = `${API_BASE_URL}`;
 
 export const Notificaciones = () => {
   const [dataList, setDataList] = useState([]);

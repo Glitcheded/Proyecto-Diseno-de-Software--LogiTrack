@@ -3,7 +3,8 @@ import "./VistaProyectos.css";
 import { useUser } from "../../../context/UserContext";
 import { supabase } from "../../../../supabaseClient";
 
-const baseURL = "http://localhost:3001/api/projects"; // ensure correct endpoint
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const baseURL = `${API_BASE_URL}/api/projects`;; // ensure correct endpoint
 
 export const VistaProyectos = ({
   ViewMode,
@@ -115,7 +116,7 @@ export const VistaProyectos = ({
 
     try {
       const res = await fetch(
-        `http://localhost:3001/api/config/email/${email}`
+        `${API_BASE_URL}/api/config/email/${email}`
       );
       if (!res.ok) {
         if (res.status === 404) {
@@ -246,7 +247,7 @@ export const VistaProyectos = ({
       const projectId = editedProject.idProyecto;
 
       const res = await fetch(
-        `http://localhost:3001/api/projects/${projectId}`,
+        `${API_BASE_URL}/api/projects/${projectId}`,
         {
           method: "DELETE",
           headers: {
