@@ -9,6 +9,7 @@ export const Listado = ({
   ViewMode,
   selectedProject,
   fetchTareas,
+  selectedProjectRole,
 }) => {
   const [tasks, setTasks] = useState(() =>
     Array.isArray(dataList) ? dataList.slice() : []
@@ -391,16 +392,17 @@ export const Listado = ({
               <span className="task-text">{t.name}</span>
             </div>
 
-            {ViewMode !== "Proyectos Anteriores" && (
-              <button
-                className="edit-btn"
-                onClick={() => openEditor(t.id)}
-                title="Editar tarea"
-                aria-label={`Editar tarea ${t.name}`}
-              >
-                Editar
-              </button>
-            )}
+            {ViewMode !== "Proyectos Anteriores" &&
+              selectedProjectRole !== 4 && (
+                <button
+                  className="edit-btn"
+                  onClick={() => openEditor(t.id)}
+                  title="Editar tarea"
+                  aria-label={`Editar tarea ${t.name}`}
+                >
+                  Editar
+                </button>
+              )}
           </td>
           {ViewMode === "Mis Tareas" && (
             <td role="cell">{t.project?.name || "-"}</td>
@@ -467,17 +469,19 @@ export const Listado = ({
         <tbody>{roots.map((task) => renderTaskRow(task))}</tbody>
       </table>
 
-      {ViewMode !== "Mis Tareas" && ViewMode !== "Proyectos Anteriores" && (
-        <div className="add-row">
-          <button
-            className="add-btn"
-            onClick={() => handleAddTask()}
-            title="Agregar tarea"
-          >
-            ➕ Agregar tarea
-          </button>
-        </div>
-      )}
+      {ViewMode !== "Mis Tareas" &&
+        ViewMode !== "Proyectos Anteriores" &&
+        (selectedProjectRole === 1 || selectedProjectRole === 2) && (
+          <div className="add-row">
+            <button
+              className="add-btn"
+              onClick={() => handleAddTask()}
+              title="Agregar tarea"
+            >
+              ➕ Agregar tarea
+            </button>
+          </div>
+        )}
 
       {/* Editor Modal */}
       {isEditorOpen && editingTask && (
@@ -542,46 +546,47 @@ export const Listado = ({
                 }
               />
             </label>
+            {(selectedProjectRole === 1 || selectedProjectRole === 2) && (
+              <label>
+                Integrantes
+                <div className="members-list">
+                  {availableMembers.map((member) => {
+                    const isMember = editingTask.members?.some(
+                      (m) => m.id === member.id
+                    );
 
-            <label>
-              Integrantes
-              <div className="members-list">
-                {availableMembers.map((member) => {
-                  const isMember = editingTask.members?.some(
-                    (m) => m.id === member.id
-                  );
-
-                  return (
-                    <div
-                      key={member.id}
-                      className={`member-item ${
-                        isMember ? "member-selected" : ""
-                      }`}
-                    >
-                      <span>{member.name}</span>
-                      <button
-                        className="small"
-                        onClick={() => {
-                          setEditingTask((prev) => ({
-                            ...prev,
-                            members: isMember
-                              ? prev.members.filter((m) => m.id !== member.id)
-                              : [...(prev.members || []), member],
-                          }));
-                        }}
-                        aria-label={
-                          isMember
-                            ? `Quitar ${member.name}`
-                            : `Agregar ${member.name}`
-                        }
+                    return (
+                      <div
+                        key={member.id}
+                        className={`member-item ${
+                          isMember ? "member-selected" : ""
+                        }`}
                       >
-                        {isMember ? "-" : "+"}
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
-            </label>
+                        <span>{member.name}</span>
+                        <button
+                          className="small"
+                          onClick={() => {
+                            setEditingTask((prev) => ({
+                              ...prev,
+                              members: isMember
+                                ? prev.members.filter((m) => m.id !== member.id)
+                                : [...(prev.members || []), member],
+                            }));
+                          }}
+                          aria-label={
+                            isMember
+                              ? `Quitar ${member.name}`
+                              : `Agregar ${member.name}`
+                          }
+                        >
+                          {isMember ? "-" : "+"}
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              </label>
+            )}
 
             <div className="modal-actions">
               <button onClick={saveEdits} className="confirm">
@@ -596,12 +601,14 @@ export const Listado = ({
               >
                 Eliminar
               </button>
-              <button
-                onClick={() => handleAddTask(editingTask.id)}
-                className="subtask"
-              >
-                Agregar subtarea
-              </button>
+              {(selectedProjectRole === 1 || selectedProjectRole === 2) && (
+                <button
+                  onClick={() => handleAddTask(editingTask.id)}
+                  className="subtask"
+                >
+                  Agregar subtarea
+                </button>
+              )}
             </div>
           </div>
         </div>

@@ -17,7 +17,6 @@ import { UserProvider, useUser } from "../context/UserContext";
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const baseURL = `${API_BASE_URL}/api`;
 
-// --- Wrapped Home logic in a child component so provider sits at the top ---
 const HomeContent = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -37,8 +36,9 @@ const HomeContent = () => {
   const [selectedView, setSelectedView] = useState(initialView);
   const [selectedProject, setSelectedProject] = useState(null);
   const [selectedProjectName, setSelectedProjectName] = useState(null);
-  const [misProyectos, setMisProyectos] = useState([]); // Activas
-  const [proyectosAnteriores, setProyectosAnteriores] = useState([]); // Terminadas
+  const [selectedProjectRole, setSelectedProjectRole] = useState(null);
+  const [misProyectos, setMisProyectos] = useState([]);
+  const [proyectosAnteriores, setProyectosAnteriores] = useState([]);
 
   const fetchProjects = async () => {
     try {
@@ -60,13 +60,14 @@ const HomeContent = () => {
 
       const proyectos = await res.json();
 
-      // Split into active (idEstadoProyecto === 1) and others
       const misProyectosList = proyectos.filter(
         (p) => p.idEstadoProyecto === 1
       );
       const proyectosAnterioresList = proyectos.filter(
         (p) => p.idEstadoProyecto !== 1
       );
+
+      console.log("Todos mis proyectos: ", proyectos);
 
       setMisProyectos(misProyectosList);
       setProyectosAnteriores(proyectosAnterioresList);
@@ -145,6 +146,7 @@ const HomeContent = () => {
             projectList={misProyectos}
             setProjectList={setMisProyectos}
             fetchProjects={fetchProjects}
+            selectedProjectRole={selectedProjectRole}
           />
         );
       case "Proyectos Anteriores":
@@ -162,6 +164,7 @@ const HomeContent = () => {
           <MisProyectosSub
             selectedProject={selectedProject}
             selectedProjectName={selectedProjectName}
+            selectedProjectRole={selectedProjectRole}
           />
         );
       case "Proyectos Anteriores / Proyecto":
@@ -169,6 +172,7 @@ const HomeContent = () => {
           <ProyectosAnterioresSub
             selectedProject={selectedProject}
             selectedProjectName={selectedProjectName}
+            selectedProjectRole={selectedProjectRole}
           />
         );
       default:
@@ -187,9 +191,9 @@ const HomeContent = () => {
         setSelectedProject={setSelectedProject}
         userName={userName}
         setSelectedProjectName={setSelectedProjectName}
+        setSelectedProjectRole={setSelectedProjectRole}
       />
 
-      {/* Main content region */}
       <main
         className="right-container"
         role="main"

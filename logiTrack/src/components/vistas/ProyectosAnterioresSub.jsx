@@ -4,6 +4,7 @@ import { VistaTareas } from "./subVistas/VistaTareas";
 export const ProyectosAnterioresSub = ({
   selectedProject,
   selectedProjectName,
+  selectedProjectRole,
 }) => {
   return (
     <div>
@@ -11,6 +12,7 @@ export const ProyectosAnterioresSub = ({
         ViewMode="Proyectos Anteriores"
         selectedProject={selectedProject}
         selectedProjectName={selectedProjectName}
+        selectedProjectRole={selectedProjectRole}
       />
     </div>
   );

@@ -14,6 +14,7 @@ export const Calendario = ({
   ViewMode,
   selectedProject,
   fetchTareas,
+  selectedProjectRole,
 }) => {
   const [tasks, setTasks] = useState(() =>
     Array.isArray(dataList) ? dataList.slice() : []
@@ -429,25 +430,26 @@ export const Calendario = ({
         >
           <div className="day-header">
             <div className="day-number">{day}</div>
-            {ViewMode === "Mis Proyectos" && (
-              <button
-                className="add-task-day-btn"
-                onClick={(e) => {
-                  e.stopPropagation();
+            {ViewMode === "Mis Proyectos" &&
+              (selectedProjectRole === 1 || selectedProjectRole === 2) && (
+                <button
+                  className="add-task-day-btn"
+                  onClick={(e) => {
+                    e.stopPropagation();
 
-                  const dateStringForTask = `${currentYear}-${String(
-                    currentMonth + 1
-                  ).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+                    const dateStringForTask = `${currentYear}-${String(
+                      currentMonth + 1
+                    ).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 
-                  console.log("Adding task for date: ", dateStringForTask);
-                  handleAddTaskForDay(dateStringForTask);
-                }}
-                title="Agregar tarea para este día"
-                aria-label={`Agregar tarea para ${months[currentMonth]} ${day}, ${currentYear}`}
-              >
-                ➕
-              </button>
-            )}
+                    console.log("Adding task for date: ", dateStringForTask);
+                    handleAddTaskForDay(dateStringForTask);
+                  }}
+                  title="Agregar tarea para este día"
+                  aria-label={`Agregar tarea para ${months[currentMonth]} ${day}, ${currentYear}`}
+                >
+                  ➕
+                </button>
+              )}
           </div>
 
           {tasksForDay.map((task) => (
@@ -461,19 +463,20 @@ export const Calendario = ({
               aria-label={`Tarea: ${task.name}, Proyecto: ${task.project.name}, Prioridad: ${task.prioridad}`}
             >
               <div className="task-preview">
-                {ViewMode !== "Proyectos Anteriores" && (
-                  <button
-                    className="edit-btn-col"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      openEditor(task.id);
-                    }}
-                    title="Editar tarea"
-                    aria-label={`Editar tarea ${task.name}`}
-                  >
-                    Editar
-                  </button>
-                )}
+                {ViewMode !== "Proyectos Anteriores" &&
+                  selectedProjectRole !== 4 && (
+                    <button
+                      className="edit-btn-col"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openEditor(task.id);
+                      }}
+                      title="Editar tarea"
+                      aria-label={`Editar tarea ${task.name}`}
+                    >
+                      Editar
+                    </button>
+                  )}
                 {Boolean(task.subtaskOf) && (
                   <div className="subtask-label">
                     Subtarea: <b>{getParentName(task)}</b>
@@ -711,46 +714,47 @@ export const Calendario = ({
                 }
               />
             </label>
+            {(selectedProjectRole === 1 || selectedProjectRole === 2) && (
+              <label>
+                Integrantes
+                <div className="members-list">
+                  {availableMembers.map((member) => {
+                    const isMember = editingTask.members?.some(
+                      (m) => m.id === member.id
+                    );
 
-            <label>
-              Integrantes
-              <div className="members-list">
-                {availableMembers.map((member) => {
-                  const isMember = editingTask.members?.some(
-                    (m) => m.id === member.id
-                  );
-
-                  return (
-                    <div
-                      key={member.id}
-                      className={`member-item ${
-                        isMember ? "member-selected" : ""
-                      }`}
-                    >
-                      <span>{member.name}</span>
-                      <button
-                        className="small"
-                        onClick={() => {
-                          setEditingTask((prev) => ({
-                            ...prev,
-                            members: isMember
-                              ? prev.members.filter((m) => m.id !== member.id)
-                              : [...(prev.members || []), member],
-                          }));
-                        }}
-                        aria-label={
-                          isMember
-                            ? `Quitar ${member.name}`
-                            : `Agregar ${member.name}`
-                        }
+                    return (
+                      <div
+                        key={member.id}
+                        className={`member-item ${
+                          isMember ? "member-selected" : ""
+                        }`}
                       >
-                        {isMember ? "-" : "+"}
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
-            </label>
+                        <span>{member.name}</span>
+                        <button
+                          className="small"
+                          onClick={() => {
+                            setEditingTask((prev) => ({
+                              ...prev,
+                              members: isMember
+                                ? prev.members.filter((m) => m.id !== member.id)
+                                : [...(prev.members || []), member],
+                            }));
+                          }}
+                          aria-label={
+                            isMember
+                              ? `Quitar ${member.name}`
+                              : `Agregar ${member.name}`
+                          }
+                        >
+                          {isMember ? "-" : "+"}
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              </label>
+            )}
 
             <div className="modal-actions">
               <button onClick={saveEdits} className="confirm">
@@ -765,14 +769,14 @@ export const Calendario = ({
               >
                 Eliminar
               </button>
-              <button
-                onClick={() =>
-                  handleAddTaskForDay(editingTask.dueDate, editingTask.id)
-                }
-                className="subtask"
-              >
-                Agregar subtarea
-              </button>
+              {(selectedProjectRole === 1 || selectedProjectRole === 2) && (
+                <button
+                  onClick={() => handleAddTask(editingTask.id)}
+                  className="subtask"
+                >
+                  Agregar subtarea
+                </button>
+              )}
             </div>
           </div>
         </div>

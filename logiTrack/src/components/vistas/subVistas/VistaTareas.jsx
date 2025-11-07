@@ -14,6 +14,7 @@ export const VistaTareas = ({
   ViewMode,
   selectedProject = null,
   selectedProjectName,
+  selectedProjectRole,
 }) => {
   const [activeViewMode, setActiveViewMode] = useState("Listado");
 
@@ -73,6 +74,7 @@ export const VistaTareas = ({
     selectedProject,
     fetchTareas,
     selectedProjectName,
+    selectedProjectRole,
   };
 
   const renderSubView = () => {

@@ -5,7 +5,13 @@ const currentUser = "Giovanni";
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const baseURL = `${API_BASE_URL}/api`;
 
-export const Tabla = ({ dataList, ViewMode, selectedProject, fetchTareas }) => {
+export const Tabla = ({
+  dataList,
+  ViewMode,
+  selectedProject,
+  fetchTareas,
+  selectedProjectRole,
+}) => {
   const [tasks, setTasks] = useState(() =>
     Array.isArray(dataList) ? dataList.slice() : []
   );
@@ -435,19 +441,19 @@ export const Tabla = ({ dataList, ViewMode, selectedProject, fetchTareas }) => {
         </tbody>
       </table>
 
-      {ViewMode === "Mis Proyectos" && (
-        <div className="add-row">
-          <button
-            className="add-btn"
-            onClick={() => handleAddTask(null)}
-            aria-label="Agregar nueva tarea"
-            tabIndex={0}
-            onKeyDown={(e) => e.key === "Enter" && handleAddTask(null)}
-          >
-            ➕ Agregar tarea
-          </button>
-        </div>
-      )}
+      {ViewMode !== "Mis Tareas" &&
+        ViewMode !== "Proyectos Anteriores" &&
+        (selectedProjectRole === 1 || selectedProjectRole === 2) && (
+          <div className="add-row">
+            <button
+              className="add-btn"
+              onClick={() => handleAddTask()}
+              title="Agregar tarea"
+            >
+              ➕ Agregar tarea
+            </button>
+          </div>
+        )}
 
       {/* Editor Modal */}
       {isEditorOpen && editingTask && (
@@ -512,46 +518,47 @@ export const Tabla = ({ dataList, ViewMode, selectedProject, fetchTareas }) => {
                 }
               />
             </label>
+            {(selectedProjectRole === 1 || selectedProjectRole === 2) && (
+              <label>
+                Integrantes
+                <div className="members-list">
+                  {availableMembers.map((member) => {
+                    const isMember = editingTask.members?.some(
+                      (m) => m.id === member.id
+                    );
 
-            <label>
-              Integrantes
-              <div className="members-list">
-                {availableMembers.map((member) => {
-                  const isMember = editingTask.members?.some(
-                    (m) => m.id === member.id
-                  );
-
-                  return (
-                    <div
-                      key={member.id}
-                      className={`member-item ${
-                        isMember ? "member-selected" : ""
-                      }`}
-                    >
-                      <span>{member.name}</span>
-                      <button
-                        className="small"
-                        onClick={() => {
-                          setEditingTask((prev) => ({
-                            ...prev,
-                            members: isMember
-                              ? prev.members.filter((m) => m.id !== member.id)
-                              : [...(prev.members || []), member],
-                          }));
-                        }}
-                        aria-label={
-                          isMember
-                            ? `Quitar ${member.name}`
-                            : `Agregar ${member.name}`
-                        }
+                    return (
+                      <div
+                        key={member.id}
+                        className={`member-item ${
+                          isMember ? "member-selected" : ""
+                        }`}
                       >
-                        {isMember ? "-" : "+"}
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
-            </label>
+                        <span>{member.name}</span>
+                        <button
+                          className="small"
+                          onClick={() => {
+                            setEditingTask((prev) => ({
+                              ...prev,
+                              members: isMember
+                                ? prev.members.filter((m) => m.id !== member.id)
+                                : [...(prev.members || []), member],
+                            }));
+                          }}
+                          aria-label={
+                            isMember
+                              ? `Quitar ${member.name}`
+                              : `Agregar ${member.name}`
+                          }
+                        >
+                          {isMember ? "-" : "+"}
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              </label>
+            )}
 
             <div className="modal-actions">
               <button onClick={saveEdits} className="confirm">
@@ -566,12 +573,14 @@ export const Tabla = ({ dataList, ViewMode, selectedProject, fetchTareas }) => {
               >
                 Eliminar
               </button>
-              <button
-                onClick={() => handleAddTask(editingTask.id)}
-                className="subtask"
-              >
-                Agregar subtarea
-              </button>
+              {(selectedProjectRole === 1 || selectedProjectRole === 2) && (
+                <button
+                  onClick={() => handleAddTask(editingTask.id)}
+                  className="subtask"
+                >
+                  Agregar subtarea
+                </button>
+              )}
             </div>
           </div>
         </div>

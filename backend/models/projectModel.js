@@ -166,6 +166,7 @@ export const getProyectosPorUsuario = async (idUsuario) => {
         'get_proyectos_completos_con_fecha_proxima', // updated function name
         { p_id_usuario: idUsuario }
     );
+    console.log(data)
 
     if (error) throw error;
     return data;

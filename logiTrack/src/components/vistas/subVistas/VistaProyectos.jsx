@@ -4,7 +4,7 @@ import { useUser } from "../../../context/UserContext";
 import { supabase } from "../../../../supabaseClient";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-const baseURL = `${API_BASE_URL}/api/projects`;; // ensure correct endpoint
+const baseURL = `${API_BASE_URL}/api/projects`;
 
 export const VistaProyectos = ({
   ViewMode,
@@ -20,6 +20,9 @@ export const VistaProyectos = ({
   const [editedProject, setEditedProject] = useState(null);
   const [newMemberEmail, setNewMemberEmail] = useState("");
   const [newMemberRole, setNewMemberRole] = useState("Colaborador");
+  const [isMembersModalOpen, setIsMembersModalOpen] = useState(false);
+  const [selectedProjectMembers, setSelectedProjectMembers] = useState([]);
+  const [selectedProjectName, setSelectedProjectName] = useState("");
 
   const [addMemberError, setAddMemberError] = useState("");
 
@@ -82,9 +85,22 @@ export const VistaProyectos = ({
     setIsModalOpen(true);
   };
 
+  const openMembersModal = (project) => {
+    const members = projectMembers[project.idProyecto] || [];
+    setSelectedProjectMembers(members);
+    setSelectedProjectName(project.nombre);
+    setIsMembersModalOpen(true);
+  };
+
   const closeModal = () => {
     setIsModalOpen(false);
     setSelectedDescription(null);
+  };
+
+  const closeMembersModal = () => {
+    setIsMembersModalOpen(false);
+    setSelectedProjectMembers([]);
+    setSelectedProjectName("");
   };
 
   const openEditor = (project) => {
@@ -115,9 +131,7 @@ export const VistaProyectos = ({
     if (!email) return;
 
     try {
-      const res = await fetch(
-        `${API_BASE_URL}/api/config/email/${email}`
-      );
+      const res = await fetch(`${API_BASE_URL}/api/config/email/${email}`);
       if (!res.ok) {
         if (res.status === 404) {
           setAddMemberError("Usuario no encontrado con ese correo");
@@ -246,16 +260,13 @@ export const VistaProyectos = ({
 
       const projectId = editedProject.idProyecto;
 
-      const res = await fetch(
-        `${API_BASE_URL}/api/projects/${projectId}`,
-        {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
+      const res = await fetch(`${API_BASE_URL}/api/projects/${projectId}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
 
       if (!res.ok) {
         const errorData = await res.json();
@@ -264,7 +275,6 @@ export const VistaProyectos = ({
 
       console.log(`Proyecto ${projectId} eliminado correctamente`);
 
-      // 🔹 Eliminar localmente del estado para reflejar el cambio en UI
       setDataList((prev) =>
         prev.filter((proj) => proj.idProyecto !== projectId)
       );
@@ -326,7 +336,6 @@ export const VistaProyectos = ({
       };
 
       setDataList((prev) => [...prev, projectForTable]);
-      // Add the current user as the first member
       setProjectMembers((prev) => ({
         ...prev,
         [createdProject.idProyecto]: [
@@ -371,15 +380,19 @@ export const VistaProyectos = ({
               <tr key={project.idProyecto} className="proyecto-row" role="row">
                 <td role="cell" className="proyecto-name-cell">
                   <strong>{project.nombre}</strong>
-                  <button
-                    className="proyecto-edit-btn"
-                    onClick={() => openEditor(project)}
-                    aria-label={`Editar proyecto ${project.nombre}`}
-                    tabIndex={0}
-                    onKeyDown={(e) => e.key === "Enter" && openEditor(project)}
-                  >
-                    Editar
-                  </button>
+                  {project.idRol === 1 && (
+                    <button
+                      className="proyecto-edit-btn"
+                      onClick={() => openEditor(project)}
+                      aria-label={`Editar proyecto ${project.nombre}`}
+                      tabIndex={0}
+                      onKeyDown={(e) =>
+                        e.key === "Enter" && openEditor(project)
+                      }
+                    >
+                      Editar
+                    </button>
+                  )}
                 </td>
                 <td role="cell">
                   <button
@@ -396,7 +409,20 @@ export const VistaProyectos = ({
                 </td>
                 <td role="cell">
                   {projectMembers[project.idProyecto]?.length || 0}
+                  <button
+                    className="proyecto-desc-btn"
+                    onClick={() => openMembersModal(project)}
+                    aria-label={`Ver miembros del proyecto ${project.nombre}`}
+                    tabIndex={0}
+                    onKeyDown={(e) =>
+                      e.key === "Enter" && openMembersModal(project)
+                    }
+                    style={{ marginLeft: "8px" }}
+                  >
+                    Ver miembros
+                  </button>
                 </td>
+
                 {isPrevious && (
                   <td role="cell">{mapEstado(project.idEstadoProyecto)}</td>
                 )}
@@ -439,6 +465,7 @@ export const VistaProyectos = ({
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <h3 id="modal-title">Descripción del proyecto</h3>
             <p id="modal-desc">{selectedDescription}</p>
+            <br />
             <button
               className="proyecto-close-btn"
               onClick={closeModal}
@@ -514,7 +541,7 @@ export const VistaProyectos = ({
                   <th role="columnheader">Nombre</th>
                   <th role="columnheader">Correo</th>
                   <th role="columnheader">Rol</th>
-                  <th role="columnheader">Acciones</th>
+                  <th role="columnheader">Acción</th>
                 </tr>
               </thead>
               <tbody>
@@ -589,6 +616,60 @@ export const VistaProyectos = ({
                 Eliminar proyecto
               </button>
             </div>
+          </div>
+        </div>
+      )}
+      {/* Members Modal */}
+      {isMembersModalOpen && (
+        <div
+          className="modal-overlay"
+          onClick={closeMembersModal}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="members-modal-title"
+          aria-describedby="members-modal-desc"
+        >
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <h3 id="members-modal-title">Miembros de {selectedProjectName}</h3>
+            <p id="members-modal-desc">
+              Lista de miembros y roles del proyecto seleccionado.
+            </p>
+
+            {selectedProjectMembers.length > 0 ? (
+              <table
+                className="members-table"
+                role="table"
+                aria-label="Miembros del proyecto"
+              >
+                <thead>
+                  <tr role="row">
+                    <th role="columnheader">Nombre</th>
+                    <th role="columnheader">Correo</th>
+                    <th role="columnheader">Rol</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {selectedProjectMembers.map((member) => (
+                    <tr key={member.id} role="row">
+                      <td role="cell">{member.name}</td>
+                      <td role="cell">{member.email}</td>
+                      <td role="cell">{member.role}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <p>No hay miembros en este proyecto.</p>
+            )}
+
+            <button
+              className="proyecto-close-btn"
+              onClick={closeMembersModal}
+              aria-label="Cerrar modal de miembros"
+              style={{ marginTop: "12px" }}
+            >
+              Cerrar
+            </button>
           </div>
         </div>
       )}

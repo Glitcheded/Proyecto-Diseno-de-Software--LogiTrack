@@ -28,6 +28,7 @@ export const NavBar = ({
   setSelectedProject,
   userName,
   setSelectedProjectName,
+  setSelectedProjectRole,
 }) => {
   const navigate = useNavigate();
   const [showUserDropdown, setShowUserDropdown] = useState(false);
@@ -59,7 +60,6 @@ export const NavBar = ({
 
   return (
     <nav className="NV-container" aria-label="Barra de navegación principal">
-      {/* USER & OPTIONS HEADER */}
       <div className="options-container">
         <div className="user-icon-wrapper">
           <button
@@ -111,7 +111,6 @@ export const NavBar = ({
         </div>
       </div>
 
-      {/* NAVIGATION MENU */}
       <ul className="navbar-container" role="menubar">
         <li>
           <button
@@ -225,6 +224,7 @@ export const NavBar = ({
                         changeView("Mis Proyectos / Proyecto");
                         setSelectedProject(proj.idProyecto);
                         setSelectedProjectName(proj.nombre);
+                        setSelectedProjectRole(proj.idRol);
                       }}
                       role="menuitem"
                     >
@@ -299,6 +299,7 @@ export const NavBar = ({
                         changeView("Proyectos Anteriores / Proyecto");
                         setSelectedProject(proj.idProyecto);
                         setSelectedProjectName(proj.nombre);
+                        setSelectedProjectRole(proj.idRol);
                       }}
                       role="menuitem"
                     >

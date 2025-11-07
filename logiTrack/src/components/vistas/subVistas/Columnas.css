@@ -138,7 +138,7 @@
   background: white;
   cursor: pointer;
   z-index: 100;
-  
+  transition: opacity 0.2s ease;
 }
 
 .task-card:hover .edit-btn-col, .edit-btn-col:focus {

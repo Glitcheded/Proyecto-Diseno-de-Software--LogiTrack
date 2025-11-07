@@ -10,7 +10,7 @@ export const Bitacora = ({
   ViewMode,
   selectedProject,
   selectedProjectName,
-  fetchProjects,
+  selectedProjectRole,
 }) => {
   const today = new Date();
   const formatDate = (date) => date.toISOString().split("T")[0];
@@ -107,16 +107,6 @@ export const Bitacora = ({
       console.error("Failed to update bitacora entry:", error);
       alert("No se pudo actualizar la entrada. Intenta nuevamente.");
     }
-  };
-
-  const toggleFinishTime = (id) => {
-    setDataList((prev) =>
-      prev.map((item) =>
-        item.id === id
-          ? { ...item, finishTime: item.finishTime ? undefined : "00:00" }
-          : item
-      )
-    );
   };
 
   const handleAddEntry = async () => {
@@ -219,7 +209,7 @@ export const Bitacora = ({
           {dataList.map((item) => (
             <tr key={item.id} role="row">
               <td role="cell">
-                {editable ? (
+                {editable && selectedProjectRole !== 4 ? (
                   <div className="time-column">
                     <label className="sr-only" htmlFor={`start-${item.id}`}>
                       Hora de inicio
@@ -319,7 +309,7 @@ export const Bitacora = ({
               </td>
 
               <td role="cell">
-                {editable ? (
+                {editable && selectedProjectRole !== 4 ? (
                   <textarea
                     value={item.tasks}
                     onChange={(e) =>
@@ -333,7 +323,7 @@ export const Bitacora = ({
               </td>
 
               <td role="cell">
-                {editable ? (
+                {editable && selectedProjectRole !== 4 ? (
                   <textarea
                     value={item.notes}
                     onChange={(e) =>
@@ -350,7 +340,7 @@ export const Bitacora = ({
         </tbody>
       </table>
 
-      {editable && (
+      {editable && selectedProjectRole !== 4 && (
         <div className="add-row">
           <button
             className="add-btn"

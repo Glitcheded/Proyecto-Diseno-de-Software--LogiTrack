@@ -199,3 +199,16 @@
 .small-danger:hover, .small-danger:focus{
   color: red;
 }
+
+.proyecto-close-btn{
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  background: #ddd;
+}
+
+.proyecto-close-btn:hover, .proyecto-close-btn:focus{
+  transform: scale(1.05);
+  background: #eee;
+}
