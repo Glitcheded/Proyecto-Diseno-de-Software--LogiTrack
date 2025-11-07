@@ -329,12 +329,14 @@ export const Tabla = ({
   const mostRecentCommentText = (task) => {
     if (!task.comments || task.comments.length === 0) return null;
 
-    // Find the comment with the highest id
     const latestComment = task.comments.reduce((latest, current) =>
       current.id > latest.id ? current : latest
     );
 
-    return latestComment.text;
+    const text = latestComment.text || "";
+    const maxLength = 30;
+
+    return text.length > maxLength ? text.slice(0, maxLength) + "..." : text;
   };
 
   const getPriorityEmoji = (prioridad) => {

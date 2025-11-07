@@ -341,12 +341,14 @@ export const Listado = ({
   const mostRecentCommentText = (task) => {
     if (!task.comments || task.comments.length === 0) return null;
 
-    // Find the comment with the highest id
     const latestComment = task.comments.reduce((latest, current) =>
       current.id > latest.id ? current : latest
     );
 
-    return latestComment.text;
+    const text = latestComment.text || "";
+    const maxLength = 30;
+
+    return text.length > maxLength ? text.slice(0, maxLength) + "..." : text;
   };
 
   const getPriorityEmoji = (prioridad) => {
@@ -373,10 +375,18 @@ export const Listado = ({
   const renderTaskRow = (t, level = 0) => {
     const hasSubtasks = t.subtasks && t.subtasks.length > 0;
     const isExpanded = !!expandedTasks[t.id];
+
+    // Cap the indentation level to prevent excessive margin
+    const cappedLevel = Math.min(level, 2);
+    const indent = cappedLevel * 20; // Adjust spacing per level (e.g., 20px per depth)
+
     return (
       <React.Fragment key={t.id}>
         <tr className={`task-row level-${level}`} role="row">
-          <td style={{ position: "relative" }} role="cell">
+          <td
+            style={{ position: "relative", paddingLeft: `${indent}px` }}
+            role="cell"
+          >
             <div className="task-name">
               {hasSubtasks && (
                 <button
@@ -404,6 +414,7 @@ export const Listado = ({
                 </button>
               )}
           </td>
+
           {ViewMode === "Mis Tareas" && (
             <td role="cell">{t.project?.name || "-"}</td>
           )}
