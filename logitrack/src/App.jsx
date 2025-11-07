@@ -8,6 +8,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LoginSignup } from "./components/LoginSignup";
 import { Chat } from "./components/Chat";
 import { Home } from "./components/Home";
+import { ActualizarContrasena } from './components/ActualizarContrasena';
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
         <Route path="/" element={<LoginSignup />} />
         <Route path="/home" element={<Home />} />
         <Route path="/chat" element={<Chat />} />
+        <Route path="/actualizar-contrasena" element={<ActualizarContrasena />} />
       </Routes>
     </BrowserRouter>
     </>

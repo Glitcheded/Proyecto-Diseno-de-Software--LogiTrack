@@ -1,0 +1,146 @@
+p {
+  padding-top: 30px;
+  margin: auto;
+  font-size: 19px;
+  font-weight: 600;
+}
+
+.login-header {
+  width: 100vw;
+  height: 10vh;
+  color: white;
+  background: #2F0459;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 500;
+}
+
+.container {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  margin: 0;
+  padding: 0;
+  flex-direction: column;
+  align-items: center;
+}
+
+.horizontal-container {
+  display: flex;
+  height: 90vh;
+  width: 100vw;
+  margin: 0;
+  padding: 0;
+}
+
+.login-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgb(255, 255, 255);
+  height: 90vh;
+  width: 50vw;
+  margin: none;
+  justify-content: center; 
+}
+
+.login-menu-container {
+  display: flex;
+  flex-direction: column;
+  margin: 0 auto;
+  width: 500px;
+  background: white;
+  border-style: solid;
+  border-width: 3px;
+  border-radius: 10px;
+  border-color: #2F0459;
+  box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5);
+  padding: 30px;
+}
+
+.login-container h2 {
+    font-size: 2rem;
+    color: #f1efef;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.inputs {
+  margin-top: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+.input {
+  display: flex;
+  align-items: center;
+  margin: auto;
+  width: 350px; 
+  height: 40px;
+  background: #eaeaea;
+  border-radius: 6px;
+}
+
+.input input {
+  height: 50px;
+  width: 100%; 
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #444444;
+  font-size: 15px;
+  padding-left: 15px;
+}
+
+.icons {
+  margin: 15px;
+}
+
+.submit-button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 30px auto;
+  width: 350px;
+  height: 50px;
+  color: white;
+  background: #2F0459;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 350px;
+  cursor: pointer;
+  border: none; 
+}
+
+.submit-button:hover {
+    background: #4b007d; 
+}
+
+.form-message {
+    text-align: center;
+    padding-top: 15px;
+    margin: 0 auto;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.form-message.success {
+    color: green;
+}
+
+.form-message.error {
+    color: red;
+}
+
+.background-image {
+  display: flex;
+  align-items: center;
+  background-image: url(..\assets\LoginImage.png); 
+  background-size: cover;
+  height: 90vh;
+  width: 50vw;
+  margin: none;
+}
