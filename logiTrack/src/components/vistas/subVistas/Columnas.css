@@ -50,7 +50,7 @@
   transition: background 0.2s ease, transform 0.1s ease;
 }
 
-.add-task-btn:hover {
+.add-task-btn:hover, .add-task-btn:focus {
   transform: scale(1.05);
 }
 
@@ -138,7 +138,7 @@
   background: white;
   cursor: pointer;
   z-index: 100;
-  transition: opacity 0.2s ease;
+  transition: background 0.2s, opacity 0.2s;
 }
 
 .task-card:hover .edit-btn-col, .edit-btn-col:focus {
@@ -147,3 +147,6 @@
   transform: translateY(0);
 }
 
+.edit-btn-col:hover{
+  background-color: #bfbfbf;
+}

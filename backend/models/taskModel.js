@@ -32,27 +32,30 @@ export const formatTaskData = (data) => {
 
 // Fetches all tasks assigned to a specific user
 export const getTareasPorUsuario = async (idUsuario) => {
+  // Step 1: Fetch tasks and related project data
   const { data, error } = await supabase
     .from("UsuarioPorTarea")
     .select(`
       Tarea (
-        idTarea,
+        "idTarea",
         nombre,
-        fechaEntrega,
-        idTareaMadre,
+        "fechaEntrega",
+        "idTareaMadre",
+        activado,
         Proyecto (
-          idProyecto,
-          nombre
+          "idProyecto",
+          nombre,
+          "idEstadoProyecto"
         ),
         EstadoTarea ( nombre ),
         Prioridad ( nivel ),
         Comentario (
-          idComentario,
+          "idComentario",
           comentario,
-          Usuario ( idUsuario, nombre, apellido )
+          Usuario ( "idUsuario", nombre, apellido )
         ),
         UsuarioPorTarea (
-          Usuario ( idUsuario, nombre, apellido )
+          Usuario ( "idUsuario", nombre, apellido )
         )
       )
     `)
@@ -60,9 +63,38 @@ export const getTareasPorUsuario = async (idUsuario) => {
     .eq("Tarea.activado", true);
 
   if (error) throw error;
+  if (!data) return [];
 
-  return formatTaskData(data);
+  const tareasFiltradas = [];
+
+  // Step 2: Filter tasks based on project role and project state
+  for (const item of data) {
+    const tarea = item.Tarea;
+    const proyecto = tarea?.Proyecto;
+    if (!proyecto) continue;
+
+    // Get the current user's role in this project
+    const { data: userProjectRow, error: roleError } = await supabase
+      .from("UsuarioPorProyecto")
+      .select('"idRol"')
+      .eq('"idProyecto"', proyecto.idProyecto)
+      .eq('"idUsuario"', idUsuario)
+      .single();
+
+    if (roleError && roleError.code !== "PGRST116") throw roleError; // Ignore "no rows" errors safely
+
+    const userRol = userProjectRow?.idRol;
+
+    // Exclude if user has role 4 or project state is not 1
+    if (userRol === 4 || proyecto.idEstadoProyecto !== 1) continue;
+
+    tareasFiltradas.push(item);
+  }
+
+  // Step 3: Return formatted task data
+  return formatTaskData(tareasFiltradas);
 };
+
 
 
 export const getTareasPorProyecto = async (idProyecto) => {

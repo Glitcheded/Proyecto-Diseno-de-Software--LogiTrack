@@ -79,13 +79,17 @@
   border: 1px solid #888;
   background: white;
   cursor: pointer;
-  transition: opacity 0.2s ease;
+  transition: background 0.2s, opacity 0.2s;
 }
 
 .task-row:hover .edit-btn,
 .edit-btn:focus {
   opacity: 1;
   pointer-events: auto;
+}
+
+.edit-btn:hover{
+  background-color: #bfbfbf;
 }
 
 .add-row {

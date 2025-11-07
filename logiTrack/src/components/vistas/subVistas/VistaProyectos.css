@@ -44,8 +44,8 @@
   right: 6px;
   top: 4px;
   padding: 4px 6px;
-  background: #d3d3d3;
-  border: none;
+  background: white;
+  border: 1px solid #888;
   border-radius: 6px;
   cursor: pointer;
   font-size: 0.85rem;

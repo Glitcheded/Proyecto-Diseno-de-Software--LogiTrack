@@ -384,6 +384,7 @@ export const VistaProyectos = ({
                     <button
                       className="proyecto-edit-btn"
                       onClick={() => openEditor(project)}
+                      title="Editar proyecto"
                       aria-label={`Editar proyecto ${project.nombre}`}
                       tabIndex={0}
                       onKeyDown={(e) =>

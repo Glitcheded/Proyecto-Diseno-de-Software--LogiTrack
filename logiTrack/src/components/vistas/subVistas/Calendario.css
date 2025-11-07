@@ -172,6 +172,7 @@
   cursor: pointer;
   opacity: 0;
   margin-bottom: 6px;
+  transition: background 0.2s ease, transform 0.1s ease;
 }
 
 .calendar-cell:hover .add-task-day-btn, .add-task-day-btn:focus {
@@ -179,7 +180,7 @@
 }
 
 .add-task-day-btn:hover, .add-task-day-btn:focus {
-  background: #e0e0e0;
+  transform: scale(1.05);
 }
 
 .comments-section{
