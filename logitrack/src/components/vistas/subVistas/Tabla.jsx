@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "./Tabla.css";
+import { toast } from "react-toastify";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const baseURL = `${API_BASE_URL}/api`;
@@ -23,6 +24,32 @@ export const Tabla = ({
     key: null,
     direction: null,
   });
+
+  // ******************************************************
+    const refModalEditarTarea = useRef(null);
+    const refModalComments = useRef(null);
+    const previousFocusRef = useRef(null);
+    const [statusMessage1, setStatusMessage1] = useState("");
+  
+    useEffect(() => {
+      if (isEditorOpen && refModalEditarTarea.current) {
+        refModalEditarTarea.current.focus();
+      }
+    }, [isEditorOpen]);
+  
+    useEffect(() => {
+      if (commentsTask != null && refModalComments.current) {
+        refModalComments.current.focus();
+      }
+    }, [commentsTask]);
+  
+    function devolverFoco(previousFocusRef) {
+      if (previousFocusRef?.current) {
+        previousFocusRef.current.focus(); // 👈 devuelve el foco
+      }
+    }
+  
+    // ******************************************************
 
   const getParentName = (task) => {
     const parent = tasks.find((t) => t.id === task.subtaskOf);
@@ -126,6 +153,7 @@ export const Tabla = ({
 
     setEditingTask({ ...t });
     await fetchProjectMembers(t.project.id);
+    previousFocusRef.current = document.activeElement; // 👈 guarda el foco actual
     setIsEditorOpen(true);
   };
 
@@ -215,6 +243,7 @@ export const Tabla = ({
 
       setIsEditorOpen(false);
       setEditingTask(null);
+      devolverFoco(previousFocusRef);
 
       alert("Tarea actualizada correctamente");
     } catch (error) {
@@ -226,6 +255,7 @@ export const Tabla = ({
   const cancelEdits = () => {
     setIsEditorOpen(false);
     setEditingTask(null);
+    devolverFoco(previousFocusRef);
   };
 
   const deleteTask = async (taskId) => {
@@ -261,6 +291,7 @@ export const Tabla = ({
 
       setIsEditorOpen(false);
       setEditingTask(null);
+      devolverFoco(previousFocusRef);
     } catch (error) {
       console.error("Error al eliminar tarea:", error);
       alert("No se pudo eliminar la tarea. Intenta nuevamente.");
@@ -270,12 +301,15 @@ export const Tabla = ({
   const openComments = (taskId) => {
     const t = tasks.find((x) => x.id === taskId);
     if (!t) return;
+    previousFocusRef.current = document.activeElement; // 👈 guarda el foco actual
     setCommentsTask({ ...t });
     setNewCommentText("");
   };
 
   const sendComment = async () => {
-    if (!commentsTask || !newCommentText.trim()) return;
+    if (!commentsTask || !newCommentText.trim()) {
+      toast.error("Debes escribir un comentario");
+      return;}
 
     try {
       const accessToken = localStorage.getItem("supabaseToken");
@@ -308,6 +342,8 @@ export const Tabla = ({
         await fetchTareas();
       }
 
+      toast.info("Se ha enviado el comentario");
+
       // Update local tasks state
       setTasks((prev) =>
         prev.map((t) =>
@@ -320,6 +356,7 @@ export const Tabla = ({
       // Close comments modal after publishing
       setCommentsTask(null);
       setNewCommentText("");
+      devolverFoco(previousFocusRef);
     } catch (error) {
       console.error("Error sending comment:", error);
       alert("No se pudo enviar el comentario. Intenta nuevamente.");
@@ -578,6 +615,8 @@ export const Tabla = ({
           role="dialog"
           aria-modal="true"
           aria-labelledby="edit-task-title"
+          tabIndex="-1"
+          ref={refModalEditarTarea}
         >
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <h3 id="edit-task-title">Editar tarea</h3>
@@ -709,6 +748,8 @@ export const Tabla = ({
           role="dialog"
           aria-modal="true"
           aria-labelledby="comments-title"
+          tabIndex="-1"
+          ref={refModalComments}
         >
           <div className="comments-modal" onClick={(e) => e.stopPropagation()}>
             <h3 id="comments-title">Comentarios</h3>
@@ -737,7 +778,7 @@ export const Tabla = ({
             )}
 
             <div style={{ marginTop: 8, textAlign: "right" }}>
-              <button onClick={() => setCommentsTask(null)}>Cerrar</button>
+              <button onClick={() => {setCommentsTask(null); devolverFoco(previousFocusRef);}}>Cerrar</button>
             </div>
           </div>
         </div>

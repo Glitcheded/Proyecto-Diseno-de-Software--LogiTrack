@@ -139,7 +139,8 @@ export const SidebarChat = ({
   const [email, setEmail] = useState("");
   const dropdownRef = useRef(null);
   const inputAddMemberEmail = useRef();
-
+  const [statusMessage1, setStatusMessage1] = useState("");
+ 
   const navigate = useNavigate();
 
   const handleClick = () => {
@@ -211,7 +212,11 @@ export const SidebarChat = ({
   };
 
   const handleNewChat = () => {
-    setShowDropdown((prev) => !prev); // 👈 alterna mostrar/ocultar menú
+    if (showDropdown) {
+      setShowDropdown(false); // 👈 cerrar
+    } else {
+      setShowDropdown(true); // 👈 abrir
+    }
   };
 
   const handleOptionClick = (option) => {
@@ -247,6 +252,7 @@ export const SidebarChat = ({
     // Validar si el campo está vacío
     if (!nuevoEmail) {
       toast.error("Por favor, ingresa un correo electrónico.");
+      setStatusMessage1("");
       return;
     }
 
@@ -254,6 +260,7 @@ export const SidebarChat = ({
     if (emails.includes(nuevoEmail)) {
       toast.error("Este correo ya está en la lista de integrantes.");
       inputAddMemberEmail.current.value = "";
+      setStatusMessage1("");
       return;
     }
 
@@ -261,12 +268,14 @@ export const SidebarChat = ({
     setEmails(prev => [...prev, nuevoEmail]);
     setNewMemberEmail(""); // limpiar campo después de agregar
     inputAddMemberEmail.current.value = "";
+    setStatusMessage1(`Se ha agregado el correo ${nuevoEmail} a la lista de integrantes`);
 
     console.log("Integrantes actuales:", [...emails, nuevoEmail]);
   };
 
   const handleRemoveMember = (index) => {
   setEmails(emails.filter((_, i) => i !== index));
+  setStatusMessage1(`Se ha removido el correo`);
 };
 
   const handleCreateGroup = () => {
@@ -395,6 +404,9 @@ export const SidebarChat = ({
               className="btn-primary"
               onClick={handleNewChat}
               aria-label="Crear nuevo chat"
+              aria-haspopup="true"
+              aria-expanded={showDropdown}
+              aria-controls="chat-dropdown"
             >
               {newChat}
             </button>
@@ -414,20 +426,23 @@ export const SidebarChat = ({
           {showModal && (
             <div className="modal-overlay">
               <div className="modal">
-                <h2>Nuevo chat</h2>
+                <h2 tabIndex="0">Nuevo chat</h2>
                 <label>Correo electrónico</label>
                 <input
                   type="email"
                   placeholder="usuario@ejemplo.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value.toLocaleLowerCase())}
+                  aria-label="Ingresa el correo de tu contacto"
                 />
                 <div className="modal-buttons">
                   <button className="btn-create" onClick={() => {handleCreate(); 
-                                                                handleClickNewChat();}}>
+                                                                handleClickNewChat();}}
+                                                                aria-label="Crear chat">
                     Crear
                   </button>
-                  <button className="btn-cancel" onClick={handleCancel}>
+                  <button className="btn-cancel" onClick={handleCancel}
+                    aria-label="Cancelar creación de chat">
                     Cancelar
                   </button>
                 </div>
@@ -438,7 +453,7 @@ export const SidebarChat = ({
           {showGroupModal && (
             <div className="modal-overlay">
               <div className="modal">
-                <h2>Nuevo chat grupal</h2>
+                <h2 tabIndex="0">Nuevo chat grupal</h2>
 
                 <label>Nombre del grupo</label>
                 <input
@@ -446,6 +461,7 @@ export const SidebarChat = ({
                   placeholder="Ej. Equipo de proyecto"
                   value={groupName}
                   onChange={(e) => setGroupName(e.target.value)}
+                  aria-label="Ingresa el nombre del grupo"
                 />
 
                 <label>Integrantes</label>
@@ -501,6 +517,7 @@ export const SidebarChat = ({
                           >
                             +
                           </button>
+                          <div aria-live="polite" className="sr-only">{statusMessage1}</div>
                         </div>
                       </td>
                     </tr>
@@ -515,11 +532,13 @@ export const SidebarChat = ({
                       handleCreateGroup();
                       handleClickNewChat();
                     }}
+                    aria-label="Crear chat"
                   >
                     Crear
                   </button>
 
-                  <button className="btn-cancel" onClick={handleCancelGroup}>
+                  <button className="btn-cancel" onClick={handleCancelGroup}
+                  aria-label="Cancelar creación de chat">
                     Cancelar
                   </button>
                 </div>

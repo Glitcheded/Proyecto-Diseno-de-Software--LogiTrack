@@ -116,7 +116,7 @@ export const LoginSignup = () => {
 
       <div className="horizontal-container">
         <div className="login-container">
-          <h2 id="auth-heading">
+          <h2 id="auth-heading" style={{ color: "#2F0459" }} tabIndex="0">
             {action === "Inciar Sesión"
               ? "Bienvenido de vuelta"
               : "Crea tu cuenta"}
@@ -154,7 +154,7 @@ export const LoginSignup = () => {
               </button>
             </div>
 
-            <p>Ingresa tus datos</p>
+            <p tabIndex="0">Ingresa tus datos</p>
 
             <form
               onSubmit={handleSubmit}
@@ -207,6 +207,7 @@ export const LoginSignup = () => {
                     onChange={(e) => setEmail(e.target.value)}
                     required
                     autoComplete="email"
+                    aria-label="Ingresar correo de cuenta"
                   />
                 </div>
 
@@ -244,20 +245,19 @@ export const LoginSignup = () => {
 
               {action === "Inciar Sesión" && (
                 <div className="forgot-password">
-                  ¿Olvidaste tu contraseña?{" "}
                   <button type="button" className="link-like" onClick={handleOpenChgPassModal}>
-                    Haz clic aquí!
+                    ¿Olvidaste tu contraseña? Haz clic aquí!
                   </button>
 
                   {showChgPassModal && (
                     <div className="modal-overlay" onClick={handleCloseChgPassModal}>
                       <div className="modal" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
-                          <h2>Recuperar Contraseña</h2>
+                          <h2 tabIndex="0">Recuperar Contraseña </h2>
                         </div>
 
                         <div className="modal-body">
-                          <p>Ingresa tu correo electrónico y te enviaremos un enlace para recuperar tu contraseña.</p>
+                          <p tabIndex="0">Ingresa tu correo electrónico y te enviaremos un enlace para recuperar tu contraseña.</p>
                           
                           <label>Correo electrónico</label>
                           <input
@@ -265,6 +265,7 @@ export const LoginSignup = () => {
                             value={email} // Reutiliza el campo de email del login
                             onChange={(e) => setEmail(e.target.value.toLowerCase())}
                             placeholder="tu.correo@ejemplo.com"
+                            aria-label="Ingresa tu correo de cuenta"
                           />                          
                           {errorMsg && <div style={{ color: "red", marginTop: "10px" }}>{errorMsg}</div>}
                         </div>
