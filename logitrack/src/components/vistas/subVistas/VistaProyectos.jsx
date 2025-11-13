@@ -348,6 +348,10 @@ export const VistaProyectos = ({
         ],
       }));
 
+      if (fetchProjects) {
+        await fetchProjects();
+      }
+
       console.log("Proyecto creado:", projectForTable);
     } catch (err) {
       console.error("Error creating project:", err);
