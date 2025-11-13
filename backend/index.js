@@ -18,7 +18,7 @@ const port = process.env.PORT || 3001;
 // ✅ Allow both local and deployed frontends
 const allowedOrigins = [
   'http://localhost:5173',
-  'https://logitrack-dguno8cfh-glitchededs-projects.vercel.app', // your actual deployed frontend
+  'https://logitrack-zeta.vercel.app', // your actual deployed frontend
 ];
 
 app.use(
