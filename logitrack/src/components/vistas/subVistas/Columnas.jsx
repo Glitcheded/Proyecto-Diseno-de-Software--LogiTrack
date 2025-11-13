@@ -51,6 +51,25 @@ export const Columnas = ({
   
     // ******************************************************
 
+    useEffect(() => {
+  const handleEsc = (e) => {
+    if (e.key === "Escape") {
+      // Close the edit modal if open
+      if (isEditorOpen) cancelEdits();
+
+      // Close the comments modal if open
+      if (commentsTask) {
+        setCommentsTask(null);
+        devolverFoco(previousFocusRef); // keeps your focus restoration logic
+      }
+    }
+  };
+
+  document.addEventListener("keydown", handleEsc);
+  return () => document.removeEventListener("keydown", handleEsc);
+}, [isEditorOpen, commentsTask]);
+
+
   useEffect(() => {
     if (Array.isArray(dataList)) {
       setTasks(dataList);
@@ -426,7 +445,10 @@ export const Columnas = ({
         aria-expanded={isExpanded}
         onClick={() => toggleExpand(task.id)}
         onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
+          if (
+            (e.key === "Enter" || e.key === " ") &&
+            e.target === e.currentTarget // only trigger if the card itself is focused
+          ) {
             e.preventDefault();
             toggleExpand(task.id);
           }
@@ -671,7 +693,7 @@ export const Columnas = ({
               </button>
               {(selectedProjectRole === 1 || selectedProjectRole === 2) && (
                 <button
-                  onClick={() => handleAddTask(editingTask.id)}
+                  onClick={() => handleAddTaskToState(editingTask.state,editingTask.id)}
                   className="subtask"
                 >
                   Agregar subtarea

@@ -53,6 +53,24 @@ export const Listado = ({
   // ******************************************************
 
   useEffect(() => {
+  const handleEsc = (e) => {
+    if (e.key === "Escape") {
+      // Close the edit modal if open
+      if (isEditorOpen) cancelEdits();
+
+      // Close the comments modal if open
+      if (commentsTask) {
+        setCommentsTask(null);
+        devolverFoco(previousFocusRef); // keeps your focus restoration logic
+      }
+    }
+  };
+
+  document.addEventListener("keydown", handleEsc);
+  return () => document.removeEventListener("keydown", handleEsc);
+}, [isEditorOpen, commentsTask]);
+
+  useEffect(() => {
     if (Array.isArray(dataList)) {
       setTasks(dataList);
     }

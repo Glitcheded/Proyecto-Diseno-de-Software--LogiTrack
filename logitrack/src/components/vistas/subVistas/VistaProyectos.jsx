@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "./VistaProyectos.css";
 import { useUser } from "../../../context/UserContext";
 import { supabase } from "../../../../supabaseClient";
@@ -14,18 +14,50 @@ export const VistaProyectos = ({
 }) => {
   const { userName, userEmail, userLastName, userId } = useUser();
 
-  const [selectedDescription, setSelectedDescription] = useState(null);
+  // 🧩 New refs for modals & focus management
+  const refModalEditarTarea = useRef(null);
+  const refModalComments = useRef(null);
+  const refModalPreview = useRef(null);
+  const previousFocusRef = useRef(null);
+  const [statusMessage1, setStatusMessage1] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
+  const [isMembersModalOpen, setIsMembersModalOpen] = useState(false);
+  const [selectedDescription, setSelectedDescription] = useState(null);
+
+  useEffect(() => {
+    if (editModalOpen && refModalEditarTarea.current) {
+      refModalEditarTarea.current.focus();
+    }
+  }, [editModalOpen]);
+
+  useEffect(() => {
+    if (isMembersModalOpen && refModalComments.current) {
+      refModalComments.current.focus();
+    }
+  }, [isMembersModalOpen]);
+
+  useEffect(() => {
+    if (selectedDescription && refModalPreview.current) {
+      refModalPreview.current.focus();
+    }
+  }, [selectedDescription]);
+
+  function devolverFoco(previousFocusRef) {
+    if (previousFocusRef?.current) {
+      previousFocusRef.current.focus(); // 👈 devuelve el foco
+    }
+  }
+
+  // ******************************************************
+
   const [editedProject, setEditedProject] = useState(null);
   const [newMemberEmail, setNewMemberEmail] = useState("");
   const [newMemberRole, setNewMemberRole] = useState("Colaborador");
-  const [isMembersModalOpen, setIsMembersModalOpen] = useState(false);
   const [selectedProjectMembers, setSelectedProjectMembers] = useState([]);
   const [selectedProjectName, setSelectedProjectName] = useState("");
 
   const [addMemberError, setAddMemberError] = useState("");
-
   const [projectMembers, setProjectMembers] = useState({});
 
   const isPrevious = ViewMode === "Proyectos Anteriores";
@@ -81,11 +113,13 @@ export const VistaProyectos = ({
   }, [dataList]);
 
   const openDescription = (description) => {
+    previousFocusRef.current = document.activeElement;
     setSelectedDescription(description);
     setIsModalOpen(true);
   };
 
   const openMembersModal = (project) => {
+    previousFocusRef.current = document.activeElement;
     const members = projectMembers[project.idProyecto] || [];
     setSelectedProjectMembers(members);
     setSelectedProjectName(project.nombre);
@@ -95,15 +129,18 @@ export const VistaProyectos = ({
   const closeModal = () => {
     setIsModalOpen(false);
     setSelectedDescription(null);
+    devolverFoco(previousFocusRef);
   };
 
   const closeMembersModal = () => {
     setIsMembersModalOpen(false);
     setSelectedProjectMembers([]);
     setSelectedProjectName("");
+    devolverFoco(previousFocusRef);
   };
 
   const openEditor = (project) => {
+    previousFocusRef.current = document.activeElement;
     const members = projectMembers[project.idProyecto] || [];
     setEditedProject({ ...project, memberList: [...members] });
     setEditModalOpen(true);
@@ -113,6 +150,7 @@ export const VistaProyectos = ({
     setEditModalOpen(false);
     setEditedProject(null);
     setNewMemberEmail("");
+    devolverFoco(previousFocusRef);
   };
 
   const handleFieldChange = (field, value) => {
@@ -348,6 +386,10 @@ export const VistaProyectos = ({
         ],
       }));
 
+      if (fetchProjects) {
+        await fetchProjects();
+      }
+
       console.log("Proyecto creado:", projectForTable);
     } catch (err) {
       console.error("Error creating project:", err);
@@ -454,226 +496,271 @@ export const VistaProyectos = ({
       )}
 
       {/* Description Modal */}
-      {isModalOpen && (
-        <div
-          className="modal-overlay"
-          onClick={closeModal}
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="modal-title"
-          aria-describedby="modal-desc"
+{isModalOpen && (
+  <div
+    className="modal-overlay"
+    onClick={closeModal}
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="modal-title"
+    aria-describedby="modal-desc"
+  >
+    <div
+      className="modal"
+      onClick={(e) => e.stopPropagation()}
+      ref={(node) => {
+        if (node) {
+          const focusable = node.querySelector(
+            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+          );
+          focusable?.focus();
+          const handleKeyDown = (e) => {
+            if (e.key === "Escape") closeModal();
+          };
+          node.addEventListener("keydown", handleKeyDown);
+          return () => node.removeEventListener("keydown", handleKeyDown);
+        }
+      }}
+    >
+      <h3 id="modal-title">Descripción del proyecto</h3>
+      <p id="modal-desc">{selectedDescription}</p>
+      <br />
+      <button
+        className="proyecto-close-btn"
+        onClick={closeModal}
+        aria-label="Cerrar modal de descripción"
+      >
+        Cerrar
+      </button>
+    </div>
+  </div>
+)}
+
+{/* Edit Project Modal */}
+{editModalOpen && editedProject && (
+  <div
+    className="modal-overlay"
+    onClick={closeEditor}
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="edit-modal-title"
+    aria-describedby="edit-modal-desc"
+  >
+    <div
+      className="modal"
+      onClick={(e) => e.stopPropagation()}
+      ref={(node) => {
+        if (node) {
+          const focusable = node.querySelector(
+            'input, select, button, [href], [tabindex]:not([tabindex="-1"])'
+          );
+          focusable?.focus();
+          const handleKeyDown = (e) => {
+            if (e.key === "Escape") closeEditor();
+          };
+          node.addEventListener("keydown", handleKeyDown);
+          return () => node.removeEventListener("keydown", handleKeyDown);
+        }
+      }}
+    >
+      <h3 id="edit-modal-title">Editar proyecto</h3>
+      <p id="edit-modal-desc">
+        Formulario para modificar información del proyecto y miembros
+      </p>
+
+      <label htmlFor="project-name">
+        Nombre del proyecto
+        <input
+          id="project-name"
+          type="text"
+          value={editedProject.nombre}
+          onChange={(e) => handleFieldChange("nombre", e.target.value)}
+        />
+      </label>
+
+      <label htmlFor="project-desc">
+        Descripción
+        <input
+          id="project-desc"
+          type="text"
+          value={editedProject.descripcion}
+          onChange={(e) => handleFieldChange("descripcion", e.target.value)}
+        />
+      </label>
+
+      <label htmlFor="project-status">
+        Estado del proyecto
+        <select
+          id="project-status"
+          value={editedProject.idEstadoProyecto}
+          onChange={(e) =>
+            handleFieldChange("idEstadoProyecto", Number(e.target.value))
+          }
         >
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <h3 id="modal-title">Descripción del proyecto</h3>
-            <p id="modal-desc">{selectedDescription}</p>
-            <br />
-            <button
-              className="proyecto-close-btn"
-              onClick={closeModal}
-              aria-label="Cerrar modal de descripción"
-            >
-              Cerrar
-            </button>
-          </div>
-        </div>
+          <option value={1}>En proceso</option>
+          <option value={2}>Cancelado</option>
+          <option value={3}>Finalizado</option>
+        </select>
+      </label>
+
+      <h4>Miembros del proyecto</h4>
+      <table
+        className="members-table"
+        role="table"
+        aria-label="Miembros del proyecto"
+      >
+        <thead>
+          <tr role="row">
+            <th role="columnheader">Nombre</th>
+            <th role="columnheader">Correo</th>
+            <th role="columnheader">Rol</th>
+            <th role="columnheader">Acción</th>
+          </tr>
+        </thead>
+        <tbody>
+          {editedProject.memberList?.map((member) => (
+            <tr key={member.id} role="row">
+              <td role="cell">{member.name}</td>
+              <td role="cell">{member.email}</td>
+              <td role="cell">{member.role}</td>
+              <td role="cell">
+                <button
+                  className="small-danger"
+                  onClick={() => handleRemoveMember(member.id)}
+                  aria-label={`Eliminar miembro ${member.name}`}
+                  tabIndex={0}
+                  onKeyDown={(e) =>
+                    e.key === "Enter" && handleRemoveMember(member.id)
+                  }
+                >
+                  ✕
+                </button>
+              </td>
+            </tr>
+          ))}
+
+          <tr className="add-member-row">
+            <td colSpan="4">
+              <div className="add-member">
+                <label className="sr-only" htmlFor="new-member-email">
+                  Correo del nuevo miembro
+                </label>
+                <input
+                  id="new-member-email"
+                  type="text"
+                  placeholder="Correo del nuevo miembro"
+                  value={newMemberEmail}
+                  onChange={(e) => setNewMemberEmail(e.target.value)}
+                />
+                <select
+                  value={newMemberRole}
+                  onChange={(e) => setNewMemberRole(e.target.value)}
+                >
+                  <option>Administrador</option>
+                  <option>Gestor de proyectos</option>
+                  <option>Colaborador</option>
+                  <option>Observador</option>
+                </select>
+                <button onClick={handleAddMember} aria-label="Agregar nuevo miembro">
+                  +
+                </button>
+              </div>
+              {addMemberError && (
+                <p className="error-message" role="alert">
+                  {addMemberError}
+                </p>
+              )}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div className="modal-actions">
+        <button className="confirm" onClick={handleConfirm}>
+          Guardar cambios
+        </button>
+        <button className="cancel" onClick={closeEditor}>
+          Cancelar
+        </button>
+        <button className="danger" onClick={handleDelete}>
+          Eliminar proyecto
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
+{/* Members Modal */}
+{isMembersModalOpen && (
+  <div
+    className="modal-overlay"
+    onClick={closeMembersModal}
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="members-modal-title"
+    aria-describedby="members-modal-desc"
+  >
+    <div
+      className="modal"
+      onClick={(e) => e.stopPropagation()}
+      ref={(node) => {
+        if (node) {
+          const focusable = node.querySelector(
+            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+          );
+          focusable?.focus();
+          const handleKeyDown = (e) => {
+            if (e.key === "Escape") closeMembersModal();
+          };
+          node.addEventListener("keydown", handleKeyDown);
+          return () => node.removeEventListener("keydown", handleKeyDown);
+        }
+      }}
+    >
+      <h3 id="members-modal-title">Miembros de {selectedProjectName}</h3>
+      <p id="members-modal-desc">
+        Lista de miembros y roles del proyecto seleccionado.
+      </p>
+
+      {selectedProjectMembers.length > 0 ? (
+        <table
+          className="members-table"
+          role="table"
+          aria-label="Miembros del proyecto"
+        >
+          <thead>
+            <tr role="row">
+              <th role="columnheader">Nombre</th>
+              <th role="columnheader">Correo</th>
+              <th role="columnheader">Rol</th>
+            </tr>
+          </thead>
+          <tbody>
+            {selectedProjectMembers.map((member) => (
+              <tr key={member.id} role="row">
+                <td role="cell">{member.name}</td>
+                <td role="cell">{member.email}</td>
+                <td role="cell">{member.role}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      ) : (
+        <p>No hay miembros en este proyecto.</p>
       )}
 
-      {/* Edit Project Modal */}
-      {editModalOpen && editedProject && (
-        <div
-          className="modal-overlay"
-          onClick={closeEditor}
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="edit-modal-title"
-          aria-describedby="edit-modal-desc"
-        >
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <h3 id="edit-modal-title">Editar proyecto</h3>
-            <p id="edit-modal-desc">
-              Formulario para modificar información del proyecto y miembros
-            </p>
+      <button
+        className="proyecto-close-btn"
+        onClick={closeMembersModal}
+        aria-label="Cerrar modal de miembros"
+        style={{ marginTop: "12px" }}
+      >
+        Cerrar
+      </button>
+    </div>
+  </div>
+)}
 
-            <label htmlFor="project-name">
-              Nombre del proyecto
-              <input
-                id="project-name"
-                type="text"
-                value={editedProject.nombre}
-                onChange={(e) => handleFieldChange("nombre", e.target.value)}
-              />
-            </label>
-
-            <label htmlFor="project-desc">
-              Descripción
-              <input
-                id="project-desc"
-                type="text"
-                value={editedProject.descripcion}
-                onChange={(e) =>
-                  handleFieldChange("descripcion", e.target.value)
-                }
-              />
-            </label>
-
-            <label htmlFor="project-status">
-              Estado del proyecto
-              <select
-                id="project-status"
-                value={editedProject.idEstadoProyecto}
-                onChange={(e) =>
-                  handleFieldChange("idEstadoProyecto", Number(e.target.value))
-                }
-              >
-                <option value={1}>En proceso</option>
-                <option value={2}>Cancelado</option>
-                <option value={3}>Finalizado</option>
-              </select>
-            </label>
-
-            <h4>Miembros del proyecto</h4>
-            <table
-              className="members-table"
-              role="table"
-              aria-label="Miembros del proyecto"
-            >
-              <thead>
-                <tr role="row">
-                  <th role="columnheader">Nombre</th>
-                  <th role="columnheader">Correo</th>
-                  <th role="columnheader">Rol</th>
-                  <th role="columnheader">Acción</th>
-                </tr>
-              </thead>
-              <tbody>
-                {editedProject.memberList?.map((member) => (
-                  <tr key={member.id} role="row">
-                    <td role="cell">{member.name}</td>
-                    <td role="cell">{member.email}</td>
-                    <td role="cell">{member.role}</td>
-                    <td role="cell">
-                      <button
-                        className="small-danger"
-                        onClick={() => handleRemoveMember(member.id)}
-                        aria-label={`Eliminar miembro ${member.name}`}
-                        tabIndex={0}
-                        onKeyDown={(e) =>
-                          e.key === "Enter" && handleRemoveMember(member.id)
-                        }
-                      >
-                        ✕
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-
-                <tr className="add-member-row">
-                  <td colSpan="4">
-                    <div className="add-member">
-                      <label className="sr-only" htmlFor="new-member-email">
-                        Correo del nuevo miembro
-                      </label>
-                      <input
-                        id="new-member-email"
-                        type="text"
-                        placeholder="Correo del nuevo miembro"
-                        value={newMemberEmail}
-                        onChange={(e) => setNewMemberEmail(e.target.value)}
-                      />
-                      <select
-                        value={newMemberRole}
-                        onChange={(e) => setNewMemberRole(e.target.value)}
-                      >
-                        <option>Administrador</option>
-                        <option>Gestor de proyectos</option>
-                        <option>Colaborador</option>
-                        <option>Observador</option>
-                      </select>
-                      <button
-                        onClick={handleAddMember}
-                        aria-label="Agregar nuevo miembro"
-                      >
-                        +
-                      </button>
-                    </div>
-                    {addMemberError && (
-                      <p className="error-message" role="alert">
-                        {addMemberError}
-                      </p>
-                    )}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-
-            <div className="modal-actions">
-              <button className="confirm" onClick={handleConfirm}>
-                Guardar cambios
-              </button>
-              <button className="cancel" onClick={closeEditor}>
-                Cancelar
-              </button>
-              <button className="danger" onClick={handleDelete}>
-                Eliminar proyecto
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-      {/* Members Modal */}
-      {isMembersModalOpen && (
-        <div
-          className="modal-overlay"
-          onClick={closeMembersModal}
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="members-modal-title"
-          aria-describedby="members-modal-desc"
-        >
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <h3 id="members-modal-title">Miembros de {selectedProjectName}</h3>
-            <p id="members-modal-desc">
-              Lista de miembros y roles del proyecto seleccionado.
-            </p>
-
-            {selectedProjectMembers.length > 0 ? (
-              <table
-                className="members-table"
-                role="table"
-                aria-label="Miembros del proyecto"
-              >
-                <thead>
-                  <tr role="row">
-                    <th role="columnheader">Nombre</th>
-                    <th role="columnheader">Correo</th>
-                    <th role="columnheader">Rol</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {selectedProjectMembers.map((member) => (
-                    <tr key={member.id} role="row">
-                      <td role="cell">{member.name}</td>
-                      <td role="cell">{member.email}</td>
-                      <td role="cell">{member.role}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            ) : (
-              <p>No hay miembros en este proyecto.</p>
-            )}
-
-            <button
-              className="proyecto-close-btn"
-              onClick={closeMembersModal}
-              aria-label="Cerrar modal de miembros"
-              style={{ marginTop: "12px" }}
-            >
-              Cerrar
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

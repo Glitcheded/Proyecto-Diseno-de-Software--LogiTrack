@@ -86,6 +86,24 @@ export const Calendario = ({
   
     // ******************************************************
 
+    useEffect(() => {
+  const handleEsc = (e) => {
+    if (e.key === "Escape") {
+      // Close the edit modal if open
+      if (isEditorOpen) cancelEdits();
+
+      // Close the comments modal if open
+      if (commentsTask) {
+        setCommentsTask(null);
+        devolverFoco(previousFocusRef); // keeps your focus restoration logic
+      }
+    }
+  };
+
+  document.addEventListener("keydown", handleEsc);
+  return () => document.removeEventListener("keydown", handleEsc);
+}, [isEditorOpen, commentsTask]);
+
   useEffect(() => {
     if (Array.isArray(dataList)) {
       setTasks(dataList);
@@ -501,40 +519,65 @@ export const Calendario = ({
 
           {tasksForDay.map((task) => (
             <div
-              key={task.id}
-              className="task-card"
-              role="button"
-              tabIndex={0}
-              onClick={() => handleTaskClick(task)}
-              onKeyDown={(e) => e.key === "Enter" && handleTaskClick(task)}
-              aria-label={`Tarea: ${task.name}, Proyecto: ${task.project.name}, Prioridad: ${task.prioridad}`}
-            >
-              <div className="task-preview">
-                {ViewMode !== "Proyectos Anteriores" &&
-                  selectedProjectRole !== 4 && (
-                    <button
-                      className="edit-btn-col"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        openEditor(task.id);
-                      }}
-                      title="Editar tarea"
-                      aria-label={`Editar tarea ${task.name}`}
-                    >
-                      Editar
-                    </button>
-                  )}
-                {Boolean(task.subtaskOf) && (
-                  <div className="subtask-label">
-                    Subtarea: <b>{getParentName(task)}</b>
-                  </div>
-                )}
-                <div className="task-name">
-                  {task.name} {getPriorityEmoji(task.prioridad)}
-                </div>
-                <div className="task-project">{task.project.name}</div>
-              </div>
-            </div>
+  key={task.id}
+  className="task-card"
+  role="button"
+  tabIndex={0}
+  onClick={() => handleTaskClick(task)}
+  onKeyDown={(e) => {
+    // Handle keyboard activation for the card itself
+    if (e.key === "Enter" || e.key === " ") {
+      // Ignore if the user is focusing an inner button or input
+      if (
+        e.target.tagName === "BUTTON" ||
+        e.target.tagName === "INPUT" ||
+        e.target.tagName === "SELECT" ||
+        e.target.closest("button")
+      ) {
+        return;
+      }
+      e.preventDefault();
+      handleTaskClick(task);
+    }
+  }}
+  aria-label={`Tarea: ${task.name}, Proyecto: ${task.project.name}, Prioridad: ${task.prioridad}`}
+>
+  <div className="task-preview">
+    {ViewMode !== "Proyectos Anteriores" && selectedProjectRole !== 4 && (
+      <button
+        className="edit-btn-col"
+        onClick={(e) => {
+          e.stopPropagation(); // Prevent parent click
+          openEditor(task.id);
+        }}
+        onKeyDown={(e) => {
+          // Prevent the parent onKeyDown from firing when pressing Enter or Space here
+          e.stopPropagation();
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            openEditor(task.id);
+          }
+        }}
+        title="Editar tarea"
+        aria-label={`Editar tarea ${task.name}`}
+      >
+        Editar
+      </button>
+    )}
+
+    {Boolean(task.subtaskOf) && (
+      <div className="subtask-label">
+        Subtarea: <b>{getParentName(task)}</b>
+      </div>
+    )}
+
+    <div className="task-name">
+      {task.name} {getPriorityEmoji(task.prioridad)}
+    </div>
+    <div className="task-project">{task.project.name}</div>
+  </div>
+</div>
+
           ))}
         </div>
       );
@@ -825,7 +868,7 @@ export const Calendario = ({
               </button>
               {(selectedProjectRole === 1 || selectedProjectRole === 2) && (
                 <button
-                  onClick={() => handleAddTask(editingTask.id)}
+                  onClick={() => handleAddTaskForDay(editingTask.dueDate,editingTask.id)}
                   className="subtask"
                 >
                   Agregar subtarea
