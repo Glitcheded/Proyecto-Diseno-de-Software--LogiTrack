@@ -263,7 +263,7 @@ export const Opciones = ({ userData, userSettings }) => {
             ) : (
               <>
                 {userInfo.name}{" "}
-                <button onClick={() => startEditing("name")}>Editar</button>
+                <button onClick={() => startEditing("name")} aria-label="Editar nombre">Editar</button>
               </>
             )}
           </div>
@@ -292,7 +292,7 @@ export const Opciones = ({ userData, userSettings }) => {
             ) : (
               <>
                 {userInfo.linkedin}{" "}
-                <button onClick={() => startEditing("linkedin")}>Editar</button>
+                <button onClick={() => startEditing("linkedin")} aria-label="Editar linkedin">Editar</button>
               </>
             )}
           </div>

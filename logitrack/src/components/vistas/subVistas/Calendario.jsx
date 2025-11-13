@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "./Calendario.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faChevronLeft,
   faChevronRight,
 } from "@fortawesome/free-solid-svg-icons";
+import { toast } from "react-toastify";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const baseURL = `${API_BASE_URL}/api`;
@@ -51,6 +52,39 @@ export const Calendario = ({
         return "⚪";
     }
   };
+
+    // ******************************************************
+    const refModalEditarTarea = useRef(null);
+    const refModalComments = useRef(null);
+    const refModalPreview = useRef(null);
+    const previousFocusRef = useRef(null);
+    const [statusMessage1, setStatusMessage1] = useState("");
+  
+    useEffect(() => {
+      if (isEditorOpen && refModalEditarTarea.current) {
+        refModalEditarTarea.current.focus();
+      }
+    }, [isEditorOpen]);
+  
+    useEffect(() => {
+      if (commentsTask != null && refModalComments.current) {
+        refModalComments.current.focus();
+      }
+    }, [commentsTask]);
+    
+    useEffect(() => {
+      if (selectedTask && refModalPreview.current) {
+        refModalPreview.current.focus();
+      }
+    }, [selectedTask]);
+
+    function devolverFoco(previousFocusRef) {
+      if (previousFocusRef?.current) {
+        previousFocusRef.current.focus(); // 👈 devuelve el foco
+      }
+    }
+  
+    // ******************************************************
 
   useEffect(() => {
     if (Array.isArray(dataList)) {
@@ -143,6 +177,7 @@ export const Calendario = ({
 
     setEditingTask({ ...t });
     await fetchProjectMembers(t.project.id);
+    previousFocusRef.current = document.activeElement; // 👈 guarda el foco actual
     setIsEditorOpen(true);
   };
 
@@ -232,6 +267,7 @@ export const Calendario = ({
 
       setIsEditorOpen(false);
       setEditingTask(null);
+      devolverFoco(previousFocusRef);
 
       alert("Tarea actualizada correctamente");
     } catch (error) {
@@ -243,6 +279,7 @@ export const Calendario = ({
   const cancelEdits = () => {
     setIsEditorOpen(false);
     setEditingTask(null);
+    devolverFoco(previousFocusRef);
   };
 
   const deleteTask = async (taskId) => {
@@ -278,23 +315,31 @@ export const Calendario = ({
 
       setIsEditorOpen(false);
       setEditingTask(null);
+      devolverFoco(previousFocusRef);
     } catch (error) {
       console.error("Error al eliminar tarea:", error);
       alert("No se pudo eliminar la tarea. Intenta nuevamente.");
     }
   };
 
-  const handleTaskClick = (task) => setSelectedTask(task);
+  const handleTaskClick = (task) => {
+    previousFocusRef.current = document.activeElement; // 👈 guarda el foco actual
+    setSelectedTask(task);
+  };
 
   const openComments = (taskId) => {
     const t = tasks.find((x) => x.id === taskId);
     if (!t) return;
+    previousFocusRef.current = document.activeElement; // 👈 guarda el foco actual
     setCommentsTask({ ...t });
     setNewCommentText("");
   };
 
   const sendComment = async () => {
-    if (!commentsTask || !newCommentText.trim()) return;
+    if (!commentsTask || !newCommentText.trim()) {
+      toast.error("Debes escribir un comentario");
+      return;
+    };
 
     try {
       const accessToken = localStorage.getItem("supabaseToken");
@@ -335,6 +380,8 @@ export const Calendario = ({
             : t
         )
       );
+
+      toast.info("Se ha enviado el comentario");
 
       // Close comments modal after publishing
       setCommentsTask(null);
@@ -568,8 +615,13 @@ export const Calendario = ({
       </div>
 
       {selectedTask && (
-        <div className="task-detail-panel">
-          <button className="close-btn" onClick={() => setSelectedTask(null)}>
+        <div className="task-detail-panel"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="preview-task"
+          tabIndex="-1"
+          ref={refModalPreview}>
+          <button aria-label="Salir de vista previa de tarea" className="close-btn" onClick={() => {setSelectedTask(null); devolverFoco(previousFocusRef)}}>
             ✖
           </button>
           <h3>{selectedTask.name}</h3>
@@ -659,6 +711,8 @@ export const Calendario = ({
           role="dialog"
           aria-modal="true"
           aria-labelledby="edit-task-title"
+          tabIndex="-1"
+          ref={refModalEditarTarea}
         >
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <h3 id="edit-task-title">Editar tarea</h3>
@@ -790,6 +844,8 @@ export const Calendario = ({
           role="dialog"
           aria-modal="true"
           aria-labelledby="comments-title"
+          tabIndex="-1"
+          ref={refModalComments}
         >
           <div className="comments-modal" onClick={(e) => e.stopPropagation()}>
             <h3 id="comments-title">Comentarios</h3>
@@ -818,7 +874,7 @@ export const Calendario = ({
             )}
 
             <div style={{ marginTop: 8, textAlign: "right" }}>
-              <button onClick={() => setCommentsTask(null)}>Cerrar</button>
+              <button onClick={() => {setCommentsTask(null); devolverFoco(previousFocusRef)}}>Cerrar</button>
             </div>
           </div>
         </div>
